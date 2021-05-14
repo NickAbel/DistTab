@@ -3,57 +3,18 @@ program get_ex
   implicit none
   character (len=255) :: lookup_table_filename
   integer :: ierror, rank, nprocs
-  integer, parameter :: n1 = 25, n2 = 10, n3 = 1, p1 = 3, p2 = 3
-  integer, parameter :: q1 = 5, q2 = 2
-  integer :: x1, x2, x, y ! Coordinate index (x1,x2), flat index x
+  integer, parameter, dimension(3) :: n = (/ 25, 10, 1 /)
+  integer, parameter, dimension(2) :: q = (/ 5, 2 /), p = (/ 3, 3 /)
+  integer, dimension(3) :: bd
+  integer, dimension(:,:), allocatable :: partition
+  integer :: x(2), y ! Coordinate index (x(1),x(2)), flat index y
   integer :: block_bounds(4)
-  integer :: l, m, n, bd1, bd2, flat_index, coord_index(2)
-  double precision :: lookup_table(n1*n2,n3), values_fetched(q1), k
+  integer :: i, j, k
+  double precision :: lookup_table(n(1)*n(2),n(3)), values_fetched(q(1)), z
   integer :: window
   integer :: integer_size, dbl_size
   integer(kind=mpi_address_kind) :: win_size, lookup_table_size
   integer(kind=mpi_address_kind) :: target_displacement
-  interface find_block_rank
-
-    ! Return rank where a flat index x is located
-    subroutine find_block_rank_flat(x)
-      integer, intent(in) :: x
-    end subroutine
-
-    ! Return rank where a coordinate index (x1,x2) is located
-    subroutine find_block_rank_coord(x1,x2)
-      integer, intent(in) :: x1,x2
-    end subroutine
-
-  end interface find_block_rank
-
-  interface find_partition_flat
-
-    ! Return all flat indices of flat index x's partition
-    subroutine find_partition_flat2flat(x)
-      integer, intent(in) :: x
-    end subroutine
-
-    ! Return all flat indices of coordinate index (x1,x2)'s partition
-    subroutine find_partition_coord2flat(x1,x2)
-      integer, intent(in) :: x1,x2
-    end subroutine
-
-  end interface find_partition_flat
-
-  interface find_partition_coord
-
-    ! Return all coordinate indices of flat index x's partition
-    subroutine find_partition_flat2coord(x)
-      integer, intent(in) :: x
-    end subroutine
-
-    ! Return all coordinate indices of coordinate index (x1,x2)'s partition
-    subroutine find_partition_coord2coord(x1,x2)
-      integer, intent(in) :: x1,x2
-    end subroutine
-
-  end interface find_partition_coord
 
   ! Setup MPI communicator, retrieve MPI type sizes
   call mpi_init(ierror)
@@ -67,8 +28,8 @@ program get_ex
   open(unit = 46, file = lookup_table_filename, status='old', action='read')
 
   ! Compute size of lookup table and window block size
-  lookup_table_size = n1*n2*n3*dbl_size
-  win_size = q1*dbl_size
+  lookup_table_size = n(1)*n(2)*n(3)*dbl_size
+  win_size = q(1)*dbl_size
 
   ! Insist on some comm size
   if (nprocs .ne. 2) then
@@ -77,72 +38,71 @@ program get_ex
   endif
 
   ! Block division per-rank
-  bd1 = n1/nprocs
-  bd2 = n2/nprocs
+  do i = 1, 3
+    bd(i) = n(i)/nprocs
+  enddo
 
   ! Populate lookup table with self-explanatory entries
-  do l = 1,n3
-    do m = 1,n2
-      do n = 1,n1
-        call coords2flat(n,m,n2,flat_index)
-        coord_index(1) = ceiling(real(flat_index)/real(n2))
-        coord_index(2) = merge(m, mod(flat_index,n2), m .eq. n2)
+  do i = 1,n(3)
+    do j = 1,n(2)
+      do k = 1,n(1)
+        y = coords2flat((/ k,j /))
+        x = flat2coords(y)
         !!! Debug output for indexing conversion
-        !if (rank .eq. 0) then
-        !  print *, n-coord_index(1), m-coord_index(2), flat_index,n2
+        !if (rank .eq. 1) then
+        !  print *, k-x(1), j-x(2), n(1)*n(2)*rank+y
         !endif 
-        lookup_table(flat_index,l) = n1*n2*rank+flat_index !1000*coord_index(1) + coord_index(2)
+        lookup_table(y,i) = y + rank*n(1)*n(2)
       enddo
     enddo
   enddo
 
   ! Create memory window covering whole sub-table on each rank
-  call mpi_win_create(lookup_table, q1*win_size, dbl_size, mpi_info_null, mpi_comm_world, window, ierror)
+  call mpi_win_create(lookup_table, q(1)*win_size, dbl_size, mpi_info_null, mpi_comm_world, window, ierror)
   call mpi_win_fence(0, window, ierror)
 
   ! If block is available on own rank... print it, for now
-  call random_number(k)
-  x = ceiling(k*500)
-  call flat2coords(x,n2,x1,x2)
-  call coords2flat(x1,x2,n2,y)
+  call random_number(z)
+  y = ceiling(z*n(1)*n(2))
+  x = flat2coords(y)
+
   ! Print information about the point requested x
-  print*, 'Flat entry x = ', x, ' has coordinates: ', x1, x2, 'Verify: (', lookup_table(y,1), ')', &
-    ' in partition block: ', ceiling(real(x1)/real(q1)), ceiling(real(x2)/real(q2)), &
-    'with local partition entry ', merge(mod(x1,q1),q1,mod(x1,q1) .ne. 0), merge(mod(x2,q2),q2,mod(x2,q2) .ne. 0)
+  print *, 'Flat entry y = ', y, ' has coordinates: ', x
+
+  y = coords2flat(x)
+
+  print *,  'Verify: (', lookup_table(y,1), ')', &
+    ' in partition block: ', find_local_partition(x), &
+    'with local partition entry ', find_local_partition_entry(x)
+
   ! Print information about x's partition block
-  print*, 'So, the bounds of the partition block containing x are:'
-  ! Lower bound direction 1
-  block_bounds(1) = x1-merge(mod(x1,q1)-1,q1-1,mod(x1,q1) .ne. 0)
-  ! Upper bound direction 1
-  block_bounds(2) = x1+merge(q1-mod(x1,q1),0,mod(x1,q1) .ne. 0)
-  ! Lower bound direction 2
-  block_bounds(3) = x2-merge(mod(x2,q2)-1,q2-1,mod(x2,q2) .ne. 0)
-  ! Upper bound direction 2
-  block_bounds(4) = x2+merge(q2-mod(x2,q2),0,mod(x2,q2) .ne. 0)
-  print*, 'LLB = (',block_bounds(1),', ',block_bounds(3),')'
-  print*, 'ULB = (',block_bounds(1),', ',block_bounds(4),')'
-  print*, 'LRB = (',block_bounds(2),', ',block_bounds(3),')'
-  print*, 'URB = (',block_bounds(2),', ',block_bounds(4),')'
-  print*, 'Per-rank block division is: ', bd1, ' x ', bd2
+  block_bounds = find_partition_bounds_coord(x)
 
-  print *, "lookup table on rank ", rank, " starts at ", lbound(lookup_table,dim=1)+n1*n2*rank, &
-    ", ends at ", ubound(lookup_table,dim=1)+n1*n2*rank
+  print *, "lookup table on rank ", rank, " has range ", find_rank_bounds(rank)
 
-  do m = block_bounds(1), block_bounds(2)
-    do n = block_bounds(3), block_bounds(4)
-      call coords2flat(m,n,n2,y)
-      print *, m,n, " corresponds to x = ", y, merge("     (On table at rank ", " (OUT OF TABLE ON RANK ", y >= &
-        lbound(lookup_table,dim=1)+n1*n2*rank  .and. y <= ubound(lookup_table,dim=1)+n1*n2*rank), rank, ") "
+  ! Dynamically allocate one partition
+  allocate(partition(block_bounds(1):block_bounds(2), block_bounds(3):block_bounds(4)))
+
+  do i = block_bounds(1), block_bounds(2)
+    do j = block_bounds(3), block_bounds(4)
+      y = coords2flat((/ i,j /))
+      partition(i,j) = merge(y, -1, find_block_rank_flat(y) .eq. rank)
+      print *, i,j, " corresponds to x = ", y, merge("     (On table at rank ", " (OUT OF TABLE ON RANK ", &
+        find_block_rank_flat(y) .eq. rank), rank, ") "
     enddo
   enddo
+  print *, partition
+
+  ! Deallocate here for now while testing
+  deallocate(partition)
 
   ! If block is available on other rank, get it and... print it, for now
   if (rank .eq. 0) then
     target_displacement = 0
-    call mpi_get(values_fetched, q1, mpi_double, 1, target_displacement, q1, mpi_double, window, ierror)
+    call mpi_get(values_fetched, q(1), mpi_double, 1, target_displacement, q(1), mpi_double, window, ierror)
   else if (rank .eq. 1) then
     target_displacement = 0
-    call mpi_get(values_fetched, q1, mpi_double, 0, target_displacement, q1, mpi_double, window, ierror)
+    call mpi_get(values_fetched, q(1), mpi_double, 0, target_displacement, q(1), mpi_double, window, ierror)
   endif
   call mpi_win_fence(0, window, ierror)
 
@@ -151,18 +111,98 @@ program get_ex
   call mpi_win_free(window, ierror)
   close(46)
   call mpi_finalize(ierror)
+
+contains
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !! A bunch of helper functions containing ugly modular arithmetic. !!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !!!!
+  ! Return upper and lower bounds of rank in global flat indices
+  function find_rank_bounds(bloc) result(bounds)
+    integer, intent(in)  :: bloc
+    integer, dimension(2) :: bounds
+    bounds(1) = lbound(lookup_table,dim=1)+n(1)*n(2)*rank
+    bounds(2) = ubound(lookup_table,dim=1)+n(1)*n(2)*rank
+  end function
+
+  !!!!
+  ! Return rank where a flat index f is located
+  function find_block_rank_flat(f) result(bloc)
+    integer, intent(in)  :: f
+    integer :: bloc
+    bloc = f/(n(1)*n(2))
+  end function
+
+  ! Return rank where a coordinate index (c(1),c(2)) is located
+  function find_block_rank_coord(c) result(bloc)
+    integer, dimension(2), intent(in)  :: c
+    integer :: bloc
+    bloc = coords2flat(c)/(n(1)*n(2))
+  end function
+
+  ! Return local partition containing coordinate index (c(1),c(2))
+  function find_local_partition(c) result(partition_index)
+    integer, dimension(2) :: c
+    integer, dimension(2) :: partition_index
+    partition_index(1) = ceiling(real(c(1))/real(q(1)))
+    partition_index(2) = ceiling(real(c(2))/real(q(2)))
+  end function
+  
+  ! Find a global coordinate (c(1),c(2))'s local (on partition) coordinates
+  function find_local_partition_entry(c) result(local_entry)
+     integer, dimension(2) :: c
+    integer, dimension(2) :: local_entry
+    local_entry(1) = merge(mod(c(1),q(1)),q(1),mod(c(1),q(1)) .ne. 0)
+    local_entry(2) = merge(mod(c(2),q(2)),q(2),mod(c(2),q(2)) .ne. 0)
+    end function
+
+
+  ! Return coordinate bounds of flat index f's partition
+  function find_partition_bounds_flat(f) result(bounds)
+    integer, intent(in)  :: f
+    integer, dimension(2) :: c
+    integer, dimension(4) :: bounds
+    c = flat2coords(f)
+    bounds = find_partition_bounds_coord(c)
+  end function
+
+  ! Return coordinate bounds of coordinate index (c(1),c(2))'s partition
+  function find_partition_bounds_coord(c) result(bounds)
+    integer, dimension(2), intent(in)  :: c
+    integer, dimension(4) :: bounds
+    print*, 'So, the bounds of the partition block containing x are:'
+    ! Lower bound direction 1
+    bounds(1) = c(1)-merge(mod(c(1),q(1))-1,q(1)-1,mod(c(1),q(1)) .ne. 0)
+    ! Upper bound direction 1
+    bounds(2) = c(1)+merge(q(1)-mod(c(1),q(1)),0,mod(c(1),q(1)) .ne. 0)
+    ! Lower bound direction 2
+    bounds(3) = c(2)-merge(mod(c(2),q(2))-1,q(2)-1,mod(c(2),q(2)) .ne. 0)
+    ! Upper bound direction 2
+    bounds(4) = c(2)+merge(q(2)-mod(c(2),q(2)),0,mod(c(2),q(2)) .ne. 0)
+    print*, 'LLB = (',bounds(1),', ',bounds(3),')'
+    print*, 'ULB = (',bounds(1),', ',bounds(4),')'
+    print*, 'LRB = (',bounds(2),', ',bounds(3),')'
+    print*, 'URB = (',bounds(2),', ',bounds(4),')'
+    print*, 'Per-rank block division is: ', bd(1), ' * ', bd(2)
+  end function
+
+  !!!!
+  ! Given coordinate indices, return flat index
+  function coords2flat(c) result(f)
+    integer, dimension(2), intent(in)  :: c
+    integer :: f
+    f = (c(1)-1)*n(2) + c(2)
+  end function
+
+  ! Given flat index, return coordinate indices
+  function flat2coords(f) result(c)
+    integer, intent(in)   :: f
+    integer, dimension(2) :: c
+    c(1) = ceiling(real(f)/real(n(2)))
+    c(2) = merge(n(2), mod(f,n(2)), mod(f,n(2)) .eq. 0)
+  end function
+
 end program get_ex
-
-subroutine coords2flat(y1,y2,n2,y)
-  integer, intent(in) :: y1,y2,n2
-  integer, intent(out) :: y
-  y = (y1-1)*n2 + y2
-end subroutine
-
-subroutine flat2coords(y,n2,y1,y2)
-  integer, intent(in) :: y,n2
-  integer, intent(out) :: y1,y2
-  y1 = ceiling(real(y)/real(n2))
-  y2 = merge(n2, mod(y,n2), mod(y,n2) .eq. 0)
-end subroutine
 
