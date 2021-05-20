@@ -3,13 +3,13 @@ program get_ex
   implicit none
   character (len=255) :: lookup_table_filename
   integer :: ierror, rank, nprocs
-  integer, parameter, dimension(3) :: n = (/ 25, 10, 1 /)
-  integer, parameter, dimension(2) :: q = (/ 5, 2 /), p = (/ 3, 3 /)
+  integer, parameter, dimension(3) :: n = (/ 6, 6, 1 /)
+  integer, parameter, dimension(2) :: q = (/ 3, 2 /), p = (/ 3, 3 /)
   integer, dimension(3) :: bd
   integer, dimension(:,:), allocatable :: partition
   integer :: x(2), y ! Coordinate index (x(1),x(2)), flat index y
   integer :: block_bounds(4)
-  integer :: i, j, k
+  integer :: i, j, k, l
   double precision :: value_fetched, z
   double precision, dimension(:,:), allocatable :: lookup_table
   integer :: window
@@ -28,8 +28,8 @@ program get_ex
   allocate(lookup_table(((n(1)*n(2)*rank) + 1):(n(1)*n(2)*(rank+1)), n(3)))
 
   ! Open lookup table file
-  lookup_table_filename = 'tables/2d.dat'
-  open(unit = 46, file = lookup_table_filename, status='old', action='read')
+  !lookup_table_filename = 'tables/2d.dat'
+  !open(unit = 46, file = lookup_table_filename, status='old', action='read')
 
   ! Compute size of lookup table in bytes for window creation
   lookup_table_size = n(1)*n(2)*n(3)*dbl_size
@@ -45,19 +45,30 @@ program get_ex
     bd(i) = n(i)/nprocs
   enddo
 
+  print *, "With table dimensions: ", n
+  print *, "The size of the small partitions is: ", q
+  print *, "So, the number of partitions in the first direction is: ", n(1)/q(1)
+  print *, "So, the number of partitions in the second direction is: ", n(2)/q(2)
+
   ! Populate lookup table with self-explanatory entries
   do j = 1,n(3)
     do k = lbound(lookup_table,dim=1), ubound(lookup_table,dim=1)
-      !y = coords2flat((/ k,j /))
+      !y = coords2flat((/ j,k /))
       !x = flat2coords(y)
-      !!! Debug output for indexing conversion
-      !if (rank .eq. 1) then
-      !  print *, k-x(1), j-x(2), n(1)*n(2)*rank+y
+      !!!! Debug output for indexing conversion
+      !if (rank .eq. 0) then
+      !  print *, y, x, find_local_partition(x)
       !endif 
       lookup_table(k,j) = k + 0.d0
     enddo
   enddo
-  !print *, lookup_table
+
+  print *, partition_base((/ 1, 1 /))
+  print *, partition_base((/ 1, 2 /))
+  print *, partition_base((/ 1, 3 /))
+  print *, partition_base((/ 2, 1 /))
+  print *, partition_base((/ 2, 2 /))
+  print *, partition_base((/ 2, 3 /))
 
   ! Create memory window covering whole sub-table on each rank
   call mpi_win_create(lookup_table, lookup_table_size, dbl_size, mpi_info_null, mpi_comm_world, window, ierror)
@@ -94,7 +105,7 @@ program get_ex
         find_block_rank_flat(y) .eq. rank), rank, ") "
       if (partition(i,j) .eq. -1.0) then
         print *, "MPI GETting entry ", y, " from table ", find_block_rank_flat(y)
-        target_displacement = mod(y-1,250)
+        target_displacement = mod(y-1,n(1)*n(2))
         call mpi_get(value_fetched, 1, mpi_double, find_block_rank_flat(y), &
           target_displacement, 1, mpi_double, window, ierror)
         partition(i,j) = value_fetched
@@ -104,7 +115,7 @@ program get_ex
   print *, partition
 
   ! Clean up, exit
-  close(46)
+  !close(46)
   deallocate(partition)
   call mpi_win_free(window, ierror)
   call mpi_finalize(ierror)
@@ -115,7 +126,18 @@ contains
   !! A bunch of helper functions containing ugly modular arithmetic. !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !!!!
+  ! Reorder the chemistry table into block-major organization
+  ! so that each block is contiguous in memory for MPI GET
+  !function block_major_order(table)
+  !  double precision, dimension(:,:) :: table
+  !end function
+
+  function partition_base(partition) result(base)
+    integer, dimension(2), intent(in) :: partition
+    integer :: base
+    base = n(2)*q(1)*(partition(1)-1) + q(2)*(partition(2)-1) + 1
+  end function
+
   ! Return upper and lower bounds of rank in global flat indices
   ! Assuming the tables on each rank are NOT indexed starting at 1
   function find_rank_bounds(bloc) result(bounds)
@@ -125,7 +147,6 @@ contains
     bounds(2) = ubound(lookup_table,dim=1)!+n(1)*n(2)*rank
   end function
 
-  !!!!
   ! Return rank where a flat index f is located
   ! TODO Using the max() function is a hack-y fix for the problem
   ! ie when n1*n2 = 250, 500/250 = 2 but entry 500 is on table 1.
@@ -159,7 +180,6 @@ contains
     local_entry(2) = merge(mod(c(2),q(2)),q(2),mod(c(2),q(2)) .ne. 0)
   end function
 
-
   ! Return coordinate bounds of flat index f's partition
   function find_partition_bounds_flat(f) result(bounds)
     integer, intent(in)  :: f
@@ -186,10 +206,8 @@ contains
     print*, 'ULB = (',bounds(1),', ',bounds(4),')'
     print*, 'LRB = (',bounds(2),', ',bounds(3),')'
     print*, 'URB = (',bounds(2),', ',bounds(4),')'
-    print*, 'Per-rank block division is: ', bd(1), ' * ', bd(2)
   end function
 
-  !!!!
   ! Given coordinate indices, return flat index
   function coords2flat(c) result(f)
     integer, dimension(2), intent(in)  :: c
