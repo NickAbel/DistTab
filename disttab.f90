@@ -4,13 +4,15 @@ program get_ex
   character (len=255) :: lookup_table_filename
   integer :: ierror, rank, nprocs
   integer, parameter, dimension(3) :: n = (/ 6, 6, 1 /)
+  integer :: ncv_flat, n_flat
   integer, parameter, dimension(2) :: q = (/ 3, 2 /), p = (/ 3, 3 /)
+  integer :: q_flat
   integer, dimension(3) :: bd
-  integer, dimension(:,:), allocatable :: partition
+  integer, dimension(:), allocatable :: partition
   integer :: x(2), y ! Coordinate index (x(1),x(2)), flat index y
   integer :: block_bounds(4)
-  integer :: i, j, k, l
-  double precision :: value_fetched, z
+  integer :: a, b, c, i, j, k, l, m, ro, co, bmi
+  double precision :: value_fetched, z, d
   double precision, dimension(:,:), allocatable :: lookup_table
   integer :: window
   integer :: integer_size, dbl_size
@@ -24,15 +26,19 @@ program get_ex
   call mpi_comm_rank(mpi_comm_world, rank, ierror)
   call mpi_comm_size(mpi_comm_world, nprocs, ierror)
 
+  ncv_flat = product(n(1:ubound(n,dim=1)-1))
+  n_flat = product(n)
+  q_flat = product(q)
+
   ! Allocate lookup table
-  allocate(lookup_table(((n(1)*n(2)*rank) + 1):(n(1)*n(2)*(rank+1)), n(3)))
+  allocate(lookup_table(((ncv_flat*rank) + 1):(ncv_flat*(rank+1)), n(3)))
 
   ! Open lookup table file
   !lookup_table_filename = 'tables/2d.dat'
   !open(unit = 46, file = lookup_table_filename, status='old', action='read')
 
   ! Compute size of lookup table in bytes for window creation
-  lookup_table_size = n(1)*n(2)*n(3)*dbl_size
+  lookup_table_size = n_flat*dbl_size
 
   ! Insist on some comm size
   if (nprocs .ne. 2) then
@@ -45,30 +51,15 @@ program get_ex
     bd(i) = n(i)/nprocs
   enddo
 
-  print *, "With table dimensions: ", n
-  print *, "The size of the small partitions is: ", q
-  print *, "So, the number of partitions in the first direction is: ", n(1)/q(1)
-  print *, "So, the number of partitions in the second direction is: ", n(2)/q(2)
-
   ! Populate lookup table with self-explanatory entries
   do j = 1,n(3)
     do k = lbound(lookup_table,dim=1), ubound(lookup_table,dim=1)
-      !y = coords2flat((/ j,k /))
-      !x = flat2coords(y)
-      !!!! Debug output for indexing conversion
-      !if (rank .eq. 0) then
-      !  print *, y, x, find_local_partition(x)
-      !endif 
       lookup_table(k,j) = k + 0.d0
     enddo
   enddo
 
-  print *, partition_base((/ 1, 1 /))
-  print *, partition_base((/ 1, 2 /))
-  print *, partition_base((/ 1, 3 /))
-  print *, partition_base((/ 2, 1 /))
-  print *, partition_base((/ 2, 2 /))
-  print *, partition_base((/ 2, 3 /))
+  ! Rearrange lookup table into block-major ordering
+  call block_major_order(lookup_table)
 
   ! Create memory window covering whole sub-table on each rank
   call mpi_win_create(lookup_table, lookup_table_size, dbl_size, mpi_info_null, mpi_comm_world, window, ierror)
@@ -76,7 +67,7 @@ program get_ex
 
   ! Pick a random number in the global lookup table range
   call random_number(z)
-  y = ceiling(z*n(1)*n(2)*nprocs)
+  y = ceiling(z*ncv_flat)
   x = flat2coords(y)
 
   ! Print information about the point requested x
@@ -88,30 +79,26 @@ program get_ex
     ' in partition block: ', find_local_partition(x), &
     'with local partition entry ', find_local_partition_entry(x)
 
+  print *, 'Base of partition is ', bm_partition_base(find_local_partition(x))
+
   ! Print information about x's partition block
   block_bounds = find_partition_bounds_coord(x)
 
-  print *, "lookup table on rank ", rank, " has range ", find_rank_bounds(rank)
+  !print *, "lookup table on rank ", rank, " has range ", find_rank_bounds(rank)
 
   ! Dynamically allocate one partition
-  allocate(partition(block_bounds(1):block_bounds(2), block_bounds(3):block_bounds(4)))
+  allocate(partition(1:q_flat))
 
-  ! Determine if the partition entries are on-table. MPI_GET any entries that are not.
-  do i = block_bounds(1), block_bounds(2)
-    do j = block_bounds(3), block_bounds(4)
-      y = coords2flat((/ i,j /))
-      partition(i,j) = merge(lookup_table(y,1), -1.0d0, find_block_rank_flat(y) .eq. rank)
-      print *, i,j, " corresponds to x = ", y, merge("     (On table at rank ", " (OUT OF TABLE ON RANK ", &
-        find_block_rank_flat(y) .eq. rank), rank, ") "
-      if (partition(i,j) .eq. -1.0) then
-        print *, "MPI GETting entry ", y, " from table ", find_block_rank_flat(y)
-        target_displacement = mod(y-1,n(1)*n(2))
-        call mpi_get(value_fetched, 1, mpi_double, find_block_rank_flat(y), &
-          target_displacement, 1, mpi_double, window, ierror)
-        partition(i,j) = value_fetched
-      endif
-    enddo
-  enddo
+  target_displacement = bm_partition_base(find_local_partition(x)) - 1
+
+  if (find_block_rank_flat(y) .eq. rank) then
+    print *, 'Fetch block of ', q_flat, ' from rank ', find_block_rank_flat(y), ' to rank ', rank
+    print *, 'The block containing ', y, ' begins with entry ', bm_partition_base(find_local_partition(x))
+    print *, 'Which is located at index ', fm2bm(bm_partition_base(find_local_partition(x)))
+    call mpi_get(partition, q_flat, mpi_double, find_block_rank_flat(y), &
+      target_displacement, 1, mpi_double, window, ierror)
+  endif
+
   print *, partition
 
   ! Clean up, exit
@@ -128,11 +115,49 @@ contains
 
   ! Reorder the chemistry table into block-major organization
   ! so that each block is contiguous in memory for MPI GET
-  !function block_major_order(table)
-  !  double precision, dimension(:,:) :: table
-  !end function
+  subroutine block_major_order(table)
+    double precision, dimension(:,:) :: table
+    m = ncv_flat*rank + 1
+    do i = 1, n(1)/q(1)
+      do j = 1, n(2)/q(2)
+        x = flat2coords(bm_partition_base((/ i, j /)))
+        do k = 0, q(1)-1
+          do l = 0, q(2)-1
+            bmi = coords2flat(x + (/ k,l /)) + ncv_flat*rank
+            print *, m, bmi
+            if (m .gt. bmi) then
+              z = lookup_table(m,1)
+              lookup_table(m,1) = lookup_table(bmi,1)
+              lookup_table(bmi,1) = z
+            endif
+            m = m + 1
+          enddo
+        enddo
+      enddo
+    enddo
+  end subroutine
 
-  function partition_base(partition) result(base)
+  ! Slowest way to convert flat end-major index to block-major index
+  function fm2bm(fm) result(bm)
+    integer, intent(in) :: fm
+    integer :: bm
+    m = 1
+    do i = 1, n(1)/q(1)
+      do j = 1, n(2)/q(2)
+        x = flat2coords(bm_partition_base((/ i, j /)))
+        do k = 0, q(1)-1
+          do l = 0, q(2)-1
+            bm = coords2flat(x + (/ k,l /)) + ncv_flat*rank
+            if (m .eq. fm) return
+            m = m + 1
+          enddo
+        enddo
+      enddo
+    enddo
+  end function
+
+  ! Find the base of the partition in block-major organization
+  function bm_partition_base(partition) result(base)
     integer, dimension(2), intent(in) :: partition
     integer :: base
     base = n(2)*q(1)*(partition(1)-1) + q(2)*(partition(2)-1) + 1
@@ -143,8 +168,8 @@ contains
   function find_rank_bounds(bloc) result(bounds)
     integer, intent(in)  :: bloc
     integer, dimension(2) :: bounds
-    bounds(1) = lbound(lookup_table,dim=1)!+n(1)*n(2)*rank
-    bounds(2) = ubound(lookup_table,dim=1)!+n(1)*n(2)*rank
+    bounds(1) = lbound(lookup_table,dim=1)!+ncv_flat*rank
+    bounds(2) = ubound(lookup_table,dim=1)!+ncv_flat*rank
   end function
 
   ! Return rank where a flat index f is located
@@ -202,10 +227,10 @@ contains
     bounds(3) = c(2)-merge(mod(c(2),q(2))-1,q(2)-1,mod(c(2),q(2)) .ne. 0)
     ! Upper bound direction 2
     bounds(4) = c(2)+merge(q(2)-mod(c(2),q(2)),0,mod(c(2),q(2)) .ne. 0)
-    print*, 'LLB = (',bounds(1),', ',bounds(3),')'
-    print*, 'ULB = (',bounds(1),', ',bounds(4),')'
-    print*, 'LRB = (',bounds(2),', ',bounds(3),')'
-    print*, 'URB = (',bounds(2),', ',bounds(4),')'
+    !print*, 'LLB = (',bounds(1),', ',bounds(3),')'
+    !print*, 'ULB = (',bounds(1),', ',bounds(4),')'
+    !print*, 'LRB = (',bounds(2),', ',bounds(3),')'
+    !print*, 'URB = (',bounds(2),', ',bounds(4),')'
   end function
 
   ! Given coordinate indices, return flat index
