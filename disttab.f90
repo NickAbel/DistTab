@@ -3,12 +3,12 @@ program get_ex
   implicit none
   character (len=255) :: lookup_table_filename
   integer :: ierror, rank, nprocs
-  integer, parameter, dimension(3) :: n = (/ 6, 6, 1 /)
+  integer, parameter, dimension(3) :: n = (/ 25, 10, 1 /)
   integer :: ncv_flat, n_flat
-  integer, parameter, dimension(2) :: q = (/ 3, 2 /), p = (/ 3, 3 /)
+  integer, parameter, dimension(2) :: q = (/ 5, 2 /), p = (/ 3, 3 /)
   integer :: q_flat
   integer, dimension(3) :: bd
-  integer, dimension(:), allocatable :: partition
+  double precision, dimension(:), allocatable :: partition
   integer :: x(2), y ! Coordinate index (x(1),x(2)), flat index y
   integer :: block_bounds(4)
   integer :: a, b, c, i, j, k, l, m, ro, co, bmi
@@ -40,12 +40,6 @@ program get_ex
   ! Compute size of lookup table in bytes for window creation
   lookup_table_size = n_flat*dbl_size
 
-  ! Insist on some comm size
-  if (nprocs .ne. 2) then
-    print *, "use 2 mpi processes for now, we detect ", nprocs
-    call mpi_abort(mpi_comm_world, -1, ierror)
-  endif
-
   ! Block division per-rank
   do i = 1, 3
     bd(i) = n(i)/nprocs
@@ -61,13 +55,15 @@ program get_ex
   ! Rearrange lookup table into block-major ordering
   call block_major_order(lookup_table)
 
+  !print *, lookup_table
+
   ! Create memory window covering whole sub-table on each rank
   call mpi_win_create(lookup_table, lookup_table_size, dbl_size, mpi_info_null, mpi_comm_world, window, ierror)
   call mpi_win_fence(0, window, ierror)
 
   ! Pick a random number in the global lookup table range
   call random_number(z)
-  y = ceiling(z*ncv_flat)
+  y = ceiling(z*ncv_flat*nprocs)
   x = flat2coords(y)
 
   ! Print information about the point requested x
@@ -75,9 +71,9 @@ program get_ex
 
   y = coords2flat(x)
 
-  print *,  'Verify: (', lookup_table(y,1), ')', &
-    ' in partition block: ', find_local_partition(x), &
-    'with local partition entry ', find_local_partition_entry(x)
+  !print *,  'Verify: (', lookup_table(y,1), ')', &
+  !  ' in partition block: ', find_local_partition(x), &
+  !  'with local partition entry ', find_local_partition_entry(x)
 
   print *, 'Base of partition is ', bm_partition_base(find_local_partition(x))
 
@@ -89,17 +85,19 @@ program get_ex
   ! Dynamically allocate one partition
   allocate(partition(1:q_flat))
 
-  target_displacement = bm_partition_base(find_local_partition(x)) - 1
+  target_displacement = fm2bm(bm_partition_base(find_local_partition(x))) - ncv_flat*rank - 1
 
-  if (find_block_rank_flat(y) .eq. rank) then
+  print *, "RANK = ", rank, " Y = ", y, " DISPLACEMENT = ", target_displacement
+
+  if (find_block_rank_flat(y) .ne. rank) then
     print *, 'Fetch block of ', q_flat, ' from rank ', find_block_rank_flat(y), ' to rank ', rank
     print *, 'The block containing ', y, ' begins with entry ', bm_partition_base(find_local_partition(x))
-    print *, 'Which is located at index ', fm2bm(bm_partition_base(find_local_partition(x)))
+    print *, 'Which is located at index ', target_displacement
     call mpi_get(partition, q_flat, mpi_double, find_block_rank_flat(y), &
-      target_displacement, 1, mpi_double, window, ierror)
+      target_displacement, q_flat, mpi_double, window, ierror)
+    print *, partition
   endif
 
-  print *, partition
 
   ! Clean up, exit
   !close(46)
@@ -124,7 +122,7 @@ contains
         do k = 0, q(1)-1
           do l = 0, q(2)-1
             bmi = coords2flat(x + (/ k,l /)) + ncv_flat*rank
-            print *, m, bmi
+            !print *, m, bmi
             if (m .gt. bmi) then
               z = lookup_table(m,1)
               lookup_table(m,1) = lookup_table(bmi,1)
@@ -142,14 +140,16 @@ contains
     integer, intent(in) :: fm
     integer :: bm
     m = 1
-    do i = 1, n(1)/q(1)
-      do j = 1, n(2)/q(2)
-        x = flat2coords(bm_partition_base((/ i, j /)))
-        do k = 0, q(1)-1
-          do l = 0, q(2)-1
-            bm = coords2flat(x + (/ k,l /)) + ncv_flat*rank
-            if (m .eq. fm) return
-            m = m + 1
+    do a = 0, nprocs-1
+      do i = 1, n(1)/q(1)
+        do j = 1, n(2)/q(2)
+          x = flat2coords(bm_partition_base((/ i, j /)))
+          do k = 0, q(1)-1
+            do l = 0, q(2)-1
+              bm = coords2flat(x + (/ k,l /)) + ncv_flat*rank
+              if (m .eq. fm) return
+              m = m + 1
+            enddo
           enddo
         enddo
       enddo
@@ -218,7 +218,6 @@ contains
   function find_partition_bounds_coord(c) result(bounds)
     integer, dimension(2), intent(in)  :: c
     integer, dimension(4) :: bounds
-    print*, 'So, the bounds of the partition block containing x are:'
     ! Lower bound direction 1
     bounds(1) = c(1)-merge(mod(c(1),q(1))-1,q(1)-1,mod(c(1),q(1)) .ne. 0)
     ! Upper bound direction 1
