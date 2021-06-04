@@ -2,10 +2,11 @@ program get_ex
   use mpi
   implicit none
   integer :: ierror, rank, nprocs
-  integer, parameter, dimension(3) :: n = (/ 4,2,1 /)
+  integer, parameter, dimension(3) :: n = (/ 4,4,1 /)
   integer, dimension(3) :: npad
   integer :: ncv_flat, n_flat, ncv_padded, n_padded
-  integer, parameter, dimension(2) :: q = (/ 1,2 /)
+  integer, parameter, dimension(2) :: q = (/ 2,2 /)
+  integer, dimension(2) :: coords
   integer :: q_flat
   double precision, dimension(:), allocatable :: partition
   integer, dimension(:), allocatable :: nloop_counters, nloop_uppers
@@ -36,7 +37,6 @@ program get_ex
       npad(i) = npad(i) + 1
     enddo
   enddo
-  print *, npad
 
   ncv_padded = product(npad(1:ubound(n,dim=1)-1))
   n_padded = product(npad)
@@ -53,70 +53,57 @@ program get_ex
   !open(unit = 46, file = lookup_table_filename, status='old', action='read')
 
   ! Compute size of lookup table in bytes for window creation
-  lookup_table_size = n_flat*dbl_size
+  lookup_table_size = n_padded*dbl_size
 
   ! Populate lookup table with self-explanatory entries
+  i=1+ncv_flat*rank
   do j = 1,n(3)
-    do k = (ncv_flat*rank) + 1,ncv_flat*(rank+1) 
-      lookup_table_flat(k,j) = k + 0.d0
+    do k = 1, n(2)
+      do l = 1, n(1)
+        lookup_table_flat(coords2flat((/l,k/)) + ncv_padded*rank,j) = i
+        i=i+1
+      enddo
     enddo
   enddo
-
-  print *, lookup_table_flat
 
   ! Create memory window covering whole sub-table on each rank
   call mpi_win_create(lookup_table, lookup_table_size, dbl_size, mpi_info_null, mpi_comm_world, window, ierror)
   call mpi_win_fence(0, window, ierror)
 
-  if (rank .eq. 0) then
-    call block_major_order()
-  endif
+  call block_major_order()
   deallocate(lookup_table_flat)
 
-  if (rank .eq. 0) then
-    print *, lookup_table
+  !Pick a random number in the global lookup table range
+  call random_number(z)
+  y = ceiling(z*ncv_flat)
+  x = flat2coords(y)
+  coords = find_local_partition(x)
+  ! Print information about the point requested x
+  print *, 'Flat entry y = ', y, ' has coordinates: ', x, ' at ', coords
+
+  y = coords2flat(x)
+
+  print *, 'Base of partition ', coords, ' is ', bm_partition_base(find_local_partition(x))
+
+  ! Dynamically allocate one partition
+  allocate(partition(1:q_flat))
+
+  target_displacement = npad(2)/q(2)*(coords(1)-1)*q_flat + (coords(2)-1)*q_flat + 1
+
+  print *, "RANK = ", rank, " DISPLACEMENT = ", target_displacement
+
+  if (find_block_rank_flat(y) .ne. rank) then
+  !  print *, 'Fetch block of ', q_flat, ' from rank ', find_block_rank_flat(y), ' to rank ', rank
+  !  print *, 'The block containing ', y, ' begins with entry ', bm_partition_base(find_local_partition(x))
+  !  print *, 'Which is located at index ', target_displacement
+  !  call mpi_get(partition, q_flat, mpi_double, find_block_rank_flat(y), &
+  !    target_displacement, q_flat, mpi_double, window, ierror)
+  !  print *, partition
   endif
-  !  !Pick a random number in the global lookup table range
-  !  call random_number(z)
-  !  y = ceiling(z*ncv_flat*nprocs)
-  !  x = flat2coords(y)
 
-  !  ! Print information about the point requested x
-  !  print *, 'Flat entry y = ', y, ' has coordinates: ', x
-
-  !  y = coords2flat(x)
-
-  !  !print *,  'Verify: (', lookup_table(y,1), ')', &
-  !  !  ' in partition block: ', find_local_partition(x), &
-  !  !  'with local partition entry ', find_local_partition_entry(x)
-
-  !  print *, 'Base of partition is ', bm_partition_base(find_local_partition(x))
-
-  !  ! Print information about x's partition block
-  !  !block_bounds = find_partition_bounds_coord(x)
-
-  !  !print *, "lookup table on rank ", rank, " has range ", find_rank_bounds(rank)
-
-  !  ! Dynamically allocate one partition
-  !  allocate(partition(1:q_flat))
-
-  !  target_displacement = fm2bm(bm_partition_base(find_local_partition(x))) - ncv_padded*rank - 1
-
-  !  print *, "RANK = ", rank, " Y = ", y, " DISPLACEMENT = ", target_displacement
-
-  !  if (find_block_rank_flat(y) .ne. rank) then
-  !    print *, 'Fetch block of ', q_flat, ' from rank ', find_block_rank_flat(y), ' to rank ', rank
-  !    print *, 'The block containing ', y, ' begins with entry ', bm_partition_base(find_local_partition(x))
-  !    print *, 'Which is located at index ', target_displacement
-  !    call mpi_get(partition, q_flat, mpi_double, find_block_rank_flat(y), &
-  !      target_displacement, q_flat, mpi_double, window, ierror)
-  !    print *, partition
-  !  endif
-
-  !  ! Clean up, exit
-  !  !close(46)
-  !  deallocate(partition)
-  !endif
+  ! Clean up, exit
+  !close(46)
+  deallocate(partition)
   deallocate(lookup_table)
   call mpi_win_free(window, ierror)
   call mpi_finalize(ierror)
@@ -151,14 +138,15 @@ contains
   subroutine block_major_order()
     integer :: offset, i, j, k, l
     integer, dimension(4) :: blk_bounds, base
-    offset = 1
-    do i = 1, npad(1), q(1)
-      do j = 1, npad(2), q(2) 
-        blk_bounds = find_partition_bounds_coord((/i,j/))
-        do k = blk_bounds(1), blk_bounds(3)
-          do l = blk_bounds(2), blk_bounds(4)
-            print *, k, l, coords2flat((/k,l/)), offset
-            lookup_table(offset,1) = lookup_table_flat(coords2flat((/k,l/)),1)
+    offset = 1 + ncv_padded*rank
+    do i = 1 + npad(2)*rank, npad(2)*(rank + 1), q(2)
+      do j = 1, npad(1), q(1) 
+        blk_bounds = find_partition_bounds_coord((/j,i/))
+        do k = blk_bounds(2), blk_bounds(4)
+          do l = blk_bounds(1), blk_bounds(3)
+            if (rank .eq. 0) then
+            endif
+            lookup_table(offset,1) = lookup_table_flat(coords2flat((/l,k/)),1)
             offset = offset + 1
           enddo
         enddo
