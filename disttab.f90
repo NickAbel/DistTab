@@ -1,23 +1,47 @@
-program get_ex
+program disttab
   use mpi
   implicit none
   integer :: ierror, rank, nprocs
-  integer, parameter, dimension(3) :: n = (/ 4,4,1 /)
   integer, dimension(3) :: npad
   integer :: ncv_flat, n_flat, ncv_padded, n_padded
-  integer, parameter, dimension(2) :: q = (/ 2,2 /)
   integer, dimension(2) :: coords
   integer :: q_flat
   double precision, dimension(:), allocatable :: partition
-  integer, dimension(:), allocatable :: nloop_counters, nloop_uppers
+  integer, dimension(:), allocatable :: n, q, nloop_counters, nloop_uppers
+  character(len=32), dimension(:), allocatable :: nstr, qstr
   integer :: x(2), y ! Coordinate index (x(1),x(2)), flat index y
-  integer :: a, b, c, d, i, j, k, l, m, bmi
+  integer :: a, b, c, d, i, j, k, l, m, bmi, n_len, q_len
   double precision :: z
   double precision, dimension(:,:), allocatable :: lookup_table, lookup_table_flat
   integer :: window
   integer :: integer_size, dbl_size
   integer(kind=mpi_address_kind) :: lookup_table_size
   integer(kind=mpi_address_kind) :: target_displacement
+  character(len=32) :: arg, nls, qls
+
+  ! Read in the dimensions for table and block sizes
+  call getarg(1, arg)
+  nls = arg
+  read (nls, *) n_len
+  allocate(nstr(n_len))
+  allocate(n(n_len))
+  do i = 2, n_len + 1
+    call getarg(i, arg)
+    nstr(i-1) = arg
+  enddo
+  call getarg(n_len + 2, arg)
+  qls = arg
+  read (qls, *) q_len
+  allocate(qstr(q_len))
+  allocate(q(q_len))
+  do i = n_len + 3, n_len + q_len + 2
+    call getarg(i, arg)
+    qstr(i - (n_len + 2)) = arg
+  enddo
+  read (nstr, *) n
+  read (qstr, *) q
+  !write (*,*) "n = ", n
+  !write (*,*) "q = ", q
 
   ! Setup MPI communicator, retrieve MPI type sizes
   call mpi_init(ierror)
@@ -73,33 +97,36 @@ program get_ex
   call block_major_order()
   deallocate(lookup_table_flat)
 
+  write (*,*) rank, lookup_table
+
   !Pick a random number in the global lookup table range
   call random_number(z)
-  y = ceiling(z*ncv_flat)
+  y = ceiling(z*ncv_flat*nprocs)
   x = flat2coords(y)
   coords = find_local_partition(x)
+
   ! Print information about the point requested x
-  print *, 'Flat entry y = ', y, ' has coordinates: ', x, ' at ', coords
-
-  y = coords2flat(x)
-
-  print *, 'Base of partition ', coords, ' is ', bm_partition_base(find_local_partition(x))
+  !print *, 'Flat entry y = ', y, ' has coordinates: ', x, ' at ', coords
+  !print *, 'Base of partition ', coords, ' is ', bm_partition_base(find_local_partition(x))
 
   ! Dynamically allocate one partition
   allocate(partition(1:q_flat))
 
-  target_displacement = npad(2)/q(2)*(coords(1)-1)*q_flat + (coords(2)-1)*q_flat + 1
+  target_displacement = mod(ceiling(npad(2)/q(2)*1.d0)*(coords(1)-1)*q_flat + (coords(2)-1)*q_flat, ncv_padded) 
 
-  print *, "RANK = ", rank, " DISPLACEMENT = ", target_displacement
+  !print *, "RANK = ", rank, " DISPLACEMENT = ", target_displacement
 
   if (find_block_rank_flat(y) .ne. rank) then
-  !  print *, 'Fetch block of ', q_flat, ' from rank ', find_block_rank_flat(y), ' to rank ', rank
-  !  print *, 'The block containing ', y, ' begins with entry ', bm_partition_base(find_local_partition(x))
-  !  print *, 'Which is located at index ', target_displacement
-  !  call mpi_get(partition, q_flat, mpi_double, find_block_rank_flat(y), &
-  !    target_displacement, q_flat, mpi_double, window, ierror)
-  !  print *, partition
+    !print *, 'Fetch block of ', q_flat, ' from rank ', find_block_rank_flat(y), ' to rank ', rank
+    !print *, 'The block containing ', y, ' begins with entry ', bm_partition_base(find_local_partition(x))
+    !print *, 'Which is located at index ', target_displacement + 1
+    call mpi_get(partition, q_flat, mpi_double, find_block_rank_flat(y), &
+      target_displacement, q_flat, mpi_double, window, ierror)
+    !print *, partition
   endif
+
+  ! Fence to prevent deallocating too early
+  call mpi_win_fence(0, window, ierror)
 
   ! Clean up, exit
   !close(46)
@@ -241,5 +268,4 @@ contains
     c(2) = merge(npad(2), mod(f,npad(2)), mod(f,npad(2)) .eq. 0)
   end function
 
-end program get_ex
-
+end program disttab 
