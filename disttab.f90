@@ -11,18 +11,23 @@ program disttab
   character(len=32), dimension(:), allocatable :: nstr, qstr
   integer :: x(2), y ! Coordinate index (x(1),x(2)), flat index y
   integer :: a, b, c, d, i, j, k, l, m, bmi, n_len, q_len
+  ! verbose_level usage:
+  ! 0 = silent, no output
+  ! 1 = full, all output
+  ! 2 = print out in format RANK LOOKUP_TABLE (where LOOKUP_TABLE is reordered)
+  ! Note that option 2 is used for the reordering unit test
+  integer :: verbose_level
   double precision :: z
   double precision, dimension(:,:), allocatable :: lookup_table, lookup_table_flat
   integer :: window
   integer :: integer_size, dbl_size
   integer(kind=mpi_address_kind) :: lookup_table_size
   integer(kind=mpi_address_kind) :: target_displacement
-  character(len=32) :: arg, nls, qls
+  character(len=32) :: arg
 
   ! Read in the dimensions for table and block sizes
   call getarg(1, arg)
-  nls = arg
-  read (nls, *) n_len
+  read (arg, *) n_len
   allocate(nstr(n_len))
   allocate(n(n_len))
   do i = 2, n_len + 1
@@ -30,8 +35,7 @@ program disttab
     nstr(i-1) = arg
   enddo
   call getarg(n_len + 2, arg)
-  qls = arg
-  read (qls, *) q_len
+  read (arg, *) q_len
   allocate(qstr(q_len))
   allocate(q(q_len))
   do i = n_len + 3, n_len + q_len + 2
@@ -40,8 +44,10 @@ program disttab
   enddo
   read (nstr, *) n
   read (qstr, *) q
-  !write (*,*) "n = ", n
-  !write (*,*) "q = ", q
+  call getarg(n_len + q_len + 3, arg)
+  read(arg, *) verbose_level
+  if (verbose_level .eq. 1) write (*,*) "n = ", n
+  if (verbose_level .eq. 1) write (*,*) "q = ", q
 
   ! Setup MPI communicator, retrieve MPI type sizes
   call mpi_init(ierror)
@@ -97,7 +103,7 @@ program disttab
   call block_major_order()
   deallocate(lookup_table_flat)
 
-  write (*,*) rank, lookup_table
+  if (verbose_level .eq. 1 .or. verbose_level .eq. 2) write (*,*) rank, lookup_table
 
   !Pick a random number in the global lookup table range
   call random_number(z)
@@ -106,23 +112,23 @@ program disttab
   coords = find_local_partition(x)
 
   ! Print information about the point requested x
-  !print *, 'Flat entry y = ', y, ' has coordinates: ', x, ' at ', coords
-  !print *, 'Base of partition ', coords, ' is ', bm_partition_base(find_local_partition(x))
+  if (verbose_level .eq. 1) print *, 'Flat entry y = ', y, ' has coordinates: ', x, ' at ', coords
+  if (verbose_level .eq. 1) print *, 'Base of partition ', coords, ' is ', bm_partition_base(find_local_partition(x))
 
   ! Dynamically allocate one partition
   allocate(partition(1:q_flat))
 
   target_displacement = mod(ceiling(npad(2)/q(2)*1.d0)*(coords(1)-1)*q_flat + (coords(2)-1)*q_flat, ncv_padded) 
 
-  !print *, "RANK = ", rank, " DISPLACEMENT = ", target_displacement
+  if (verbose_level .eq. 1) print *, "RANK = ", rank, " DISPLACEMENT = ", target_displacement
 
   if (find_block_rank_flat(y) .ne. rank) then
-    !print *, 'Fetch block of ', q_flat, ' from rank ', find_block_rank_flat(y), ' to rank ', rank
-    !print *, 'The block containing ', y, ' begins with entry ', bm_partition_base(find_local_partition(x))
-    !print *, 'Which is located at index ', target_displacement + 1
+    if (verbose_level .eq. 1) print *, 'Fetch block of ', q_flat, ' from rank ', find_block_rank_flat(y), ' to rank ', rank
+    if (verbose_level .eq. 1) print *, 'The block containing ', y, ' begins with entry ', bm_partition_base(find_local_partition(x))
+    if (verbose_level .eq. 1) print *, 'Which is located at index ', target_displacement + 1
     call mpi_get(partition, q_flat, mpi_double, find_block_rank_flat(y), &
       target_displacement, q_flat, mpi_double, window, ierror)
-    !print *, partition
+    if (verbose_level .eq. 1) print *, partition
   endif
 
   ! Fence to prevent deallocating too early
@@ -145,7 +151,7 @@ contains
   !  integer, intent(in) :: idx
   !  integer, dimension(ubound(nloop_counters)), intent(in) :: ctrs, uppers
   !  integer, dimension(ubound(nloop_counters)) :: ctrs_incr
-  !  print *, ctrs
+  !  if (verbose_level .eq. 1) print *, ctrs
   !  if (idx .eq. 1) then
   !    do while (ctrs(idx) .lt. uppers(idx))
   !      ctrs(idx) = ctrs(idx) + 1
