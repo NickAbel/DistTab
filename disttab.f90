@@ -132,6 +132,11 @@ program disttab
   endif
 
   ! Fence to prevent deallocating too early
+  allocate(nloop_counters(2))
+  allocate(nloop_uppers(2))
+  nloop_counters = (/1,1,1,1/)
+  nloop_uppers = (/4,4,4,4/)
+  call nloop_increment(4,nloop_counters,nloop_uppers)
   call mpi_win_fence(0, window, ierror)
 
   ! Clean up, exit
@@ -147,23 +152,24 @@ contains
   !! A bunch of helper functions containing ugly modular arithmetic. !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !recursive function nloop_increment(idx,ctrs,uppers) result(ctrs_incr)
-  !  integer, intent(in) :: idx
-  !  integer, dimension(ubound(nloop_counters)), intent(in) :: ctrs, uppers
-  !  integer, dimension(ubound(nloop_counters)) :: ctrs_incr
-  !  if (verbose_level .eq. 1) print *, ctrs
-  !  if (idx .eq. 1) then
-  !    do while (ctrs(idx) .lt. uppers(idx))
-  !      ctrs(idx) = ctrs(idx) + 1
-  !    enddo
-  !  else if (idx .gt. 1) then
-  !    do while (ctrs(idx) .le. uppers(idx)) 
-  !      call nloop_increment(idx - 1)
-  !      ctrs(idx) = ctrs(idx) + 1
-  !    enddo
-  !  endif
-  !  ctrs_incr = ctrs
-  !end function
+  recursive subroutine nloop_increment(idx,ctrs,uppers) 
+    integer, intent(in) :: idx
+    integer, dimension(4) :: ctrs, uppers
+    integer, dimension(4) :: ctrs_copy
+    if (idx .eq. 1) then
+      if (verbose_level .eq. 1) print *, ctrs
+      do while (ctrs(idx) .lt. uppers(idx))
+        ctrs(idx) = ctrs(idx) + 1
+        if (verbose_level .eq. 1) print *, ctrs
+      enddo
+    else if (idx .gt. 1) then
+      do while (ctrs(idx) .le. uppers(idx)) 
+        ctrs_copy = ctrs
+        call nloop_increment(idx - 1,ctrs_copy,uppers)
+        ctrs(idx) = ctrs(idx) + 1
+      enddo
+    endif
+  end subroutine
 
 
   ! Reorder the chemistry table into block-major organization
