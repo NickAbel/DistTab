@@ -2,14 +2,13 @@ program disttab
   use mpi
   implicit none
   integer :: ierror, rank, nprocs
-  integer, dimension(3) :: npad
   integer :: ncv_flat, n_flat, ncv_padded, n_padded
-  integer, dimension(2) :: coords
   integer :: q_flat
   double precision, dimension(:), allocatable :: partition
   integer, dimension(:), allocatable :: n, q, nloop_counters, nloop_uppers
+  integer, dimension(:), allocatable :: npad, coords, x
   character(len=32), dimension(:), allocatable :: nstr, qstr
-  integer :: x(2), y ! Coordinate index (x(1),x(2)), flat index y
+  integer :: y ! Coordinate index (x(1),x(2)), flat index y
   integer :: a, b, c, d, i, j, k, l, m, bmi, n_len, q_len
   ! verbose_level usage:
   ! 0 = silent, no output
@@ -25,11 +24,15 @@ program disttab
   integer(kind=mpi_address_kind) :: target_displacement
   character(len=32) :: arg
 
-  ! Read in the dimensions for table and block sizes
+  ! Read in the dimensions for table and block sizes, allocate relevant arrays
+  ! according to the input sizes
   call getarg(1, arg)
   read (arg, *) n_len
   allocate(nstr(n_len))
+  allocate(npad(n_len))
   allocate(n(n_len))
+  allocate(coords(n_len-1))
+  allocate(x(n_len-1))
   do i = 2, n_len + 1
     call getarg(i, arg)
     nstr(i-1) = arg
@@ -68,7 +71,7 @@ program disttab
     enddo
   enddo
 
-  ncv_padded = product(npad(1:ubound(n,dim=1)-1))
+  ncv_padded = product(npad(1:ubound(npad,dim=1)-1))
   n_padded = product(npad)
 
   ! Allocate lookup table
@@ -86,15 +89,20 @@ program disttab
   lookup_table_size = n_padded*dbl_size
 
   ! Populate lookup table with self-explanatory entries
-  i=1+ncv_flat*rank
-  do j = 1,n(3)
-    do k = 1, n(2)
-      do l = 1, n(1)
-        lookup_table_flat(coords2flat((/l,k/)) + ncv_padded*rank,j) = i
-        i=i+1
-      enddo
-    enddo
-  enddo
+  !i=1+ncv_flat*rank
+  !do j = 1,n(3)
+  !  do k = 1, n(2)
+  !    do l = 1, n(1)
+  !      lookup_table_flat(coords2flat((/l,k/)) + ncv_padded*rank,j) = i
+  !      i=i+1
+  !    enddo
+  !  enddo
+  !enddo
+  allocate(nloop_counters(n_len-1))
+  allocate(nloop_uppers(n_len-1))
+  nloop_counters = 1
+  nloop_uppers = npad(1:ubound(npad,dim=1)-1)
+  call loop_table_flat(ubound(npad,dim=1)-1,nloop_counters,nloop_uppers)
 
   ! Create memory window covering whole sub-table on each rank
   call mpi_win_create(lookup_table, lookup_table_size, dbl_size, mpi_info_null, mpi_comm_world, window, ierror)
@@ -132,11 +140,9 @@ program disttab
   endif
 
   ! Fence to prevent deallocating too early
-  allocate(nloop_counters(2))
-  allocate(nloop_uppers(2))
-  nloop_counters = (/1,1,1,1/)
-  nloop_uppers = (/4,4,4,4/)
-  call nloop_increment(4,nloop_counters,nloop_uppers)
+  !nloop_counters = 1
+  !nloop_uppers = npad(1:ubound(npad,dim=1)-1)
+  !call nloop_increment(ubound(npad,dim=1)-1,nloop_counters,nloop_uppers)
   call mpi_win_fence(0, window, ierror)
 
   ! Clean up, exit
@@ -154,8 +160,8 @@ contains
 
   recursive subroutine nloop_increment(idx,ctrs,uppers) 
     integer, intent(in) :: idx
-    integer, dimension(4) :: ctrs, uppers
-    integer, dimension(4) :: ctrs_copy
+    integer, dimension(n_len-1) :: ctrs, uppers
+    integer, dimension(n_len-1) :: ctrs_copy
     if (idx .eq. 1) then
       if (verbose_level .eq. 1) print *, ctrs
       do while (ctrs(idx) .lt. uppers(idx))
@@ -171,6 +177,28 @@ contains
     endif
   end subroutine
 
+  recursive subroutine loop_table_flat(idx,ctrs,uppers) 
+    integer, intent(in) :: idx
+    integer, dimension(n_len-1) :: ctrs, uppers
+    integer, dimension(n_len-1) :: ctrs_copy
+    if (idx .eq. 1) then
+      lookup_table_flat(coords2flat((/ctrs(1),ctrs(2)/)) + ncv_padded*rank,1) = &
+        coords2flat((/ctrs(1),ctrs(2)/)) + 1.d0*ncv_flat*rank
+      if (verbose_level .eq. 1) print *, coords2flat((/ctrs(1),ctrs(2)/)), ctrs
+      do while (ctrs(idx) .lt. uppers(idx))
+        ctrs(idx) = ctrs(idx) + 1
+        lookup_table_flat(coords2flat((/ctrs(1),ctrs(2)/)) + ncv_padded*rank,1) = &
+          coords2flat((/ctrs(1),ctrs(2)/)) + 1.d0*ncv_flat*rank
+        if (verbose_level .eq. 1) print *, coords2flat((/ctrs(1),ctrs(2)/)), ctrs
+      enddo
+    else if (idx .gt. 1) then
+      do while (ctrs(idx) .le. uppers(idx)) 
+        ctrs_copy = ctrs
+        call loop_table_flat(idx - 1,ctrs_copy,uppers)
+        ctrs(idx) = ctrs(idx) + 1
+      enddo
+    endif
+  end subroutine
 
   ! Reorder the chemistry table into block-major organization
   ! so that each block is contiguous in memory for MPI GET
