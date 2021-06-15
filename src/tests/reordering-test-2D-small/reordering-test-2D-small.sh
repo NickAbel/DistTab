@@ -14,7 +14,7 @@ do
           then
             continue
           fi
-          mpirun -np $PROCS --oversubscribe ../disttab 3 $N1 $N2 1 2 $Q1 $Q2 2 | sort -g >| ./np-$PROCS\_n-$N1-$N2\_q-$Q1-$Q2.out
+          mpirun -np $PROCS --oversubscribe ../../lib/disttab 3 $N1 $N2 1 2 $Q1 $Q2 | sort -g >| ./np-$PROCS\_n-$N1-$N2\_q-$Q1-$Q2.out
           diff --unified=0 ./np-$PROCS\_n-$N1-$N2\_q-$Q1-$Q2.out ./gold/np-$PROCS\_n-$N1-$N2\_q-$Q1-$Q2.gold
           rm ./np-$PROCS\_n-$N1-$N2\_q-$Q1-$Q2.out 
         done
