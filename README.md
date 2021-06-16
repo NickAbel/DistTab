@@ -6,7 +6,7 @@ Distributed Tabulation of Spray Flamelet Lookup Tables
 MPI (I use OpenMPI)
 * Compile
 ```shell
-cd src/lib
+cd src/lib/
 mpifort disttab_table.f90 disttab.f90 -o disttab
 ```
 
