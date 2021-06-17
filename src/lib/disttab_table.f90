@@ -19,14 +19,16 @@ module disttab_table
 
   contains
 
-    procedure, public, pass(this)  :: read_in              ! Read in a lookup table from file
-    procedure, public, pass(this)  :: fill_example         ! Fill table with example entries
-    procedure, public, pass(this)  :: partition_mapping    ! Map table to partition-major order
-    procedure, public, pass(this)  :: print_elements       ! Print the table elements
-    procedure, public, pass(this)  :: table_deallocate     ! Deallocate table member variables (this is not the dtor!)
+    procedure, public, pass(this)  :: read_in                ! Read in a lookup table from file
+    procedure, public, pass(this)  :: fill_example           ! Fill table with example entries
+    procedure, public, pass(this)  :: partition_mapping      ! Map table to partition-major order
+    procedure, public, pass(this)  :: partition_mapping_test ! Run test to verify block reorganization functionality
+    procedure, public, pass(this)  :: print_elements         ! Print the table elements
+    procedure, public, pass(this)  :: table_deallocate       ! Deallocate table member variables (this is not the dtor!)
 
-    procedure, private, pass(this) :: coords2flat          ! Convert table coordinates to flat-major index
-    procedure, private, pass(this) :: get_partition_bounds ! Get the bounds of the partition containing the argument
+    procedure, private, pass(this) :: part_test_fill_table  ! Fill table for the partition mapping test (uses file I/O)
+    procedure, private, pass(this) :: coords2flat            ! Convert table coordinates to flat-major index
+    procedure, private, pass(this) :: get_partition_bounds   ! Get the bounds of the partition containing the argument
     final :: table_destructor
 
   end type table
@@ -58,33 +60,25 @@ contains
   subroutine table_destructor(this)
     type(table) :: this
 
-    print *, " If you are reading this, table_destructor is running automatically."
+    print *, "If you are reading this, table_destructor is running automatically."
 
   end subroutine table_destructor
 
-  subroutine table_deallocate(this)
+  subroutine read_in(this, file_id)
     class(table), intent(inout) :: this
+    character(len = *), intent(in) :: file_id
+    integer :: dims(2), i
+    double precision :: c1, c2
 
-    deallocate(this%table_dims)
-    deallocate(this%partition_dims)
-    deallocate(this%elements)
-
-  end subroutine table_deallocate
-
-  subroutine read_in(this)
-    class(table), intent(inout) :: this
+    open(1, file = file_id, action = 'read')
+    read(unit = 1, fmt = *) dims
+    read(unit = 1, fmt = *) dims
+    do i = 1, this % table_dims_cvar_flat
+      read(unit = 1, fmt = *) c1, c2, this % elements(i,1)
+    enddo
+    close(1)
 
   end subroutine read_in
-
-  subroutine print_elements(this)
-    class(table), intent(inout) :: this
-    integer :: rank, ierror
-
-    call mpi_comm_rank(mpi_comm_world, rank, ierror)
-
-    print *, rank, this % elements
-
-  end subroutine print_elements
 
   !recursive subroutine fill_example(this,loop_counters,loop_uppers,idx)
   subroutine fill_example(this)
@@ -156,6 +150,76 @@ contains
     deallocate(elements_old)
 
   end subroutine partition_mapping
+
+  subroutine partition_mapping_test(this)
+    class(table), intent(inout) :: this
+    
+    call part_test_fill_table(this)
+    call partition_mapping(this)
+    call print_elements(this)
+    
+  end subroutine partition_mapping_test
+
+  subroutine print_elements(this)
+    class(table), intent(inout) :: this
+    integer :: rank, ierror
+
+    call mpi_comm_rank(mpi_comm_world, rank, ierror)
+
+    write (*, fmt = '(f9.3)') this % elements
+
+  end subroutine print_elements
+
+  subroutine table_deallocate(this)
+    class(table), intent(inout) :: this
+
+    deallocate(this%table_dims)
+    deallocate(this%partition_dims)
+    deallocate(this%elements)
+
+  end subroutine table_deallocate
+
+  subroutine part_test_fill_table(this)
+    class(table), intent(inout) :: this
+    integer :: total_partitions(2)
+    integer :: i, j, k, l, m, part_ctr, c1, c2
+
+    total_partitions = this % table_dims(1:2) / this % partition_dims(1:2)
+    m = 0
+    part_ctr = 1
+    print *, "total blocks: ", total_partitions
+    open(34, file = 'partition_test_table.tmp.dat', action = 'write')
+
+    do i = 1, total_partitions(2)
+      do j = 1, total_partitions(1)
+        do k = 1, this % partition_dims(2)
+          do l = 1, this % partition_dims(1)
+            m = m + 1
+            write(unit = 34, fmt = '(2(i4.3), f9.3)') l + (j-1)*this % partition_dims(1), &
+              k + (i-1)*this % partition_dims(2), &
+              part_ctr + (DBLE(m)/DBLE(1000))
+          enddo
+        enddo
+        part_ctr = part_ctr + 1
+        m = 0
+      enddo
+    enddo
+
+    close(34)
+
+    call execute_command_line('sort -k 2 partition_test_table.tmp.dat >&
+       partition_test_table_sorted.tmp.dat')
+
+    open(35, file = 'partition_test_table_sorted.tmp.dat', action = 'read')
+
+    do i = 1, this % table_dims_cvar_flat
+      read(unit = 35, fmt = '(2(i4.3), f9.3)') c1, c2, this % elements(i,1)
+    enddo
+
+    close(35)
+    call execute_command_line('rm partition_test_table.tmp.dat partition_test_table_sorted.tmp.dat')
+
+  end subroutine part_test_fill_table
 
   function coords2flat(this, coords) result(flat)
     class(table), intent(inout) :: this

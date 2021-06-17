@@ -21,6 +21,7 @@ program disttab
   integer(kind=mpi_address_kind) :: lookup_table_size
   integer(kind=mpi_address_kind) :: target_displacement
   character(len=32) :: arg
+  character(len=120) :: file_id
 
   type(table) :: lookup
 
@@ -51,6 +52,9 @@ program disttab
     qstr(i - (n_len + 2)) = arg
   enddo
 
+  call getarg(i, file_id)
+
+  print *, i, file_id
   read (nstr, *) n
   read (qstr, *) q
 
@@ -58,10 +62,11 @@ program disttab
 
   lookup = table(n, q)
 
-  call lookup % read_in()
-  call lookup % fill_example()
+  !call lookup % fill_example()
+  call lookup % read_in(file_id)
+  call lookup % partition_mapping_test()
+  write (*,*) " "
   call lookup % partition_mapping()
-  call lookup % print_elements()
   call lookup % table_deallocate()
 
   call mpi_finalize(ierror)
