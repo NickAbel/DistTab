@@ -22,14 +22,44 @@ module disttab_test_partitioning
 
 contains
 
-   type(partitioning_test) function partitioning_test_constructor(n, q) result(this)
-      integer, intent(in) :: n(3), q(2)
-      this%table_dims = n
-      this%partition_dims = q
-      this%lookup = table(n)
+   !> The constructor for the partitioning_test type. 
+   !! Initializes the table and partition dimensions and creates a table
+   !! object lookup for testing.
+   !! 
+   !! @param table_dimensions specifies the size of the table in the two control variable and one state variable dimension
+   !! @param partition_dimensions specifies the size of the partition blocks in each direction
+   !! @return this the partitioning_test object which partitioning_test_constructor instantiates
+   type(partitioning_test) function partitioning_test_constructor(table_dimensions, partition_dimensions) result(this)
+      integer, intent(in) :: table_dimensions(3), partition_dimensions(2)
+      this%table_dims = table_dimensions
+      this%partition_dims = partition_dimensions
+      this%lookup = table(this%table_dims)
 
    end function partitioning_test_constructor
 
+   !> A verification test for the table object's partition mapping algorithm.
+   !! First, calls part_test_fill_table to fill the elements of this%lookup
+   !! with pre-partitioned entries.
+   !! Then, calls this%lookup%partition_mapping to get the result of the
+   !! partition mapping algorithm.
+   !! Next creates the array elements_gold_std, which is a reference
+   !! solution to the partition mapping problem with table size of 
+   !! this%lookup and the partition dimensions of this%partition_dims.
+   !! 
+   !! The entries of elements_gold_std are selected to be easily understandable
+   !! values Phi_k. In particular,
+   !! Phi_k is the sum of the number of the partition which the entry is located,
+   !! and the local number of the entry in the partition divided by 1000.
+   !! For example, for block number 2 and entry number 3, Phi_k = 2.003.
+   !! 
+   !! elements_gold_std is then compared to this%lookup%elements. If all
+   !! entries are equal, a pass is reported. If there is no difference in
+   !! absolute value greater than 0.0005 between all elements of the two tables,
+   !! a different message is given (as this could be due to precision issues
+   !! that I am not sure don't exist.) Else, the test is failed.
+   !!
+   !! @param this the partition_test object to which partition_mapping_test belongs
+   !! @todo be sure there is no precision issue
    subroutine partition_mapping_test(this)
       class(partitioning_test), intent(inout) :: this
       integer, dimension(2) :: total_partitions
@@ -76,6 +106,24 @@ contains
 
    end subroutine partition_mapping_test
 
+   !> Writes to file the gold-standard table for the partitioning test,
+   !! which is in the correct partition-major ordering, with easy-to-
+   !! understand values for the control and state variables:
+   !! 
+   !! phi_i phi_j Phi_k
+   !! 
+   !! where:
+   !! 
+   !! phi_i is the coordinate in direction 1
+   !! phi_j is the coordinate in direction 2
+   !! Phi_k is the sum of the number of the partition which the entry is located,
+   !! and the local number of the entry in the partition divided by 1000.
+   !! For example, for block number 2 and entry number 3, Phi_k = 2.003.
+   !! 
+   !! The file that has been written is sorted according to the phi_j column first,
+   !! and then by the phi_i column second, which yields the order in which Alya-
+   !! formatted flamelet tables are stored.
+   !! @param this the partition_test object to which part_test_fill_table belongs
    subroutine part_test_fill_table(this)
       class(partitioning_test), intent(inout) :: this
       integer, dimension(2) :: total_partitions
@@ -118,6 +166,8 @@ contains
 
    end subroutine part_test_fill_table
 
+   !> Runs the partitioning test.
+   !! @param this the partitioning_test object to which run_test belongs
    subroutine run_test(this)
       class(partitioning_test), intent(inout) :: this
 

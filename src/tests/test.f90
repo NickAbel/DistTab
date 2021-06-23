@@ -1,3 +1,4 @@
+!> A driver program for the DistTab partitioning test.
 program test
   use disttab_test_partitioning
   implicit none

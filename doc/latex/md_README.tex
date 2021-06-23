@@ -1,0 +1,17 @@
+Distributed Tabulation of Spray Flamelet Lookup Tables\hypertarget{md_README_autotoc_md1}{}\doxysection{Instructions}\label{md_README_autotoc_md1}
+
+\begin{DoxyItemize}
+\item Dependencies M\+PI (I use Open\+M\+PI)
+\item Compile 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{cd src/lib/}
+\DoxyCodeLine{mpifort disttab\_table.f90 disttab.f90 -\/o disttab}
+\end{DoxyCode}
+
+\item Run Test (Command Runstring To Be Explained Later) 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{cd src/tests/reordering-\/test-\/2D-\/small/}
+\DoxyCodeLine{./reordering-\/test-\/2D-\/small.sh}
+\end{DoxyCode}
+ 
+\end{DoxyItemize}

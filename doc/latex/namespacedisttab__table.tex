@@ -1,0 +1,209 @@
+\hypertarget{namespacedisttab__table}{}\doxysection{disttab\+\_\+table Module Reference}
+\label{namespacedisttab__table}\index{disttab\_table@{disttab\_table}}
+\doxysubsection*{Data Types}
+\begin{DoxyCompactItemize}
+\item 
+interface \mbox{\hyperlink{structdisttab__table_1_1table}{table}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function \mbox{\hyperlink{namespacedisttab__table_a6b30669a17ed75f6ebac958f890655af}{table\+\_\+constructor}} (table\+\_\+dimensions)
+\begin{DoxyCompactList}\small\item\em Constructor for the table object. ~\newline
+ Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}{table\+\_\+destructor}} (this)
+\begin{DoxyCompactList}\small\item\em destructor for the table type \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}{read\+\_\+in}} (this, file\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a5ebcbc269c4e666ca0725852783d6d76}{fill\+\_\+example}} (this)
+\begin{DoxyCompactList}\small\item\em A quick and dirty table filler that populates the table with integers 1, 2, ... \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a2d5187579c137716a67c5f592eef7328}{partition\+\_\+mapping}} (this, partition\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Remaps the partition from assumed Alya-\/format ordering to given partition ordering. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}{print\+\_\+elements}} (this)
+\begin{DoxyCompactList}\small\item\em Write elements to stdout. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}{table\+\_\+deallocate}} (this)
+\begin{DoxyCompactList}\small\item\em Deallocates the allocated (allocatable) member variables of the table object. \end{DoxyCompactList}\item 
+integer function \mbox{\hyperlink{namespacedisttab__table_aad4dced79753238edfa98673d1606e63}{coords2flat}} (this, coords)
+\begin{DoxyCompactList}\small\item\em Converts entry (i, j) in coordinate indexing to flat index n. \end{DoxyCompactList}\item 
+integer function, dimension(4) \mbox{\hyperlink{namespacedisttab__table_afe75e53b5186b175b6e164ef565a5d7e}{get\+\_\+partition\+\_\+bounds}} (this, coords, partition\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Return the dimensional coordinate bounds of the block beginning at given coordinates coords. Currently only works on partition bases. The commented code is broken. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{namespacedisttab__table_aad4dced79753238edfa98673d1606e63}\label{namespacedisttab__table_aad4dced79753238edfa98673d1606e63}} 
+\index{disttab\_table@{disttab\_table}!coords2flat@{coords2flat}}
+\index{coords2flat@{coords2flat}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{coords2flat()}{coords2flat()}}
+{\footnotesize\ttfamily integer function disttab\+\_\+table\+::coords2flat (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(2), intent(in)}]{coords }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Converts entry (i, j) in coordinate indexing to flat index n. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & table object to which coords2flat belongs \\
+\hline
+{\em coords} & the coordinates of the entry to be returned in flat index \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+flat the flat index of entry located at coordinates coords 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__table_a5ebcbc269c4e666ca0725852783d6d76}\label{namespacedisttab__table_a5ebcbc269c4e666ca0725852783d6d76}} 
+\index{disttab\_table@{disttab\_table}!fill\_example@{fill\_example}}
+\index{fill\_example@{fill\_example}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{fill\_example()}{fill\_example()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::fill\+\_\+example (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+A quick and dirty table filler that populates the table with integers 1, 2, ... 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object to fill \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000004}{Todo}}]for N-\/dimensional lookup tables this is the first functionality to develop. Note the commented function prototype below. \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_afe75e53b5186b175b6e164ef565a5d7e}\label{namespacedisttab__table_afe75e53b5186b175b6e164ef565a5d7e}} 
+\index{disttab\_table@{disttab\_table}!get\_partition\_bounds@{get\_partition\_bounds}}
+\index{get\_partition\_bounds@{get\_partition\_bounds}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{get\_partition\_bounds()}{get\_partition\_bounds()}}
+{\footnotesize\ttfamily integer function, dimension(4) disttab\+\_\+table\+::get\+\_\+partition\+\_\+bounds (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(2), intent(in)}]{coords,  }\item[{integer, dimension(2)}]{partition\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Return the dimensional coordinate bounds of the block beginning at given coordinates coords. Currently only works on partition bases. The commented code is broken. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object to which get\+\_\+partition\+\_\+bounds belongs \\
+\hline
+{\em coords} & the entry (partition base only) whose four bounds is to be returned \\
+\hline
+{\em partition\+\_\+dims} & dimensions of the partition in each direction \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+partition\+\_\+bounds coordinates of the entries which bound the partition containing coords 
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000007}{Todo}}]fix the broken commented code which works on entries which are not partition bases \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_a2d5187579c137716a67c5f592eef7328}\label{namespacedisttab__table_a2d5187579c137716a67c5f592eef7328}} 
+\index{disttab\_table@{disttab\_table}!partition\_mapping@{partition\_mapping}}
+\index{partition\_mapping@{partition\_mapping}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{partition\_mapping()}{partition\_mapping()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::partition\+\_\+mapping (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(2), intent(in)}]{partition\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Remaps the partition from assumed Alya-\/format ordering to given partition ordering. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & table object to perform partition mapping \\
+\hline
+{\em partition\+\_\+dims} & partition dimensions to use \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000005}{Todo}}]zero padding 
+
+n-\/dimensionalization 
+
+assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. 
+
+partition\+\_\+dims should also be stored as a member variable, initialized as \mbox{[}1,1,...,1\mbox{]} when in Alya format. \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}\label{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}} 
+\index{disttab\_table@{disttab\_table}!print\_elements@{print\_elements}}
+\index{print\_elements@{print\_elements}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{print\_elements()}{print\_elements()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::print\+\_\+elements (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Write elements to stdout. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & table object whose elements are to be written \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}\label{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}} 
+\index{disttab\_table@{disttab\_table}!read\_in@{read\_in}}
+\index{read\_in@{read\_in}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{read\_in()}{read\_in()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::read\+\_\+in (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{character(len=$\ast$), intent(in)}]{file\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: 
+
+phi\+\_\+1,1 phi\+\_\+2,1 Phi\+\_\+1 phi\+\_\+1,2 phi\+\_\+2,2 Phi\+\_\+2 ... ... ...
+
+Where phi\+\_\+i,j are control variables, and Phi\+\_\+k are state variables. 
+\begin{DoxyParams}{Parameters}
+{\em this} & table object to which read\+\_\+in is a member. \\
+\hline
+{\em file\+\_\+id} & the lookup table filename to read in. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000003}{Todo}}]Should read in a table in the \char`\"{}\+Alya format\char`\"{} (see tables/2d.\+dat) \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_a6b30669a17ed75f6ebac958f890655af}\label{namespacedisttab__table_a6b30669a17ed75f6ebac958f890655af}} 
+\index{disttab\_table@{disttab\_table}!table\_constructor@{table\_constructor}}
+\index{table\_constructor@{table\_constructor}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{table\_constructor()}{table\_constructor()}}
+{\footnotesize\ttfamily type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function disttab\+\_\+table\+::table\+\_\+constructor (\begin{DoxyParamCaption}\item[{integer, dimension(3), intent(in)}]{table\+\_\+dimensions }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Constructor for the table object. ~\newline
+ Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em table\+\_\+dimensions} & the length of the control variable space in each dimension, and the number of state variables \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+this table object 
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000001}{Todo}}]if partition dimensions are a property of a lookup table which may change, the partition\+\_\+dimensions can be stored as a member variable but perhaps not initialized here. Then, the same is true of the \char`\"{}padded\char`\"{} variables which generally will change as the partition\+\_\+dimensions change. Organize the code as such. Perhaps use an optional argument for partition\+\_\+dimensions here instead. \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}\label{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}} 
+\index{disttab\_table@{disttab\_table}!table\_deallocate@{table\_deallocate}}
+\index{table\_deallocate@{table\_deallocate}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{table\_deallocate()}{table\_deallocate()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::table\+\_\+deallocate (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Deallocates the allocated (allocatable) member variables of the table object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object whose allocatable member variables are to be deallocated \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000006}{Todo}}]This is called by the destructor, but is it necessary? \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}\label{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}} 
+\index{disttab\_table@{disttab\_table}!table\_destructor@{table\_destructor}}
+\index{table\_destructor@{table\_destructor}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{table\_destructor()}{table\_destructor()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::table\+\_\+destructor (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}})}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+destructor for the table type 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object to destruct \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000002}{Todo}}]what is this exactly doing? is table\+\_\+deallocate call necessary? \end{DoxyRefDesc}

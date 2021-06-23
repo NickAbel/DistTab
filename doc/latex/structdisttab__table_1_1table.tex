@@ -1,0 +1,175 @@
+\hypertarget{structdisttab__table_1_1table}{}\doxysection{disttab\+\_\+table\+::table Interface Reference}
+\label{structdisttab__table_1_1table}\index{disttab\_table::table@{disttab\_table::table}}
+
+
+Collaboration diagram for disttab\+\_\+table\+::table\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{structdisttab__table_1_1table__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_a875acbd88c3a20d36855940779e8b4c3}{read\+\_\+in}}
+\item 
+procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_aac66617fcb4fcc25c6ac988f7affddeb}{partition\+\_\+mapping}}
+\item 
+procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_a49570177e85bb0d0db219a42c79fc799}{print\+\_\+elements}}
+\item 
+procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_a2813f857d682931f9063f93453c61755}{table\+\_\+deallocate}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+procedure, pass(this), private \mbox{\hyperlink{structdisttab__table_1_1table_afb8e712965650986ed949059ce64e98b}{coords2flat}}
+\item 
+procedure, pass(this), private \mbox{\hyperlink{structdisttab__table_1_1table_ab81bcd7dd94a4c4186ac10cf1de51be6}{get\+\_\+partition\+\_\+bounds}}
+\item 
+final \mbox{\hyperlink{structdisttab__table_1_1table_adf0fe9371ee20bdd43725f8f3930aebd}{table\+\_\+destructor}}
+\item 
+type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function \mbox{\hyperlink{structdisttab__table_1_1table_a84dadb68274c010e6033b98a0c8c4569}{table\+\_\+constructor}} (table\+\_\+dimensions)
+\begin{DoxyCompactList}\small\item\em Constructor for the table object. ~\newline
+ Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+double precision, dimension(\+:, \+:), allocatable \mbox{\hyperlink{structdisttab__table_1_1table_a302eccfe1084654fc0a32c0fc1f3ff03}{elements}}
+\item 
+integer, dimension(\+:), allocatable \mbox{\hyperlink{structdisttab__table_1_1table_ad5567f62dd6fc6787b2b9b3bad350915}{table\+\_\+dims}}
+\item 
+integer, dimension(\+:), allocatable \mbox{\hyperlink{structdisttab__table_1_1table_ad79e69a04e834635593b34d444acd14a}{table\+\_\+dims\+\_\+padded}}
+\item 
+integer \mbox{\hyperlink{structdisttab__table_1_1table_a6370cfe2b7c72cfdf3ac5b6974354fb6}{table\+\_\+dims\+\_\+cvar\+\_\+flat}}
+\item 
+integer \mbox{\hyperlink{structdisttab__table_1_1table_a129fc4966b59f9e3de411f0a365c85e6}{table\+\_\+dims\+\_\+flat}}
+\item 
+integer \mbox{\hyperlink{structdisttab__table_1_1table_a3c1f6caef5e128cd8ff289f7b4e1d9cd}{table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat}}
+\item 
+integer \mbox{\hyperlink{structdisttab__table_1_1table_a7834b3f0723e351e4ca6afeabb317afc}{table\+\_\+dims\+\_\+padded\+\_\+flat}}
+\item 
+integer \mbox{\hyperlink{structdisttab__table_1_1table_a7eb0b1eecd4272d02a83008172db559c}{table\+\_\+dim\+\_\+svar}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{structdisttab__table_1_1table_afb8e712965650986ed949059ce64e98b}\label{structdisttab__table_1_1table_afb8e712965650986ed949059ce64e98b}} 
+\index{disttab\_table::table@{disttab\_table::table}!coords2flat@{coords2flat}}
+\index{coords2flat@{coords2flat}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{coords2flat()}{coords2flat()}}
+{\footnotesize\ttfamily procedure, pass(this), private disttab\+\_\+table\+::table\+::coords2flat\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_ab81bcd7dd94a4c4186ac10cf1de51be6}\label{structdisttab__table_1_1table_ab81bcd7dd94a4c4186ac10cf1de51be6}} 
+\index{disttab\_table::table@{disttab\_table::table}!get\_partition\_bounds@{get\_partition\_bounds}}
+\index{get\_partition\_bounds@{get\_partition\_bounds}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{get\_partition\_bounds()}{get\_partition\_bounds()}}
+{\footnotesize\ttfamily procedure, pass(this), private disttab\+\_\+table\+::table\+::get\+\_\+partition\+\_\+bounds\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_aac66617fcb4fcc25c6ac988f7affddeb}\label{structdisttab__table_1_1table_aac66617fcb4fcc25c6ac988f7affddeb}} 
+\index{disttab\_table::table@{disttab\_table::table}!partition\_mapping@{partition\_mapping}}
+\index{partition\_mapping@{partition\_mapping}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{partition\_mapping()}{partition\_mapping()}}
+{\footnotesize\ttfamily procedure, pass(this), public disttab\+\_\+table\+::table\+::partition\+\_\+mapping}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_a49570177e85bb0d0db219a42c79fc799}\label{structdisttab__table_1_1table_a49570177e85bb0d0db219a42c79fc799}} 
+\index{disttab\_table::table@{disttab\_table::table}!print\_elements@{print\_elements}}
+\index{print\_elements@{print\_elements}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{print\_elements()}{print\_elements()}}
+{\footnotesize\ttfamily procedure, pass(this), public disttab\+\_\+table\+::table\+::print\+\_\+elements}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_a875acbd88c3a20d36855940779e8b4c3}\label{structdisttab__table_1_1table_a875acbd88c3a20d36855940779e8b4c3}} 
+\index{disttab\_table::table@{disttab\_table::table}!read\_in@{read\_in}}
+\index{read\_in@{read\_in}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{read\_in()}{read\_in()}}
+{\footnotesize\ttfamily procedure, pass(this), public disttab\+\_\+table\+::table\+::read\+\_\+in}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_a84dadb68274c010e6033b98a0c8c4569}\label{structdisttab__table_1_1table_a84dadb68274c010e6033b98a0c8c4569}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_constructor@{table\_constructor}}
+\index{table\_constructor@{table\_constructor}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_constructor()}{table\_constructor()}}
+{\footnotesize\ttfamily type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function disttab\+\_\+table\+::table\+::table\+\_\+constructor (\begin{DoxyParamCaption}\item[{integer, dimension(3), intent(in)}]{table\+\_\+dimensions }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Constructor for the table object. ~\newline
+ Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em table\+\_\+dimensions} & the length of the control variable space in each dimension, and the number of state variables \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+this table object 
+\end{DoxyReturn}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000001}{Todo}}]if partition dimensions are a property of a lookup table which may change, the partition\+\_\+dimensions can be stored as a member variable but perhaps not initialized here. Then, the same is true of the \char`\"{}padded\char`\"{} variables which generally will change as the partition\+\_\+dimensions change. Organize the code as such. Perhaps use an optional argument for partition\+\_\+dimensions here instead. \end{DoxyRefDesc}
+\mbox{\Hypertarget{structdisttab__table_1_1table_a2813f857d682931f9063f93453c61755}\label{structdisttab__table_1_1table_a2813f857d682931f9063f93453c61755}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_deallocate@{table\_deallocate}}
+\index{table\_deallocate@{table\_deallocate}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_deallocate()}{table\_deallocate()}}
+{\footnotesize\ttfamily procedure, pass(this), public disttab\+\_\+table\+::table\+::table\+\_\+deallocate}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_adf0fe9371ee20bdd43725f8f3930aebd}\label{structdisttab__table_1_1table_adf0fe9371ee20bdd43725f8f3930aebd}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_destructor@{table\_destructor}}
+\index{table\_destructor@{table\_destructor}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_destructor()}{table\_destructor()}}
+{\footnotesize\ttfamily final disttab\+\_\+table\+::table\+::table\+\_\+destructor\hspace{0.3cm}{\ttfamily [final]}, {\ttfamily [private]}}
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{structdisttab__table_1_1table_a302eccfe1084654fc0a32c0fc1f3ff03}\label{structdisttab__table_1_1table_a302eccfe1084654fc0a32c0fc1f3ff03}} 
+\index{disttab\_table::table@{disttab\_table::table}!elements@{elements}}
+\index{elements@{elements}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{elements}{elements}}
+{\footnotesize\ttfamily double precision, dimension(\+:, \+:), allocatable disttab\+\_\+table\+::table\+::elements\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_a7eb0b1eecd4272d02a83008172db559c}\label{structdisttab__table_1_1table_a7eb0b1eecd4272d02a83008172db559c}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_dim\_svar@{table\_dim\_svar}}
+\index{table\_dim\_svar@{table\_dim\_svar}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_dim\_svar}{table\_dim\_svar}}
+{\footnotesize\ttfamily integer disttab\+\_\+table\+::table\+::table\+\_\+dim\+\_\+svar\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_ad5567f62dd6fc6787b2b9b3bad350915}\label{structdisttab__table_1_1table_ad5567f62dd6fc6787b2b9b3bad350915}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_dims@{table\_dims}}
+\index{table\_dims@{table\_dims}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_dims}{table\_dims}}
+{\footnotesize\ttfamily integer, dimension(\+:), allocatable disttab\+\_\+table\+::table\+::table\+\_\+dims\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_a6370cfe2b7c72cfdf3ac5b6974354fb6}\label{structdisttab__table_1_1table_a6370cfe2b7c72cfdf3ac5b6974354fb6}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_dims\_cvar\_flat@{table\_dims\_cvar\_flat}}
+\index{table\_dims\_cvar\_flat@{table\_dims\_cvar\_flat}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_dims\_cvar\_flat}{table\_dims\_cvar\_flat}}
+{\footnotesize\ttfamily integer disttab\+\_\+table\+::table\+::table\+\_\+dims\+\_\+cvar\+\_\+flat\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_a129fc4966b59f9e3de411f0a365c85e6}\label{structdisttab__table_1_1table_a129fc4966b59f9e3de411f0a365c85e6}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_dims\_flat@{table\_dims\_flat}}
+\index{table\_dims\_flat@{table\_dims\_flat}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_dims\_flat}{table\_dims\_flat}}
+{\footnotesize\ttfamily integer disttab\+\_\+table\+::table\+::table\+\_\+dims\+\_\+flat\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_ad79e69a04e834635593b34d444acd14a}\label{structdisttab__table_1_1table_ad79e69a04e834635593b34d444acd14a}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_dims\_padded@{table\_dims\_padded}}
+\index{table\_dims\_padded@{table\_dims\_padded}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_dims\_padded}{table\_dims\_padded}}
+{\footnotesize\ttfamily integer, dimension(\+:), allocatable disttab\+\_\+table\+::table\+::table\+\_\+dims\+\_\+padded\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_a3c1f6caef5e128cd8ff289f7b4e1d9cd}\label{structdisttab__table_1_1table_a3c1f6caef5e128cd8ff289f7b4e1d9cd}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_dims\_padded\_cvar\_flat@{table\_dims\_padded\_cvar\_flat}}
+\index{table\_dims\_padded\_cvar\_flat@{table\_dims\_padded\_cvar\_flat}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_dims\_padded\_cvar\_flat}{table\_dims\_padded\_cvar\_flat}}
+{\footnotesize\ttfamily integer disttab\+\_\+table\+::table\+::table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_a7834b3f0723e351e4ca6afeabb317afc}\label{structdisttab__table_1_1table_a7834b3f0723e351e4ca6afeabb317afc}} 
+\index{disttab\_table::table@{disttab\_table::table}!table\_dims\_padded\_flat@{table\_dims\_padded\_flat}}
+\index{table\_dims\_padded\_flat@{table\_dims\_padded\_flat}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{table\_dims\_padded\_flat}{table\_dims\_padded\_flat}}
+{\footnotesize\ttfamily integer disttab\+\_\+table\+::table\+::table\+\_\+dims\+\_\+padded\+\_\+flat\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/table/\mbox{\hyperlink{disttab__table_8f90}{disttab\+\_\+table.\+f90}}\end{DoxyCompactItemize}

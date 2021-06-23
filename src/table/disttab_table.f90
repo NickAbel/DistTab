@@ -25,6 +25,7 @@ module disttab_table
       procedure, public, pass(this)  :: partition_mapping      ! Map table to partition-major order
       procedure, public, pass(this)  :: print_elements         ! Print the table elements
       procedure, public, pass(this)  :: table_deallocate       ! Deallocate table member variables (this is not the dtor!)
+      !procedure, public, pass(this)  :: get_svar_by_coords    ! Given integer coordinates in CV space, return corresponding SV's
 
       procedure, private, pass(this) :: coords2flat            ! Convert table coordinates to flat-major index
       procedure, private, pass(this) :: get_partition_bounds   ! Get the bounds of the partition containing the argument
@@ -38,6 +39,22 @@ module disttab_table
 
 contains
 
+   !> Constructor for the table object.  
+   !! Allocates the elements array according to the table dimensions.
+   !! Initializes the member variables table_dims, table_dims_padded.
+   !! Computes the parameters table_dims_cvar_flat, table_dims_flat,
+   !! table_dims_padded_cvar_flat, table_dims_padded_flat, table_dim_svar,
+   !! which are all a property of the table_dimensions argument, necessary
+   !! for partition mapping functionality.
+   !! 
+   !! @param table_dimensions the length of the control variable space in each dimension, and the number of state variables
+   !! @result this table object
+   !! @todo if partition dimensions are a property of a lookup table which
+   !! may change, the partition_dimensions can be stored as a member variable
+   !! but perhaps not initialized here. Then, the same is true of the "padded"
+   !! variables which generally will change as the partition_dimensions change.
+   !! Organize the code as such. Perhaps use an optional argument for partition_dimensions
+   !! here instead.
    type(table) function table_constructor(table_dimensions) result(this)
       integer, intent(in) :: table_dimensions(3)
       integer :: i
@@ -56,6 +73,10 @@ contains
 
    end function table_constructor
 
+   !> destructor for the table type
+   !! 
+   !! @param this the table object to destruct
+   !! @todo what is this exactly doing? is table_deallocate call necessary?
    subroutine table_destructor(this)
       type(table) :: this
 
@@ -64,6 +85,17 @@ contains
 
    end subroutine table_destructor
 
+   !> Reads in a lookup table to the elements array of the table object.
+   !! Currently reads in tables with the following format:
+   !!
+   !! phi_1,1 phi_2,1 Phi_1
+   !! phi_1,2 phi_2,2 Phi_2
+   !! ...     ...     ...
+   !!
+   !! Where phi_i,j are control variables, and Phi_k are state variables.
+   !! @param this table object to which read_in is a member.
+   !! @param file_id the lookup table filename to read in.
+   !! @todo Should read in a table in the "Alya format" (see tables/2d.dat)
    subroutine read_in(this, file_id)
       class(table), intent(inout) :: this
       character(len=*), intent(in) :: file_id
@@ -71,8 +103,6 @@ contains
       double precision :: c1, c2
 
       open (1, file=file_id, action='read')
-      read (unit=1, fmt=*) dims
-      read (unit=1, fmt=*) dims
       do i = 1, this%table_dims_cvar_flat
          read (unit=1, fmt=*) c1, c2, this%elements(i, 1)
       end do
@@ -80,11 +110,16 @@ contains
 
    end subroutine read_in
 
+
+   !> A quick and dirty table filler that populates the table with integers 1, 2, ...
+   !! 
+   !! @param this the table object to fill
+   !! @todo for N-dimensional lookup tables this is the first functionality
+   !! to develop. Note the commented function prototype below.
    !recursive subroutine fill_example(this,loop_counters,loop_uppers,idx)
    subroutine fill_example(this)
       class(table), intent(inout) :: this
       integer :: i, j, k
-      integer :: rank, ierror
 
       !call mpi_comm_rank(mpi_comm_world, rank, ierror)
 
@@ -120,12 +155,24 @@ contains
 
    end subroutine fill_example
 
+   !> Remaps the partition from assumed Alya-format ordering to given partition
+   !! ordering.
+   !! 
+   !! @param this table object to perform partition mapping
+   !! @param partition_dims partition dimensions to use
+   !! @todo zero padding
+   !! @todo n-dimensionalization
+   !! @todo assumed currently that table is in Alya-format. Add functionality
+   !! to remap from one partition size to another. This can be achieved by
+   !! writing and sorting the table as in test_partitioning%part_test_fill_table
+   !! to recover the Alya format and then reading that sorted file back in.
+   !! @todo partition_dims should also be stored as a member variable, initialized
+   !! as [1,1,...,1] when in Alya format.
    subroutine partition_mapping(this, partition_dims)
       class(table), intent(inout) :: this
       integer, dimension(2), intent(in) :: partition_dims
       integer, dimension(4) :: partition_bounds
       integer :: offset, i, j, k, l
-      integer :: rank, ierror
       double precision, allocatable, dimension(:, :) :: elements_old
 
       !call mpi_comm_rank(mpi_comm_world, rank, ierror)
@@ -160,16 +207,20 @@ contains
 
    end subroutine partition_mapping
 
+   !> Write elements to stdout. 
+   !! 
+   !! @param this table object whose elements are to be written
    subroutine print_elements(this)
       class(table), intent(inout) :: this
-      integer :: rank, ierror
-
-      !call mpi_comm_rank(mpi_comm_world, rank, ierror)
 
       write (*, fmt='(f9.3)') this%elements
 
    end subroutine print_elements
 
+   !> Deallocates the allocated (allocatable) member variables of the table object
+   !! 
+   !! @param this the table object whose allocatable member variables are to be deallocated
+   !! @todo This is called by the destructor, but is it necessary?
    subroutine table_deallocate(this)
       class(table), intent(inout) :: this
 
@@ -179,6 +230,11 @@ contains
 
    end subroutine table_deallocate
 
+   !> Converts entry (i, j) in coordinate indexing to flat index n
+   !! 
+   !! @param this table object to which coords2flat belongs
+   !! @param coords the coordinates of the entry to be returned in flat index
+   !! @result flat the flat index of entry located at coordinates coords
    function coords2flat(this, coords) result(flat)
       class(table), intent(inout) :: this
       integer, dimension(2), intent(in)  :: coords
@@ -188,6 +244,15 @@ contains
 
    end function
 
+   !> Return the dimensional coordinate bounds of the block beginning at
+   !! given coordinates coords.
+   !! Currently only works on partition bases. The commented code is broken.
+   !!
+   !! @param this the table object to which get_partition_bounds belongs
+   !! @param coords the entry (partition base only) whose four bounds is to be returned
+   !! @param partition_dims dimensions of the partition in each direction
+   !! @result partition_bounds coordinates of the entries which bound the partition containing coords
+   !! @todo fix the broken commented code which works on entries which are not partition bases
    function get_partition_bounds(this, coords, partition_dims) result(partition_bounds)
       class(table), intent(inout) :: this
       integer, dimension(2), intent(in)  :: coords

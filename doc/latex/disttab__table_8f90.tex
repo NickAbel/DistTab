@@ -1,0 +1,36 @@
+\hypertarget{disttab__table_8f90}{}\doxysection{src/table/disttab\+\_\+table.f90 File Reference}
+\label{disttab__table_8f90}\index{src/table/disttab\_table.f90@{src/table/disttab\_table.f90}}
+\doxysubsection*{Data Types}
+\begin{DoxyCompactItemize}
+\item 
+interface \mbox{\hyperlink{structdisttab__table_1_1table}{disttab\+\_\+table\+::table}}
+\item 
+interface \mbox{\hyperlink{structdisttab__table_1_1table}{disttab\+\_\+table\+::table}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+module \mbox{\hyperlink{namespacedisttab__table}{disttab\+\_\+table}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+type(table) function \mbox{\hyperlink{namespacedisttab__table_a6b30669a17ed75f6ebac958f890655af}{disttab\+\_\+table\+::table\+\_\+constructor}} (table\+\_\+dimensions)
+\begin{DoxyCompactList}\small\item\em Constructor for the table object. ~\newline
+ Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}{disttab\+\_\+table\+::table\+\_\+destructor}} (this)
+\begin{DoxyCompactList}\small\item\em destructor for the table type \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}{disttab\+\_\+table\+::read\+\_\+in}} (this, file\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a5ebcbc269c4e666ca0725852783d6d76}{disttab\+\_\+table\+::fill\+\_\+example}} (this)
+\begin{DoxyCompactList}\small\item\em A quick and dirty table filler that populates the table with integers 1, 2, ... \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a2d5187579c137716a67c5f592eef7328}{disttab\+\_\+table\+::partition\+\_\+mapping}} (this, partition\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Remaps the partition from assumed Alya-\/format ordering to given partition ordering. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}{disttab\+\_\+table\+::print\+\_\+elements}} (this)
+\begin{DoxyCompactList}\small\item\em Write elements to stdout. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}{disttab\+\_\+table\+::table\+\_\+deallocate}} (this)
+\begin{DoxyCompactList}\small\item\em Deallocates the allocated (allocatable) member variables of the table object. \end{DoxyCompactList}\item 
+integer function \mbox{\hyperlink{namespacedisttab__table_aad4dced79753238edfa98673d1606e63}{disttab\+\_\+table\+::coords2flat}} (this, coords)
+\begin{DoxyCompactList}\small\item\em Converts entry (i, j) in coordinate indexing to flat index n. \end{DoxyCompactList}\item 
+integer function, dimension(4) \mbox{\hyperlink{namespacedisttab__table_afe75e53b5186b175b6e164ef565a5d7e}{disttab\+\_\+table\+::get\+\_\+partition\+\_\+bounds}} (this, coords, partition\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Return the dimensional coordinate bounds of the block beginning at given coordinates coords. Currently only works on partition bases. The commented code is broken. \end{DoxyCompactList}\end{DoxyCompactItemize}

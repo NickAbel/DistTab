@@ -1,0 +1,98 @@
+\hypertarget{namespacedisttab__test__partitioning}{}\doxysection{disttab\+\_\+test\+\_\+partitioning Module Reference}
+\label{namespacedisttab__test__partitioning}\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsection*{Data Types}
+\begin{DoxyCompactItemize}
+\item 
+interface \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+type(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}) function \mbox{\hyperlink{namespacedisttab__test__partitioning_ab1d37db19bdbf9040381d46a05367339}{partitioning\+\_\+test\+\_\+constructor}} (table\+\_\+dimensions, partition\+\_\+dimensions)
+\begin{DoxyCompactList}\small\item\em The constructor for the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} type. Initializes the table and partition dimensions and creates a table object lookup for testing. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_a5a71fcde2c7b22ebfad7d1ce5b142407}{partition\+\_\+mapping\+\_\+test}} (this)
+\begin{DoxyCompactList}\small\item\em A verification test for the table object\textquotesingle{}s partition mapping algorithm. First, calls part\+\_\+test\+\_\+fill\+\_\+table to fill the elements of thislookup with pre-\/partitioned entries. Then, calls thislookuppartition\+\_\+mapping to get the result of the partition mapping algorithm. Next creates the array elements\+\_\+gold\+\_\+std, which is a reference solution to the partition mapping problem with table size of thislookup and the partition dimensions of thispartition\+\_\+dims. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_a64b2e2cb62008a9a4f6c46452ca64387}{part\+\_\+test\+\_\+fill\+\_\+table}} (this)
+\begin{DoxyCompactList}\small\item\em Writes to file the gold-\/standard table for the partitioning test, which is in the correct partition-\/major ordering, with easy-\/to-\/ understand values for the control and state variables\+: \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_af5744b471af01f7c457e307ef77b5451}{run\+\_\+test}} (this)
+\begin{DoxyCompactList}\small\item\em Runs the partitioning test. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_a64b2e2cb62008a9a4f6c46452ca64387}\label{namespacedisttab__test__partitioning_a64b2e2cb62008a9a4f6c46452ca64387}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!part\_test\_fill\_table@{part\_test\_fill\_table}}
+\index{part\_test\_fill\_table@{part\_test\_fill\_table}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{part\_test\_fill\_table()}{part\_test\_fill\_table()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::part\+\_\+test\+\_\+fill\+\_\+table (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Writes to file the gold-\/standard table for the partitioning test, which is in the correct partition-\/major ordering, with easy-\/to-\/ understand values for the control and state variables\+: 
+
+phi\+\_\+i phi\+\_\+j Phi\+\_\+k
+
+where\+:
+
+phi\+\_\+i is the coordinate in direction 1 phi\+\_\+j is the coordinate in direction 2 Phi\+\_\+k is the sum of the number of the partition which the entry is located, and the local number of the entry in the partition divided by 1000. For example, for block number 2 and entry number 3, Phi\+\_\+k = 2.\+003.
+
+The file that has been written is sorted according to the phi\+\_\+j column first, and then by the phi\+\_\+i column second, which yields the order in which Alya-\/ formatted flamelet tables are stored. 
+\begin{DoxyParams}{Parameters}
+{\em this} & the partition\+\_\+test object to which part\+\_\+test\+\_\+fill\+\_\+table belongs \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_a5a71fcde2c7b22ebfad7d1ce5b142407}\label{namespacedisttab__test__partitioning_a5a71fcde2c7b22ebfad7d1ce5b142407}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!partition\_mapping\_test@{partition\_mapping\_test}}
+\index{partition\_mapping\_test@{partition\_mapping\_test}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{partition\_mapping\_test()}{partition\_mapping\_test()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::partition\+\_\+mapping\+\_\+test (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+A verification test for the table object\textquotesingle{}s partition mapping algorithm. First, calls part\+\_\+test\+\_\+fill\+\_\+table to fill the elements of thislookup with pre-\/partitioned entries. Then, calls thislookuppartition\+\_\+mapping to get the result of the partition mapping algorithm. Next creates the array elements\+\_\+gold\+\_\+std, which is a reference solution to the partition mapping problem with table size of thislookup and the partition dimensions of thispartition\+\_\+dims. 
+
+The entries of elements\+\_\+gold\+\_\+std are selected to be easily understandable values Phi\+\_\+k. In particular, Phi\+\_\+k is the sum of the number of the partition which the entry is located, and the local number of the entry in the partition divided by 1000. For example, for block number 2 and entry number 3, Phi\+\_\+k = 2.\+003.
+
+elements\+\_\+gold\+\_\+std is then compared to thislookupelements. If all entries are equal, a pass is reported. If there is no difference in absolute value greater than 0.\+0005 between all elements of the two tables, a different message is given (as this could be due to precision issues that I am not sure don\textquotesingle{}t exist.) Else, the test is failed.
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the partition\+\_\+test object to which partition\+\_\+mapping\+\_\+test belongs \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000008}{Todo}}]be sure there is no precision issue \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_ab1d37db19bdbf9040381d46a05367339}\label{namespacedisttab__test__partitioning_ab1d37db19bdbf9040381d46a05367339}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!partitioning\_test\_constructor@{partitioning\_test\_constructor}}
+\index{partitioning\_test\_constructor@{partitioning\_test\_constructor}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{partitioning\_test\_constructor()}{partitioning\_test\_constructor()}}
+{\footnotesize\ttfamily type(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}) function disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+\_\+constructor (\begin{DoxyParamCaption}\item[{integer, dimension(3), intent(in)}]{table\+\_\+dimensions,  }\item[{integer, dimension(2), intent(in)}]{partition\+\_\+dimensions }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The constructor for the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} type. Initializes the table and partition dimensions and creates a table object lookup for testing. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em table\+\_\+dimensions} & specifies the size of the table in the two control variable and one state variable dimension \\
+\hline
+{\em partition\+\_\+dimensions} & specifies the size of the partition blocks in each direction \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+this the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object which partitioning\+\_\+test\+\_\+constructor instantiates 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_af5744b471af01f7c457e307ef77b5451}\label{namespacedisttab__test__partitioning_af5744b471af01f7c457e307ef77b5451}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!run\_test@{run\_test}}
+\index{run\_test@{run\_test}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{run\_test()}{run\_test()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::run\+\_\+test (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Runs the partitioning test. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object to which run\+\_\+test belongs \\
+\hline
+\end{DoxyParams}
