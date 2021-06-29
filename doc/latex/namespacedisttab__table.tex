@@ -17,7 +17,7 @@ subroutine \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429a
 \begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a5ebcbc269c4e666ca0725852783d6d76}{fill\+\_\+example}} (this)
 \begin{DoxyCompactList}\small\item\em A quick and dirty table filler that populates the table with integers 1, 2, ... \end{DoxyCompactList}\item 
-subroutine \mbox{\hyperlink{namespacedisttab__table_a2d5187579c137716a67c5f592eef7328}{partition\+\_\+mapping}} (this, partition\+\_\+dims)
+subroutine \mbox{\hyperlink{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}{partition\+\_\+mapping}} (this, partition\+\_\+dimensions)
 \begin{DoxyCompactList}\small\item\em Remaps the partition from assumed Alya-\/format ordering to given partition ordering. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}{print\+\_\+elements}} (this)
 \begin{DoxyCompactList}\small\item\em Write elements to stdout. \end{DoxyCompactList}\item 
@@ -91,11 +91,11 @@ partition\+\_\+bounds coordinates of the entries which bound the partition conta
 \end{DoxyReturn}
 \begin{DoxyRefDesc}{Todo}
 \item[\mbox{\hyperlink{todo__todo000007}{Todo}}]fix the broken commented code which works on entries which are not partition bases \end{DoxyRefDesc}
-\mbox{\Hypertarget{namespacedisttab__table_a2d5187579c137716a67c5f592eef7328}\label{namespacedisttab__table_a2d5187579c137716a67c5f592eef7328}} 
+\mbox{\Hypertarget{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}\label{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}} 
 \index{disttab\_table@{disttab\_table}!partition\_mapping@{partition\_mapping}}
 \index{partition\_mapping@{partition\_mapping}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{partition\_mapping()}{partition\_mapping()}}
-{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::partition\+\_\+mapping (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(2), intent(in)}]{partition\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::partition\+\_\+mapping (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(2), intent(in)}]{partition\+\_\+dimensions }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -105,7 +105,7 @@ Remaps the partition from assumed Alya-\/format ordering to given partition orde
 \begin{DoxyParams}{Parameters}
 {\em this} & table object to perform partition mapping \\
 \hline
-{\em partition\+\_\+dims} & partition dimensions to use \\
+{\em partition\+\_\+dimensions} & partition dimensions to use \\
 \hline
 \end{DoxyParams}
 \begin{DoxyRefDesc}{Todo}
@@ -113,9 +113,7 @@ Remaps the partition from assumed Alya-\/format ordering to given partition orde
 
 n-\/dimensionalization 
 
-assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. 
-
-partition\+\_\+dims should also be stored as a member variable, initialized as \mbox{[}1,1,...,1\mbox{]} when in Alya format. \end{DoxyRefDesc}
+assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. \end{DoxyRefDesc}
 \mbox{\Hypertarget{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}\label{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}} 
 \index{disttab\_table@{disttab\_table}!print\_elements@{print\_elements}}
 \index{print\_elements@{print\_elements}!disttab\_table@{disttab\_table}}

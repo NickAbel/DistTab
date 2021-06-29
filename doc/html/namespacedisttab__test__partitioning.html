@@ -87,9 +87,21 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a64b2e2cb62008a9a4f6c46452ca64387"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__partitioning.html#a64b2e2cb62008a9a4f6c46452ca64387">part_test_fill_table</a> (this)</td></tr>
 <tr class="memdesc:a64b2e2cb62008a9a4f6c46452ca64387"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes to file the gold-standard table for the partitioning test, which is in the correct partition-major ordering, with easy-to- understand values for the control and state variables:  <a href="namespacedisttab__test__partitioning.html#a64b2e2cb62008a9a4f6c46452ca64387">More...</a><br /></td></tr>
 <tr class="separator:a64b2e2cb62008a9a4f6c46452ca64387"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5744b471af01f7c457e307ef77b5451"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__partitioning.html#af5744b471af01f7c457e307ef77b5451">run_test</a> (this)</td></tr>
-<tr class="memdesc:af5744b471af01f7c457e307ef77b5451"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the partitioning test.  <a href="namespacedisttab__test__partitioning.html#af5744b471af01f7c457e307ef77b5451">More...</a><br /></td></tr>
-<tr class="separator:af5744b471af01f7c457e307ef77b5451"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a162d4880f0947cb128badc721857568c"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__partitioning.html#a162d4880f0947cb128badc721857568c">zero_padding_test</a> (this)</td></tr>
+<tr class="memdesc:a162d4880f0947cb128badc721857568c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simple zero-padding test. The remapping of the table with ascending integers from 1, table size of [3,3,1], and partition size [2,2] should map from: 1 4 7 2 5 8 3 6 9 to: 1 3 7 9 2 0 8 0 4 6 0 0 5 0 0 0 This test checks ONLY that this occurs. The general partition_mapping_test must be modified to account for 0-padding, but this is involved.  <a href="namespacedisttab__test__partitioning.html#a162d4880f0947cb128badc721857568c">More...</a><br /></td></tr>
+<tr class="separator:a162d4880f0947cb128badc721857568c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a750498654e1594c312540ab02043da74"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__partitioning.html#a750498654e1594c312540ab02043da74">run_test_2d</a> (this)</td></tr>
+<tr class="memdesc:a750498654e1594c312540ab02043da74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the 2D no-pad partitioning test.  <a href="namespacedisttab__test__partitioning.html#a750498654e1594c312540ab02043da74">More...</a><br /></td></tr>
+<tr class="separator:a750498654e1594c312540ab02043da74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a101d195650a615f2b32313b22b362128"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__partitioning.html#a101d195650a615f2b32313b22b362128">run_test_2d_0pad</a> (this)</td></tr>
+<tr class="memdesc:a101d195650a615f2b32313b22b362128"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the 2D zero-padded partitioning test.  <a href="namespacedisttab__test__partitioning.html#a101d195650a615f2b32313b22b362128">More...</a><br /></td></tr>
+<tr class="separator:a101d195650a615f2b32313b22b362128"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec0af9db59e1a23ed4992f78356f6cc8"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__partitioning.html#aec0af9db59e1a23ed4992f78356f6cc8">run_test_3d</a> (this)</td></tr>
+<tr class="memdesc:aec0af9db59e1a23ed4992f78356f6cc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the 3D no-pad partitioning test.  <a href="namespacedisttab__test__partitioning.html#aec0af9db59e1a23ed4992f78356f6cc8">More...</a><br /></td></tr>
+<tr class="separator:aec0af9db59e1a23ed4992f78356f6cc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d87795addf1fbf90bec1e6ab83dc82c"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__partitioning.html#a0d87795addf1fbf90bec1e6ab83dc82c">run_test_3d_0pad</a> (this)</td></tr>
+<tr class="memdesc:a0d87795addf1fbf90bec1e6ab83dc82c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the 3D zero-padded partitioning test.  <a href="namespacedisttab__test__partitioning.html#a0d87795addf1fbf90bec1e6ab83dc82c">More...</a><br /></td></tr>
+<tr class="separator:a0d87795addf1fbf90bec1e6ab83dc82c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="a64b2e2cb62008a9a4f6c46452ca64387"></a>
@@ -212,8 +224,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="af5744b471af01f7c457e307ef77b5451"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5744b471af01f7c457e307ef77b5451">&#9670;&nbsp;</a></span>run_test()</h2>
+<a id="a750498654e1594c312540ab02043da74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a750498654e1594c312540ab02043da74">&#9670;&nbsp;</a></span>run_test_2d()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -222,7 +234,7 @@ Functions/Subroutines</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine disttab_test_partitioning::run_test </td>
+          <td class="memname">subroutine disttab_test_partitioning::run_test_2d </td>
           <td>(</td>
           <td class="paramtype">class(<a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em></td><td>)</td>
@@ -236,10 +248,146 @@ Functions/Subroutines</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Runs the partitioning test. </p>
+<p>Runs the 2D no-pad partitioning test. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">this</td><td>the <a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a> object to which run_test belongs </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a101d195650a615f2b32313b22b362128"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a101d195650a615f2b32313b22b362128">&#9670;&nbsp;</a></span>run_test_2d_0pad()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine disttab_test_partitioning::run_test_2d_0pad </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Runs the 2D zero-padded partitioning test. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>the <a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a> object to which run_test belongs </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aec0af9db59e1a23ed4992f78356f6cc8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec0af9db59e1a23ed4992f78356f6cc8">&#9670;&nbsp;</a></span>run_test_3d()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine disttab_test_partitioning::run_test_3d </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Runs the 3D no-pad partitioning test. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>the <a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a> object to which run_test belongs </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0d87795addf1fbf90bec1e6ab83dc82c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d87795addf1fbf90bec1e6ab83dc82c">&#9670;&nbsp;</a></span>run_test_3d_0pad()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine disttab_test_partitioning::run_test_3d_0pad </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Runs the 3D zero-padded partitioning test. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>the <a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a> object to which run_test belongs </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a162d4880f0947cb128badc721857568c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a162d4880f0947cb128badc721857568c">&#9670;&nbsp;</a></span>zero_padding_test()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine disttab_test_partitioning::zero_padding_test </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Simple zero-padding test. The remapping of the table with ascending integers from 1, table size of [3,3,1], and partition size [2,2] should map from: 1 4 7 2 5 8 3 6 9 to: 1 3 7 9 2 0 8 0 4 6 0 0 5 0 0 0 This test checks ONLY that this occurs. The general partition_mapping_test must be modified to account for 0-padding, but this is involved. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>the <a class="el" href="structdisttab__test__partitioning_1_1partitioning__test.html">partitioning_test</a> object </td></tr>
   </table>
   </dd>
 </dl>

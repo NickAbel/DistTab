@@ -81,7 +81,7 @@ Collaboration diagram for disttab_table::table:</div>
 <div class="dyncontent">
 <div class="center"><img src="structdisttab__table_1_1table__coll__graph.png" border="0" usemap="#disttab__table_1_1table_coll__map" alt="Collaboration graph"/></div>
 <map name="disttab__table_1_1table_coll__map" id="disttab__table_1_1table_coll__map">
-<area shape="rect" title=" " alt="" coords="156,248,335,428"/>
+<area shape="rect" title=" " alt="" coords="156,263,335,443"/>
 <area shape="rect" title=" " alt="" coords="5,5,149,97"/>
 <area shape="rect" title=" " alt="" coords="211,13,279,90"/>
 <area shape="rect" title=" " alt="" coords="315,5,520,97"/>
@@ -120,6 +120,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:ad5567f62dd6fc6787b2b9b3bad350915"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad79e69a04e834635593b34d444acd14a"><td class="memItemLeft" align="right" valign="top">integer, dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#ad79e69a04e834635593b34d444acd14a">table_dims_padded</a></td></tr>
 <tr class="separator:ad79e69a04e834635593b34d444acd14a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13aa265be7967a9018dc1de461c4a4e9"><td class="memItemLeft" align="right" valign="top">integer, dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a13aa265be7967a9018dc1de461c4a4e9">partition_dims</a></td></tr>
+<tr class="separator:a13aa265be7967a9018dc1de461c4a4e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6370cfe2b7c72cfdf3ac5b6974354fb6"><td class="memItemLeft" align="right" valign="top">integer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a6370cfe2b7c72cfdf3ac5b6974354fb6">table_dims_cvar_flat</a></td></tr>
 <tr class="separator:a6370cfe2b7c72cfdf3ac5b6974354fb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a129fc4966b59f9e3de411f0a365c85e6"><td class="memItemLeft" align="right" valign="top">integer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a129fc4966b59f9e3de411f0a365c85e6">table_dims_flat</a></td></tr>
@@ -130,6 +132,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a7834b3f0723e351e4ca6afeabb317afc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eb0b1eecd4272d02a83008172db559c"><td class="memItemLeft" align="right" valign="top">integer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a7eb0b1eecd4272d02a83008172db559c">table_dim_svar</a></td></tr>
 <tr class="separator:a7eb0b1eecd4272d02a83008172db559c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a3c684a159d49a117448e340936237a"><td class="memItemLeft" align="right" valign="top">integer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a0a3c684a159d49a117448e340936237a">partition_dims_flat</a></td></tr>
+<tr class="separator:a0a3c684a159d49a117448e340936237a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function/Subroutine Documentation</h2>
 <a id="afb8e712965650986ed949059ce64e98b"></a>
@@ -303,6 +307,50 @@ Private Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">double precision, dimension(:, :), allocatable disttab_table::table::elements</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a13aa265be7967a9018dc1de461c4a4e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13aa265be7967a9018dc1de461c4a4e9">&#9670;&nbsp;</a></span>partition_dims</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer, dimension(:), allocatable disttab_table::table::partition_dims</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0a3c684a159d49a117448e340936237a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a3c684a159d49a117448e340936237a">&#9670;&nbsp;</a></span>partition_dims_flat</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer disttab_table::table::partition_dims_flat</td>
         </tr>
       </table>
   </td>

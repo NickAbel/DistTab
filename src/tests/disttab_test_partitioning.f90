@@ -10,9 +10,15 @@ module disttab_test_partitioning
       type(table) :: lookup
       integer :: table_dims(3), partition_dims(2)
    contains
-      procedure, pass(this) :: run_test
+      procedure, pass(this) :: run_test_2d
+      procedure, pass(this) :: run_test_2d_0pad
+      procedure, pass(this) :: run_test_3d
+      procedure, pass(this) :: run_test_3d_0pad
+
       procedure, pass(this), private :: partition_mapping_test
       procedure, pass(this), private :: part_test_fill_table
+
+      procedure, pass(this), private :: zero_padding_test
 
    end type partitioning_test
 
@@ -65,6 +71,8 @@ contains
       integer, dimension(2) :: total_partitions
       double precision, allocatable, dimension(:, :) :: elements_gold_std
       integer :: i, j, k, l, m, n, part_ctr
+
+      print *, "partition_mapping_test begin "
 
       call part_test_fill_table(this)
       call this%lookup%partition_mapping(this%partition_dims)
@@ -157,7 +165,7 @@ contains
 
       open (35, file='partition_test_table_sorted.tmp.dat', action='read')
 
-      do i = 1, this%lookup%table_dims_cvar_flat
+      do i = 1, this%lookup%table_dims_padded_cvar_flat
          read (unit=35, fmt='(2(i4.3), f9.3)') c1, c2, this%lookup%elements(i, 1)
       end do
 
@@ -166,13 +174,78 @@ contains
 
    end subroutine part_test_fill_table
 
-   !> Runs the partitioning test.
+   !> Simple zero-padding test.
+   !! The remapping of the table with ascending integers from 1,
+   !! table size of [3,3,1], and partition size [2,2] should map
+   !! from:
+   !! 1 4 7
+   !! 2 5 8
+   !! 3 6 9
+   !! to:
+   !! 1 3 7 9
+   !! 2 0 8 0
+   !! 4 6 0 0
+   !! 5 0 0 0
+   !! This test checks ONLY that this occurs.
+   !! The general partition_mapping_test must be modified
+   !! to account for 0-padding, but this is involved.
+   !! @param this the partitioning_test object
+   subroutine zero_padding_test(this)
+      class(partitioning_test), intent(inout) :: this
+      double precision :: reference_solution(16)
+      integer :: i
+      do i = 1, 9
+        this%lookup%elements(i,1) = i + 0.d0
+      end do
+
+      reference_solution = (/1, 2, 4, 5, 3, 0, 6, 0, 7, 8, 0, 0, 9, 0, 0, 0/)
+      call this%lookup%partition_mapping(this%partition_dims)
+      do i = 1, 16
+        if (reference_solution(i) .ne. this%lookup%elements(i,1)) print *, &
+          "zero_padding_test not working correctly..."
+      enddo
+      print *, "zero_padding_test complete."
+
+   end subroutine zero_padding_test
+
+   !> Runs the 2D no-pad partitioning test.
    !! @param this the partitioning_test object to which run_test belongs
-   subroutine run_test(this)
+   subroutine run_test_2d(this)
       class(partitioning_test), intent(inout) :: this
 
+      print *, "calling partition_mapping_test"
       call partition_mapping_test(this)
 
-   end subroutine run_test
+   end subroutine run_test_2d
+
+   !> Runs the 2D zero-padded partitioning test.
+   !! @param this the partitioning_test object to which run_test belongs
+   subroutine run_test_2d_0pad(this)
+      class(partitioning_test), intent(inout) :: this
+
+      print *, "calling zero_padding_test"
+      call zero_padding_test(this)
+
+   end subroutine run_test_2d_0pad
+
+   !> Runs the 3D no-pad partitioning test.
+   !! @param this the partitioning_test object to which run_test belongs
+   subroutine run_test_3d(this)
+      class(partitioning_test), intent(inout) :: this
+
+      print *, "calling partition_mapping_test"
+      call partition_mapping_test(this)
+
+   end subroutine run_test_3d
+
+   !> Runs the 3D zero-padded partitioning test.
+   !! @param this the partitioning_test object to which run_test belongs
+   subroutine run_test_3d_0pad(this)
+      class(partitioning_test), intent(inout) :: this
+
+      print *, "calling partition_mapping_test"
+      call partition_mapping_test(this)
+
+   end subroutine run_test_3d_0pad
 
 end module disttab_test_partitioning

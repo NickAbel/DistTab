@@ -1,19 +1,12 @@
 var searchData=
 [
-  ['table_42',['table',['../structdisttab__table_1_1table.html',1,'disttab_table']]],
-  ['table_5fconstructor_43',['table_constructor',['../structdisttab__table_1_1table.html#a84dadb68274c010e6033b98a0c8c4569',1,'disttab_table::table::table_constructor()'],['../namespacedisttab__table.html#a6b30669a17ed75f6ebac958f890655af',1,'disttab_table::table_constructor()']]],
-  ['table_5fdeallocate_44',['table_deallocate',['../structdisttab__table_1_1table.html#a2813f857d682931f9063f93453c61755',1,'disttab_table::table::table_deallocate()'],['../namespacedisttab__table.html#aa09b941e14a6f94cd56d6531a3abc1cf',1,'disttab_table::table_deallocate()']]],
-  ['table_5fdestructor_45',['table_destructor',['../structdisttab__table_1_1table.html#adf0fe9371ee20bdd43725f8f3930aebd',1,'disttab_table::table::table_destructor()'],['../namespacedisttab__table.html#a00320b1b054be17b502e8bc01bdfb8cd',1,'disttab_table::table_destructor()']]],
-  ['table_5fdim_5fsvar_46',['table_dim_svar',['../structdisttab__table_1_1table.html#a7eb0b1eecd4272d02a83008172db559c',1,'disttab_table::table']]],
-  ['table_5fdims_47',['table_dims',['../structdisttab__table_1_1table.html#ad5567f62dd6fc6787b2b9b3bad350915',1,'disttab_table::table::table_dims()'],['../structdisttab__test__partitioning_1_1partitioning__test.html#ab27d74d3be0fb3877149a036d00d62db',1,'disttab_test_partitioning::partitioning_test::table_dims()'],['../testtablegenerator_8m.html#ac314b0b2ff5227aa741db8972529b4b6',1,'table_dims():&#160;testtablegenerator.m']]],
-  ['table_5fdims_5fcvar_5fflat_48',['table_dims_cvar_flat',['../structdisttab__table_1_1table.html#a6370cfe2b7c72cfdf3ac5b6974354fb6',1,'disttab_table::table']]],
-  ['table_5fdims_5fflat_49',['table_dims_flat',['../structdisttab__table_1_1table.html#a129fc4966b59f9e3de411f0a365c85e6',1,'disttab_table::table']]],
-  ['table_5fdims_5fpadded_50',['table_dims_padded',['../structdisttab__table_1_1table.html#ad79e69a04e834635593b34d444acd14a',1,'disttab_table::table']]],
-  ['table_5fdims_5fpadded_5fcvar_5fflat_51',['table_dims_padded_cvar_flat',['../structdisttab__table_1_1table.html#a3c1f6caef5e128cd8ff289f7b4e1d9cd',1,'disttab_table::table']]],
-  ['table_5fdims_5fpadded_5fflat_52',['table_dims_padded_flat',['../structdisttab__table_1_1table.html#a7834b3f0723e351e4ca6afeabb317afc',1,'disttab_table::table']]],
-  ['test_53',['test',['../test_8f90.html#a9bc57b8dbe7c3e1b9db72b918a1b6bab',1,'test.f90']]],
-  ['test_2ef90_54',['test.f90',['../test_8f90.html',1,'']]],
-  ['testtablegenerator_2em_55',['testtablegenerator.m',['../testtablegenerator_8m.html',1,'']]],
-  ['todo_20list_56',['Todo List',['../todo.html',1,'']]],
-  ['total_5fblocks_57',['total_blocks',['../testtablegenerator_8m.html#a4ecfb5cd2aedda68c07e1426e4feea9d',1,'testtablegenerator.m']]]
+  ['part_5ftest_5ffill_5ftable_43',['part_test_fill_table',['../structdisttab__test__partitioning_1_1partitioning__test.html#a4f1e527d3491fc20a871ff675ae819e6',1,'disttab_test_partitioning::partitioning_test::part_test_fill_table()'],['../namespacedisttab__test__partitioning.html#a64b2e2cb62008a9a4f6c46452ca64387',1,'disttab_test_partitioning::part_test_fill_table()']]],
+  ['partition_5fdims_44',['partition_dims',['../structdisttab__table_1_1table.html#a13aa265be7967a9018dc1de461c4a4e9',1,'disttab_table::table::partition_dims()'],['../structdisttab__test__partitioning_1_1partitioning__test.html#a440ad99599bd8fba3ce2af935a0d8726',1,'disttab_test_partitioning::partitioning_test::partition_dims()']]],
+  ['partition_5fdims_5fflat_45',['partition_dims_flat',['../structdisttab__table_1_1table.html#a0a3c684a159d49a117448e340936237a',1,'disttab_table::table']]],
+  ['partition_5fmapping_46',['partition_mapping',['../structdisttab__table_1_1table.html#aac66617fcb4fcc25c6ac988f7affddeb',1,'disttab_table::table::partition_mapping()'],['../namespacedisttab__table.html#a46780ef5ba062fbd4c874c575f6a3c46',1,'disttab_table::partition_mapping()']]],
+  ['partition_5fmapping_5ftest_47',['partition_mapping_test',['../structdisttab__test__partitioning_1_1partitioning__test.html#a56165a1d0d5f43b6678674e673c82b60',1,'disttab_test_partitioning::partitioning_test::partition_mapping_test()'],['../namespacedisttab__test__partitioning.html#a5a71fcde2c7b22ebfad7d1ce5b142407',1,'disttab_test_partitioning::partition_mapping_test()']]],
+  ['partitioning_5ftest_48',['partitioning_test',['../structdisttab__test__partitioning_1_1partitioning__test.html',1,'disttab_test_partitioning']]],
+  ['partitioning_5ftest_5fconstructor_49',['partitioning_test_constructor',['../structdisttab__test__partitioning_1_1partitioning__test.html#a63d0dc84969c1d3d1737f573cf6b489c',1,'disttab_test_partitioning::partitioning_test::partitioning_test_constructor()'],['../namespacedisttab__test__partitioning.html#ab1d37db19bdbf9040381d46a05367339',1,'disttab_test_partitioning::partitioning_test_constructor()']]],
+  ['platform_5fid_50',['PLATFORM_ID',['../CMakeCCompilerId_8c.html#adbc5372f40838899018fadbc89bd588b',1,'PLATFORM_ID():&#160;CMakeCCompilerId.c'],['../CMakeCXXCompilerId_8cpp.html#adbc5372f40838899018fadbc89bd588b',1,'PLATFORM_ID():&#160;CMakeCXXCompilerId.cpp']]],
+  ['print_5felements_51',['print_elements',['../structdisttab__table_1_1table.html#a49570177e85bb0d0db219a42c79fc799',1,'disttab_table::table::print_elements()'],['../namespacedisttab__table.html#a95bea9c2f10963e2842688e6b6ecea53',1,'disttab_table::print_elements()']]]
 ];

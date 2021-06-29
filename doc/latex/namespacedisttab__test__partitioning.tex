@@ -14,8 +14,16 @@ subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_a5a71fcde2c7b22
 \begin{DoxyCompactList}\small\item\em A verification test for the table object\textquotesingle{}s partition mapping algorithm. First, calls part\+\_\+test\+\_\+fill\+\_\+table to fill the elements of thislookup with pre-\/partitioned entries. Then, calls thislookuppartition\+\_\+mapping to get the result of the partition mapping algorithm. Next creates the array elements\+\_\+gold\+\_\+std, which is a reference solution to the partition mapping problem with table size of thislookup and the partition dimensions of thispartition\+\_\+dims. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_a64b2e2cb62008a9a4f6c46452ca64387}{part\+\_\+test\+\_\+fill\+\_\+table}} (this)
 \begin{DoxyCompactList}\small\item\em Writes to file the gold-\/standard table for the partitioning test, which is in the correct partition-\/major ordering, with easy-\/to-\/ understand values for the control and state variables\+: \end{DoxyCompactList}\item 
-subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_af5744b471af01f7c457e307ef77b5451}{run\+\_\+test}} (this)
-\begin{DoxyCompactList}\small\item\em Runs the partitioning test. \end{DoxyCompactList}\end{DoxyCompactItemize}
+subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_a162d4880f0947cb128badc721857568c}{zero\+\_\+padding\+\_\+test}} (this)
+\begin{DoxyCompactList}\small\item\em Simple zero-\/padding test. The remapping of the table with ascending integers from 1, table size of \mbox{[}3,3,1\mbox{]}, and partition size \mbox{[}2,2\mbox{]} should map from\+: 1 4 7 2 5 8 3 6 9 to\+: 1 3 7 9 2 0 8 0 4 6 0 0 5 0 0 0 This test checks O\+N\+LY that this occurs. The general partition\+\_\+mapping\+\_\+test must be modified to account for 0-\/padding, but this is involved. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_a750498654e1594c312540ab02043da74}{run\+\_\+test\+\_\+2d}} (this)
+\begin{DoxyCompactList}\small\item\em Runs the 2D no-\/pad partitioning test. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_a101d195650a615f2b32313b22b362128}{run\+\_\+test\+\_\+2d\+\_\+0pad}} (this)
+\begin{DoxyCompactList}\small\item\em Runs the 2D zero-\/padded partitioning test. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_aec0af9db59e1a23ed4992f78356f6cc8}{run\+\_\+test\+\_\+3d}} (this)
+\begin{DoxyCompactList}\small\item\em Runs the 3D no-\/pad partitioning test. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__partitioning_a0d87795addf1fbf90bec1e6ab83dc82c}{run\+\_\+test\+\_\+3d\+\_\+0pad}} (this)
+\begin{DoxyCompactList}\small\item\em Runs the 3D zero-\/padded partitioning test. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Function/\+Subroutine Documentation}
@@ -81,18 +89,78 @@ The constructor for the \mbox{\hyperlink{structdisttab__test__partitioning_1_1pa
 \begin{DoxyReturn}{Returns}
 this the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object which partitioning\+\_\+test\+\_\+constructor instantiates 
 \end{DoxyReturn}
-\mbox{\Hypertarget{namespacedisttab__test__partitioning_af5744b471af01f7c457e307ef77b5451}\label{namespacedisttab__test__partitioning_af5744b471af01f7c457e307ef77b5451}} 
-\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!run\_test@{run\_test}}
-\index{run\_test@{run\_test}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
-\doxysubsubsection{\texorpdfstring{run\_test()}{run\_test()}}
-{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::run\+\_\+test (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_a750498654e1594c312540ab02043da74}\label{namespacedisttab__test__partitioning_a750498654e1594c312540ab02043da74}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!run\_test\_2d@{run\_test\_2d}}
+\index{run\_test\_2d@{run\_test\_2d}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{run\_test\_2d()}{run\_test\_2d()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::run\+\_\+test\+\_\+2d (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
-Runs the partitioning test. 
+Runs the 2D no-\/pad partitioning test. 
 
 
 \begin{DoxyParams}{Parameters}
 {\em this} & the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object to which run\+\_\+test belongs \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_a101d195650a615f2b32313b22b362128}\label{namespacedisttab__test__partitioning_a101d195650a615f2b32313b22b362128}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!run\_test\_2d\_0pad@{run\_test\_2d\_0pad}}
+\index{run\_test\_2d\_0pad@{run\_test\_2d\_0pad}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{run\_test\_2d\_0pad()}{run\_test\_2d\_0pad()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::run\+\_\+test\+\_\+2d\+\_\+0pad (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Runs the 2D zero-\/padded partitioning test. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object to which run\+\_\+test belongs \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_aec0af9db59e1a23ed4992f78356f6cc8}\label{namespacedisttab__test__partitioning_aec0af9db59e1a23ed4992f78356f6cc8}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!run\_test\_3d@{run\_test\_3d}}
+\index{run\_test\_3d@{run\_test\_3d}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{run\_test\_3d()}{run\_test\_3d()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::run\+\_\+test\+\_\+3d (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Runs the 3D no-\/pad partitioning test. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object to which run\+\_\+test belongs \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_a0d87795addf1fbf90bec1e6ab83dc82c}\label{namespacedisttab__test__partitioning_a0d87795addf1fbf90bec1e6ab83dc82c}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!run\_test\_3d\_0pad@{run\_test\_3d\_0pad}}
+\index{run\_test\_3d\_0pad@{run\_test\_3d\_0pad}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{run\_test\_3d\_0pad()}{run\_test\_3d\_0pad()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::run\+\_\+test\+\_\+3d\+\_\+0pad (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Runs the 3D zero-\/padded partitioning test. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object to which run\+\_\+test belongs \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacedisttab__test__partitioning_a162d4880f0947cb128badc721857568c}\label{namespacedisttab__test__partitioning_a162d4880f0947cb128badc721857568c}} 
+\index{disttab\_test\_partitioning@{disttab\_test\_partitioning}!zero\_padding\_test@{zero\_padding\_test}}
+\index{zero\_padding\_test@{zero\_padding\_test}!disttab\_test\_partitioning@{disttab\_test\_partitioning}}
+\doxysubsubsection{\texorpdfstring{zero\_padding\_test()}{zero\_padding\_test()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+test\+\_\+partitioning\+::zero\+\_\+padding\+\_\+test (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Simple zero-\/padding test. The remapping of the table with ascending integers from 1, table size of \mbox{[}3,3,1\mbox{]}, and partition size \mbox{[}2,2\mbox{]} should map from\+: 1 4 7 2 5 8 3 6 9 to\+: 1 3 7 9 2 0 8 0 4 6 0 0 5 0 0 0 This test checks O\+N\+LY that this occurs. The general partition\+\_\+mapping\+\_\+test must be modified to account for 0-\/padding, but this is involved. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object \\
 \hline
 \end{DoxyParams}

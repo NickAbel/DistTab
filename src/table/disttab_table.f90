@@ -12,12 +12,14 @@ module disttab_table
       double precision, allocatable, dimension(:, :) :: elements
       integer, allocatable, dimension(:) :: table_dims
       integer, allocatable, dimension(:) :: table_dims_padded
+      integer, allocatable, dimension(:) :: partition_dims
 
       integer :: table_dims_cvar_flat
       integer :: table_dims_flat      
       integer :: table_dims_padded_cvar_flat
       integer :: table_dims_padded_flat
       integer :: table_dim_svar
+      integer :: partition_dims_flat
 
    contains
 
@@ -57,10 +59,10 @@ contains
    !! here instead.
    type(table) function table_constructor(table_dimensions) result(this)
       integer, intent(in) :: table_dimensions(3)
-      integer :: i
 
       allocate (this%table_dims(size(table_dimensions)))
       allocate (this%table_dims_padded(size(table_dimensions)))
+      allocate (this%partition_dims(size(table_dimensions)-1))
 
       this%table_dims = table_dimensions
       this%table_dims_cvar_flat = product(this%table_dims(1:ubound(this%table_dims, dim=1) - 1))
@@ -68,6 +70,9 @@ contains
       this%table_dims_padded_cvar_flat = product(this%table_dims(1:ubound(this%table_dims, dim=1) - 1))
       this%table_dims_padded_flat = product(this%table_dims)
       this%table_dim_svar = this%table_dims(ubound(this%table_dims, dim=1))
+
+      this%partition_dims = 1 ! Table initially considered to have 1x1 partitions, i.e. 'unpartitioned'
+      this%partition_dims_flat = product(this%partition_dims)
 
       allocate (this%elements(this%table_dims_padded_cvar_flat, this%table_dim_svar))
 
@@ -147,8 +152,8 @@ contains
       k = 1
       do i = 1, this%table_dims(1)
          do j = 1, this%table_dims(2)
-            this%elements(k, 1) = k + &
-                                  this%table_dims_cvar_flat*rank*1.d0
+            this%elements(k, 1) = k !+ &
+                                  !this%table_dims_cvar_flat*rank*1.d0
             k = k + 1
          end do
       end do
@@ -159,18 +164,16 @@ contains
    !! ordering.
    !! 
    !! @param this table object to perform partition mapping
-   !! @param partition_dims partition dimensions to use
+   !! @param partition_dimensions partition dimensions to use
    !! @todo zero padding
    !! @todo n-dimensionalization
    !! @todo assumed currently that table is in Alya-format. Add functionality
    !! to remap from one partition size to another. This can be achieved by
    !! writing and sorting the table as in test_partitioning%part_test_fill_table
    !! to recover the Alya format and then reading that sorted file back in.
-   !! @todo partition_dims should also be stored as a member variable, initialized
-   !! as [1,1,...,1] when in Alya format.
-   subroutine partition_mapping(this, partition_dims)
+   subroutine partition_mapping(this, partition_dimensions)
       class(table), intent(inout) :: this
-      integer, dimension(2), intent(in) :: partition_dims
+      integer, dimension(2), intent(in) :: partition_dimensions
       integer, dimension(4) :: partition_bounds
       integer :: offset, i, j, k, l
       double precision, allocatable, dimension(:, :) :: elements_old
@@ -180,23 +183,35 @@ contains
       allocate (elements_old(this%table_dims_cvar_flat, this%table_dim_svar))
 
       elements_old = this%elements
+      this%partition_dims = partition_dimensions
+      this%partition_dims_flat = product(this%partition_dims)
 
       ! Pad out table to maintain shape
-      !this%table_dims_padded = this%table_dims
-      !do i = lbound(this%table_dims_padded, dim=1), ubound(this%table_dims_padded, dim=1) - 1
-      !   do while (mod(this%table_dims_padded(i), partition_dims(i)) .ne. 0)
-      !      this%table_dims_padded(i) = this%table_dims_padded(i) + 1
-      !   end do
-      !end do
+      this%table_dims_padded = this%table_dims
+      do i = lbound(this%table_dims_padded, dim=1), ubound(this%table_dims_padded, dim=1) - 1
+         do while (mod(this%table_dims_padded(i), partition_dimensions(i)) .ne. 0)
+            this%table_dims_padded(i) = this%table_dims_padded(i) + 1
+         end do
+      end do
+
+      this%table_dims_padded_cvar_flat = product(this%table_dims_padded &
+                                         (1:ubound(this%table_dims_padded, dim=1) - 1))
+      this%table_dims_padded_flat = product(this%table_dims_padded)
+
+      deallocate(this%elements)
+      allocate (this%elements(this%table_dims_padded_cvar_flat, this%table_dim_svar))
+      this%elements = 0.d0
 
       offset = 1
 
-      do i = 1, this%table_dims(2), partition_dims(2)
-         do j = 1, this%table_dims(1), partition_dims(1)
-            partition_bounds = get_partition_bounds(this, (/j, i/), partition_dims)
+      do i = 1, this%table_dims(2), this%partition_dims(2)
+         do j = 1, this%table_dims(1), this%partition_dims(1)
+            partition_bounds = get_partition_bounds(this, (/j, i/), this%partition_dims)
             do k = partition_bounds(2), partition_bounds(4)
                do l = partition_bounds(1), partition_bounds(3)
                   this%elements(offset, 1) = elements_old(coords2flat(this, (/l, k/)), 1)
+                  if (k .gt. this%table_dims(2)) this%elements(offset, 1) = 0.0
+                  if (l .gt. this%table_dims(1)) this%elements(offset, 1) = 0.0
                   offset = offset + 1
                end do
             end do
@@ -226,6 +241,7 @@ contains
 
       if (allocated(this%table_dims))        deallocate (this%table_dims)
       if (allocated(this%table_dims_padded)) deallocate (this%table_dims_padded)
+      if (allocated(this%partition_dims))    deallocate (this%partition_dims)
       if (allocated(this%elements))          deallocate (this%elements)
 
    end subroutine table_deallocate

@@ -91,9 +91,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a5ebcbc269c4e666ca0725852783d6d76"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a5ebcbc269c4e666ca0725852783d6d76">fill_example</a> (this)</td></tr>
 <tr class="memdesc:a5ebcbc269c4e666ca0725852783d6d76"><td class="mdescLeft">&#160;</td><td class="mdescRight">A quick and dirty table filler that populates the table with integers 1, 2, ...  <a href="namespacedisttab__table.html#a5ebcbc269c4e666ca0725852783d6d76">More...</a><br /></td></tr>
 <tr class="separator:a5ebcbc269c4e666ca0725852783d6d76"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d5187579c137716a67c5f592eef7328"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a2d5187579c137716a67c5f592eef7328">partition_mapping</a> (this, partition_dims)</td></tr>
-<tr class="memdesc:a2d5187579c137716a67c5f592eef7328"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remaps the partition from assumed Alya-format ordering to given partition ordering.  <a href="namespacedisttab__table.html#a2d5187579c137716a67c5f592eef7328">More...</a><br /></td></tr>
-<tr class="separator:a2d5187579c137716a67c5f592eef7328"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46780ef5ba062fbd4c874c575f6a3c46"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a46780ef5ba062fbd4c874c575f6a3c46">partition_mapping</a> (this, partition_dimensions)</td></tr>
+<tr class="memdesc:a46780ef5ba062fbd4c874c575f6a3c46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remaps the partition from assumed Alya-format ordering to given partition ordering.  <a href="namespacedisttab__table.html#a46780ef5ba062fbd4c874c575f6a3c46">More...</a><br /></td></tr>
+<tr class="separator:a46780ef5ba062fbd4c874c575f6a3c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a95bea9c2f10963e2842688e6b6ecea53"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a95bea9c2f10963e2842688e6b6ecea53">print_elements</a> (this)</td></tr>
 <tr class="memdesc:a95bea9c2f10963e2842688e6b6ecea53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write elements to stdout.  <a href="namespacedisttab__table.html#a95bea9c2f10963e2842688e6b6ecea53">More...</a><br /></td></tr>
 <tr class="separator:a95bea9c2f10963e2842688e6b6ecea53"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -243,8 +243,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="a2d5187579c137716a67c5f592eef7328"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d5187579c137716a67c5f592eef7328">&#9670;&nbsp;</a></span>partition_mapping()</h2>
+<a id="a46780ef5ba062fbd4c874c575f6a3c46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46780ef5ba062fbd4c874c575f6a3c46">&#9670;&nbsp;</a></span>partition_mapping()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -262,7 +262,7 @@ Functions/Subroutines</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">integer, dimension(2), intent(in)&#160;</td>
-          <td class="paramname"><em>partition_dims</em>&#160;</td>
+          <td class="paramname"><em>partition_dimensions</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -281,14 +281,13 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">this</td><td>table object to perform partition mapping </td></tr>
-    <tr><td class="paramname">partition_dims</td><td>partition dimensions to use </td></tr>
+    <tr><td class="paramname">partition_dimensions</td><td>partition dimensions to use </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd><p class="startdd">zero padding </p>
 <p class="interdd">n-dimensionalization </p>
-<p class="interdd">assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in. </p>
-<p class="enddd">partition_dims should also be stored as a member variable, initialized as [1,1,...,1] when in Alya format. </p>
+<p class="enddd">assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in. </p>
 </dd></dl>
 
 </div>

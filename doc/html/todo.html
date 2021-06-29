@@ -76,11 +76,10 @@ $(function() {
 <dd><a class="anchor" id="_todo000003"></a>Should read in a table in the "Alya format" (see tables/2d.dat)  </dd>
 <dt>Subprogram <a class="el" href="namespacedisttab__table.html#a5ebcbc269c4e666ca0725852783d6d76">disttab_table::fill_example</a>  (this)</dt>
 <dd><a class="anchor" id="_todo000004"></a>for N-dimensional lookup tables this is the first functionality to develop. Note the commented function prototype below.  </dd>
-<dt>Subprogram <a class="el" href="namespacedisttab__table.html#a2d5187579c137716a67c5f592eef7328">disttab_table::partition_mapping</a>  (this, partition_dims)</dt>
+<dt>Subprogram <a class="el" href="namespacedisttab__table.html#a46780ef5ba062fbd4c874c575f6a3c46">disttab_table::partition_mapping</a>  (this, partition_dimensions)</dt>
 <dd><p class="startdd"><a class="anchor" id="_todo000005"></a>zero padding </p>
 <p class="interdd">n-dimensionalization </p>
-<p class="interdd">assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in. </p>
-<p class="enddd">partition_dims should also be stored as a member variable, initialized as [1,1,...,1] when in Alya format.  </p>
+<p class="enddd">assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in.  </p>
 </dd>
 <dt>Subprogram <a class="el" href="namespacedisttab__table.html#aa09b941e14a6f94cd56d6531a3abc1cf">disttab_table::table_deallocate</a>  (this)</dt>
 <dd><a class="anchor" id="_todo000006"></a>This is called by the destructor, but is it necessary?  </dd>

@@ -12,15 +12,13 @@ Should read in a table in the \char`\"{}\+Alya format\char`\"{} (see tables/2d.\
 \item[Subprogram \mbox{\hyperlink{namespacedisttab__table_a5ebcbc269c4e666ca0725852783d6d76}{disttab\+\_\+table\+::fill\+\_\+example}} (this)]\label{todo__todo000004}%
 \Hypertarget{todo__todo000004}%
 for N-\/dimensional lookup tables this is the first functionality to develop. Note the commented function prototype below.  
-\item[Subprogram \mbox{\hyperlink{namespacedisttab__table_a2d5187579c137716a67c5f592eef7328}{disttab\+\_\+table\+::partition\+\_\+mapping}} (this, partition\+\_\+dims)]\label{todo__todo000005}%
+\item[Subprogram \mbox{\hyperlink{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}{disttab\+\_\+table\+::partition\+\_\+mapping}} (this, partition\+\_\+dimensions)]\label{todo__todo000005}%
 \Hypertarget{todo__todo000005}%
 zero padding 
 
 n-\/dimensionalization 
 
-assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. 
-
-partition\+\_\+dims should also be stored as a member variable, initialized as \mbox{[}1,1,...,1\mbox{]} when in Alya format.  
+assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in.  
 \item[Subprogram \mbox{\hyperlink{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}{disttab\+\_\+table\+::table\+\_\+deallocate}} (this)]\label{todo__todo000006}%
 \Hypertarget{todo__todo000006}%
 This is called by the destructor, but is it necessary?  
