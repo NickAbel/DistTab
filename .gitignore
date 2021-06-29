@@ -33,3 +33,9 @@
 
 # Others
 flame.svg
+bin/
+build/
+lib/
+
+# Vim crap
+*.old.swp
