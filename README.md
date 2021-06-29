@@ -1,3 +1,9 @@
+<img src="disttab-logo.png" align="left" />
+
+# DistTab
+
+Distributed Tabulation of Flamelet Tables
+
 ## Table of Contents
 
 * [About](#about)
