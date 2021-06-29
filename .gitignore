@@ -31,11 +31,9 @@
 *.out
 *.app
 
-# Others
+# Others, cmake build dirs
 flame.svg
 bin/
 build/
 lib/
 
-# Vim crap
-*.old.swp
