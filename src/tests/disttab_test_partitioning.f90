@@ -8,17 +8,13 @@ module disttab_test_partitioning
    type :: partitioning_test
       private
       type(table) :: lookup
-      integer :: table_dims(3), partition_dims(2)
+      integer, allocatable, dimension(:) :: table_dims
+      integer, allocatable, dimension(:) :: partition_dims
    contains
-      procedure, pass(this) :: run_test_2d
-      procedure, pass(this) :: run_test_2d_0pad
-      procedure, pass(this) :: run_test_3d
-      procedure, pass(this) :: run_test_3d_0pad
+      procedure, pass(this) :: run_test
 
       procedure, pass(this), private :: partition_mapping_test
       procedure, pass(this), private :: part_test_fill_table
-
-      procedure, pass(this), private :: zero_padding_test
 
    end type partitioning_test
 
@@ -28,15 +24,20 @@ module disttab_test_partitioning
 
 contains
 
-   !> The constructor for the partitioning_test type. 
-   !! Initializes the table and partition dimensions and creates a table
-   !! object lookup for testing.
-   !! 
-   !! @param table_dimensions specifies the size of the table in the two control variable and one state variable dimension
-   !! @param partition_dimensions specifies the size of the partition blocks in each direction
-   !! @return this the partitioning_test object which partitioning_test_constructor instantiates
+   !> The constructor for the partitioning_test type.
+  !! Initializes the table and partition dimensions and creates a table
+  !! object lookup for testing.
+  !!
+  !! @param table_dimensions specifies the size of the table in the two control variable and one state variable dimension
+  !! @param partition_dimensions specifies the size of the partition blocks in each direction
+  !! @return this the partitioning_test object which partitioning_test_constructor instantiates
    type(partitioning_test) function partitioning_test_constructor(table_dimensions, partition_dimensions) result(this)
-      integer, intent(in) :: table_dimensions(3), partition_dimensions(2)
+      integer, dimension(:), intent(in) :: table_dimensions
+      integer, dimension(:), intent(in) :: partition_dimensions
+
+      allocate (this%table_dims(size(table_dimensions)))
+      allocate (this%partition_dims(size(table_dimensions)))
+
       this%table_dims = table_dimensions
       this%partition_dims = partition_dimensions
       this%lookup = table(this%table_dims)
@@ -44,70 +45,76 @@ contains
    end function partitioning_test_constructor
 
    !> A verification test for the table object's partition mapping algorithm.
-   !! First, calls part_test_fill_table to fill the elements of this%lookup
-   !! with pre-partitioned entries.
-   !! Then, calls this%lookup%partition_mapping to get the result of the
-   !! partition mapping algorithm.
-   !! Next creates the array elements_gold_std, which is a reference
-   !! solution to the partition mapping problem with table size of 
-   !! this%lookup and the partition dimensions of this%partition_dims.
-   !! 
-   !! The entries of elements_gold_std are selected to be easily understandable
-   !! values Phi_k. In particular,
-   !! Phi_k is the sum of the number of the partition which the entry is located,
-   !! and the local number of the entry in the partition divided by 1000.
-   !! For example, for block number 2 and entry number 3, Phi_k = 2.003.
-   !! 
-   !! elements_gold_std is then compared to this%lookup%elements. If all
-   !! entries are equal, a pass is reported. If there is no difference in
-   !! absolute value greater than 0.0005 between all elements of the two tables,
-   !! a different message is given (as this could be due to precision issues
-   !! that I am not sure don't exist.) Else, the test is failed.
-   !!
-   !! @param this the partition_test object to which partition_mapping_test belongs
-   !! @todo be sure there is no precision issue
+  !! First, calls part_test_fill_table to fill the elements of this%lookup
+  !! with pre-partitioned entries.
+  !! Then, calls this%lookup%partition_mapping to get the result of the
+  !! partition mapping algorithm.
+  !! Next creates the array elements_gold_std, which is a reference
+  !! solution to the partition mapping problem with table size of
+  !! this%lookup and the partition dimensions of this%partition_dims.
+  !!
+  !! The entries of elements_gold_std are selected to be easily understandable
+  !! values Phi_k. In particular,
+  !! Phi_k is the sum of the number of the partition which the entry is located,
+  !! and the local number of the entry in the partition divided by 1000.
+  !! For example, for block number 2 and entry number 3, Phi_k = 2.003.
+  !!
+  !! elements_gold_std is then compared to this%lookup%elements. If all
+  !! entries are equal, a pass is reported. If there is no difference in
+  !! absolute value greater than 0.0005 between all elements of the two tables,
+  !! a different message is given (as this could be due to precision issues
+  !! that I am not sure don't exist.) Else, the test is failed.
+  !!
+  !! @param this the partition_test object to which partition_mapping_test belongs
+  !! @todo be sure there is no precision issue
    subroutine partition_mapping_test(this)
       class(partitioning_test), intent(inout) :: this
-      integer, dimension(2) :: total_partitions
+      integer, allocatable, dimension(:) :: counters, uppers
       double precision, allocatable, dimension(:, :) :: elements_gold_std
-      integer :: i, j, k, l, m, n, part_ctr
+      integer :: i, j, k, l, idx, offset, m, n, part_ctr, h, o, coords(size(this%partition_dims))
 
-      print *, "partition_mapping_test begin "
+      print *, "partition_mapping_test begin"
 
+      ! Pad out table to maintain shape
+      this%lookup%table_dims_padded = this%table_dims
+      do i = lbound(this%lookup%table_dims_padded, dim=1), ubound(this%lookup%table_dims_padded, dim=1) - 1
+         do while (mod(this%lookup%table_dims_padded(i), this%partition_dims(i)) .ne. 0)
+            this%lookup%table_dims_padded(i) = this%lookup%table_dims_padded(i) + 1
+         end do
+      end do
+      this%lookup%table_dims_padded_cvar_flat = &
+         product(this%lookup%table_dims_padded(1:ubound(this%lookup%table_dims_padded, dim=1) - 1))
+      this%lookup%table_dims_padded_flat = product(this%lookup%table_dims_padded)
+      deallocate (this%lookup%elements)
+      allocate (this%lookup%elements(this%lookup%table_dims_padded_cvar_flat, this%lookup%table_dim_svar))
+
+      N = size(this%partition_dims)
       call part_test_fill_table(this)
       call this%lookup%partition_mapping(this%partition_dims)
 
-      allocate (elements_gold_std(this%lookup%table_dims_cvar_flat, this%lookup%table_dim_svar))
+      allocate (elements_gold_std(this%lookup%table_dims_padded_cvar_flat, this%lookup%table_dim_svar))
 
-      total_partitions = this%lookup%table_dims(1:2)/this%partition_dims(1:2)
+      open (36, file='partition_test_table.tmp.dat', action='read')
 
-      m = 0
-      n = 1
-      part_ctr = 1
-      do i = 1, total_partitions(2)
-         do j = 1, total_partitions(1)
-            do k = 1, this%partition_dims(2)
-               do l = 1, this%partition_dims(1)
-                  m = m + 1
-                  elements_gold_std(n, 1) = DBLE(part_ctr) + (DBLE(m)/DBLE(1000))
-                  n = n + 1
-               end do
-            end do
-            part_ctr = part_ctr + 1
-            m = 0
-         end do
+      do i = 1, this%lookup%table_dims_padded_cvar_flat
+         read (36, *) (coords(j), j=1, N), elements_gold_std(i, 1)
       end do
 
+      close (36)
+
+      !call execute_command_line('rm partition_test_table.tmp.dat partition_test_table_sorted.tmp.dat')
+
       if (all(this%lookup%elements .eq. elements_gold_std)) then
-         write (*, '(a5, 3i3, a8, 2i3, a3, a30) ') "n = [", this%lookup%table_dims, "], q = [", &
+         write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
             this%partition_dims, "]: ", "partition_mapping_test passed!"
       else if (all(abs(this%lookup%elements - elements_gold_std) .lt. 0.0005)) then
-         write (*, '(a5, 3i3, a8, 2i3, a3, a70) ') "n = [", this%lookup%table_dims, "], q = [", &
+         write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
             this%partition_dims, "]: ", "trivially small diff in partition_mapping_test. most likely a pass."
       else
-         write (*, '(a5, 3i3, a8, 2i3, a3, a55) ') "n = [", this%lookup%table_dims, "], q = [", &
+         write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
             this%partition_dims, "]: ", "partition_mapping_test conditional not working right..."
-         !write (*, fmt='(f9.3)') abs(elements_gold_std - this%lookup%elements)
+!         write (*, *) "Sorted table    Gold std"
+!         write (*, fmt='(2(f9.3))') abs(this%lookup%elements), abs(elements_gold_std)
       end if
 
       deallocate (elements_gold_std)
@@ -115,137 +122,92 @@ contains
    end subroutine partition_mapping_test
 
    !> Writes to file the gold-standard table for the partitioning test,
-   !! which is in the correct partition-major ordering, with easy-to-
-   !! understand values for the control and state variables:
-   !! 
-   !! phi_i phi_j Phi_k
-   !! 
-   !! where:
-   !! 
-   !! phi_i is the coordinate in direction 1
-   !! phi_j is the coordinate in direction 2
-   !! Phi_k is the sum of the number of the partition which the entry is located,
-   !! and the local number of the entry in the partition divided by 1000.
-   !! For example, for block number 2 and entry number 3, Phi_k = 2.003.
-   !! 
-   !! The file that has been written is sorted according to the phi_j column first,
-   !! and then by the phi_i column second, which yields the order in which Alya-
-   !! formatted flamelet tables are stored.
-   !! @param this the partition_test object to which part_test_fill_table belongs
+  !! which is in the correct partition-major ordering, with easy-to-
+  !! understand values for the control and state variables:
+  !!
+  !! phi_i phi_j Phi_k
+  !!
+  !! where:
+  !!
+  !! phi_i is the coordinate in direction 1
+  !! phi_j is the coordinate in direction 2
+  !! Phi_k is the sum of the number of the partition which the entry is located,
+  !! and the local number of the entry in the partition divided by 1000.
+  !! For example, for block number 2 and entry number 3, Phi_k = 2.003.
+  !!
+  !! The file that has been written is sorted according to the phi_j column first,
+  !! and then by the phi_i column second, which yields the order in which Alya-
+  !! formatted flamelet tables are stored.
+  !! @param this the partition_test object to which part_test_fill_table belongs
    subroutine part_test_fill_table(this)
       class(partitioning_test), intent(inout) :: this
-      integer, dimension(2) :: total_partitions
-      integer :: i, j, k, l, m, part_ctr, c1, c2
+      integer, allocatable, dimension(:) :: total_partitions
+      integer :: h, N, i, ind_local, j, k, l, m, part_ctr
+      integer, dimension(size(this%partition_dims)) :: coords, coords_p, coords_b
+      character(len=400) :: sort_cmd
 
-      total_partitions = this%lookup%table_dims(1:2)/this%partition_dims(1:2)
+      N = size(this%partition_dims)
+      allocate (total_partitions(N))
+      total_partitions = this%lookup%table_dims_padded(1:N)/this%partition_dims
 
-      m = 0
-      part_ctr = 1
       open (34, file='partition_test_table.tmp.dat', action='write')
 
-      do i = 1, total_partitions(2)
-         do j = 1, total_partitions(1)
-            do k = 1, this%partition_dims(2)
-               do l = 1, this%partition_dims(1)
-                  m = m + 1
-                  write (unit=34, fmt='(2(i4.3), f9.3)') l + (j - 1)*this%partition_dims(1), &
-                     k + (i - 1)*this%partition_dims(2), &
-                     part_ctr + (DBLE(m)/DBLE(1000))
-               end do
-            end do
-            part_ctr = part_ctr + 1
-            m = 0
-         end do
+      do i = 1, this%lookup%table_dims_padded_cvar_flat
+         part_ctr = ceiling(real(i)/product(this%partition_dims))
+
+         coords_b = this%lookup%flat2coords(part_ctr, total_partitions)
+
+         !! Localized intra-partition index
+         if (mod(i, product(this%partition_dims)) .ne. 0) then
+            ind_local = mod(i, product(this%partition_dims))
+         else
+            ind_local = product(this%partition_dims)
+         end if
+
+         coords_p = this%lookup%flat2coords(ind_local, this%partition_dims)
+
+         coords = coords_p + this%partition_dims*(coords_b - 1)
+         h = i
+         if (any(coords .gt. this%table_dims)) h = 0
+         write (34, *) (coords(j), j=1, N), h
       end do
+
+      deallocate (total_partitions)
 
       close (34)
 
-      call execute_command_line('sort -k 2,2 partition_test_table.tmp.dat >&
-  &       partition_test_table_sorted.tmp.dat')
+      call execute_command_line("gawk -F ',' '                                &
+                                    {                                         &
+                                       for(i=1;i<=NF;i++){sorter[i][NR]=$i}   &
+                                    }                                         &
+                                    END{                                      &
+                                       for(i=1;i<=NF;i++){asort(sorter[i])}   &
+                                       for(j=1;j<=NR;j++){                    &
+                                           for(i=1;i<NF;i++){                 &
+                                               printf ""%s,"",sorter[i][j]    &
+                                           }                                  &
+                                           print sorter[i][j]                 &
+                                       }                                      &
+                                   }' partition_test_table.tmp.dat > partition_test_table_sorted.tmp.dat")
 
       open (35, file='partition_test_table_sorted.tmp.dat', action='read')
 
       do i = 1, this%lookup%table_dims_padded_cvar_flat
-         read (unit=35, fmt='(2(i4.3), f9.3)') c1, c2, this%lookup%elements(i, 1)
+         read (35, *) (coords(j), j=1, N), this%lookup%elements(i, 1)
       end do
 
       close (35)
-      call execute_command_line('rm partition_test_table.tmp.dat partition_test_table_sorted.tmp.dat')
 
    end subroutine part_test_fill_table
 
-   !> Simple zero-padding test.
-   !! The remapping of the table with ascending integers from 1,
-   !! table size of [3,3,1], and partition size [2,2] should map
-   !! from:
-   !! 1 4 7
-   !! 2 5 8
-   !! 3 6 9
-   !! to:
-   !! 1 3 7 9
-   !! 2 0 8 0
-   !! 4 6 0 0
-   !! 5 0 0 0
-   !! This test checks ONLY that this occurs.
-   !! The general partition_mapping_test must be modified
-   !! to account for 0-padding, but this is involved.
-   !! @param this the partitioning_test object
-   subroutine zero_padding_test(this)
-      class(partitioning_test), intent(inout) :: this
-      double precision :: reference_solution(16)
-      integer :: i
-      do i = 1, 9
-        this%lookup%elements(i,1) = i + 0.d0
-      end do
-
-      reference_solution = (/1, 2, 4, 5, 3, 0, 6, 0, 7, 8, 0, 0, 9, 0, 0, 0/)
-      call this%lookup%partition_mapping(this%partition_dims)
-      do i = 1, 16
-        if (reference_solution(i) .ne. this%lookup%elements(i,1)) print *, &
-          "zero_padding_test not working correctly..."
-      enddo
-      print *, "zero_padding_test complete."
-
-   end subroutine zero_padding_test
-
-   !> Runs the 2D no-pad partitioning test.
-   !! @param this the partitioning_test object to which run_test belongs
-   subroutine run_test_2d(this)
+   !> Runs the partitioning test.
+  !! @param this the partitioning_test object to which run_test belongs
+   subroutine run_test(this)
       class(partitioning_test), intent(inout) :: this
 
       print *, "calling partition_mapping_test"
       call partition_mapping_test(this)
 
-   end subroutine run_test_2d
-
-   !> Runs the 2D zero-padded partitioning test.
-   !! @param this the partitioning_test object to which run_test belongs
-   subroutine run_test_2d_0pad(this)
-      class(partitioning_test), intent(inout) :: this
-
-      print *, "calling zero_padding_test"
-      call zero_padding_test(this)
-
-   end subroutine run_test_2d_0pad
-
-   !> Runs the 3D no-pad partitioning test.
-   !! @param this the partitioning_test object to which run_test belongs
-   subroutine run_test_3d(this)
-      class(partitioning_test), intent(inout) :: this
-
-      print *, "calling partition_mapping_test"
-      call partition_mapping_test(this)
-
-   end subroutine run_test_3d
-
-   !> Runs the 3D zero-padded partitioning test.
-   !! @param this the partitioning_test object to which run_test belongs
-   subroutine run_test_3d_0pad(this)
-      class(partitioning_test), intent(inout) :: this
-
-      print *, "calling partition_mapping_test"
-      call partition_mapping_test(this)
-
-   end subroutine run_test_3d_0pad
+   end subroutine run_test
 
 end module disttab_test_partitioning

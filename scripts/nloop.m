@@ -1,12 +1,12 @@
-R = [4,4];
-d = ones(size(R));
+R = [2,2,2];
+d = [1,1,1];
 
 function increment(i,c,N)
   if i == 1
-    disp(c);
+    disp(flip(c));
     while c(i) < N(i)
       c(i) = c(i) + 1;
-      disp(c);
+      disp(flip(c));
     endwhile
   elseif i > 1
     while c(i) <= N(i)

@@ -15,7 +15,7 @@ module disttab_table
       integer, allocatable, dimension(:) :: partition_dims
 
       integer :: table_dims_cvar_flat
-      integer :: table_dims_flat      
+      integer :: table_dims_flat
       integer :: table_dims_padded_cvar_flat
       integer :: table_dims_padded_flat
       integer :: table_dim_svar
@@ -29,7 +29,13 @@ module disttab_table
       procedure, public, pass(this)  :: table_deallocate       ! Deallocate table member variables (this is not the dtor!)
       !procedure, public, pass(this)  :: get_svar_by_coords    ! Given integer coordinates in CV space, return corresponding SV's
 
-      procedure, private, pass(this) :: coords2flat            ! Convert table coordinates to flat-major index
+      procedure, public, pass(this) :: coords2flat             ! Convert table coordinates to flat-major index
+      procedure, public, pass(this) :: flat2coords             ! Convert flat-major index to table coordinates
+      procedure, public, pass(this) :: get_global_coords       ! ravel a linear index to partitioned index
+      procedure, public, pass(this) :: get_local_coords        ! Unravel a partitioned index to linear index
+      procedure, public, pass(this) :: get_index_global_coords ! ravel a linear index to partitioned index
+      procedure, public, pass(this) :: get_index_local_coords  ! Unravel a partitioned index to linear index
+
       procedure, private, pass(this) :: get_partition_bounds   ! Get the bounds of the partition containing the argument
       final :: table_destructor
 
@@ -41,14 +47,14 @@ module disttab_table
 
 contains
 
-   !> Constructor for the table object.  
+   !> Constructor for the table object.
    !! Allocates the elements array according to the table dimensions.
    !! Initializes the member variables table_dims, table_dims_padded.
    !! Computes the parameters table_dims_cvar_flat, table_dims_flat,
    !! table_dims_padded_cvar_flat, table_dims_padded_flat, table_dim_svar,
    !! which are all a property of the table_dimensions argument, necessary
    !! for partition mapping functionality.
-   !! 
+   !!
    !! @param table_dimensions the length of the control variable space in each dimension, and the number of state variables
    !! @result this table object
    !! @todo if partition dimensions are a property of a lookup table which
@@ -58,11 +64,11 @@ contains
    !! Organize the code as such. Perhaps use an optional argument for partition_dimensions
    !! here instead.
    type(table) function table_constructor(table_dimensions) result(this)
-      integer, intent(in) :: table_dimensions(3)
+      integer, dimension(:), intent(in) :: table_dimensions
 
       allocate (this%table_dims(size(table_dimensions)))
       allocate (this%table_dims_padded(size(table_dimensions)))
-      allocate (this%partition_dims(size(table_dimensions)-1))
+      allocate (this%partition_dims(size(table_dimensions) - 1))
 
       this%table_dims = table_dimensions
       this%table_dims_cvar_flat = product(this%table_dims(1:ubound(this%table_dims, dim=1) - 1))
@@ -79,7 +85,7 @@ contains
    end function table_constructor
 
    !> destructor for the table type
-   !! 
+   !!
    !! @param this the table object to destruct
    !! @todo what is this exactly doing? is table_deallocate call necessary?
    subroutine table_destructor(this)
@@ -104,7 +110,7 @@ contains
    subroutine read_in(this, file_id)
       class(table), intent(inout) :: this
       character(len=*), intent(in) :: file_id
-      integer :: dims(2), i
+      integer :: dims(size(this%table_dims) - 1), i
       double precision :: c1, c2
 
       open (1, file=file_id, action='read')
@@ -115,54 +121,9 @@ contains
 
    end subroutine read_in
 
-
-   !> A quick and dirty table filler that populates the table with integers 1, 2, ...
-   !! 
-   !! @param this the table object to fill
-   !! @todo for N-dimensional lookup tables this is the first functionality
-   !! to develop. Note the commented function prototype below.
-   !recursive subroutine fill_example(this,loop_counters,loop_uppers,idx)
-   subroutine fill_example(this)
-      class(table), intent(inout) :: this
-      integer :: i, j, k
-
-      !call mpi_comm_rank(mpi_comm_world, rank, ierror)
-
-      !integer, dimension(size(this%table_dims)-1) :: loop_counters, loop_uppers
-      !integer, dimension(size(this%table_dims)-1) :: loop_counters_copy
-
-      !if (idx .eq. 1) then
-      !  this%elements(coords2flat(this,(/loop_counters(1),loop_counters(2)/)) + this%table_dims_cvar_flat*rank,1) = &
-      !    coords2flat(this,(/loop_counters(1),loop_counters(2)/)) + 1.d0*this%table_dims_cvar_flat*rank
-      !  print *, "?", coords2flat(this,(/loop_counters(1),loop_counters(2)/)), loop_counters
-      !  do while (loop_counters(idx) .lt. loop_uppers(idx))
-      !    loop_counters(idx) = loop_counters(idx) + 1
-      !    this%elements(coords2flat(this,(/loop_counters(1),loop_counters(2)/)) + this%table_dims_cvar_flat*rank,1) = &
-      !      coords2flat(this,(/loop_counters(1),loop_counters(2)/)) + 1.d0*this%table_dims_cvar_flat*rank
-      !    print *, "?", coords2flat(this,(/loop_counters(1),loop_counters(2)/)), loop_counters
-      !  enddo
-      !else if (idx .gt. 1) then
-      !  do while (loop_counters(idx) .le. loop_uppers(idx))
-      !    loop_counters_copy = loop_counters
-      !    call fill_example(this,loop_counters_copy,loop_uppers,idx-1,rank)
-      !    loop_counters(idx) = loop_counters(idx) + 1
-      !  enddo
-      !endif
-
-      k = 1
-      do i = 1, this%table_dims(1)
-         do j = 1, this%table_dims(2)
-            this%elements(k, 1) = k !+ &
-                                  !this%table_dims_cvar_flat*rank*1.d0
-            k = k + 1
-         end do
-      end do
-
-   end subroutine fill_example
-
    !> Remaps the partition from assumed Alya-format ordering to given partition
    !! ordering.
-   !! 
+   !!
    !! @param this table object to perform partition mapping
    !! @param partition_dimensions partition dimensions to use
    !! @todo zero padding
@@ -173,9 +134,9 @@ contains
    !! to recover the Alya format and then reading that sorted file back in.
    subroutine partition_mapping(this, partition_dimensions)
       class(table), intent(inout) :: this
-      integer, dimension(2), intent(in) :: partition_dimensions
-      integer, dimension(4) :: partition_bounds
-      integer :: offset, i, j, k, l
+      integer, dimension(size(this%table_dims) - 1), intent(in) :: partition_dimensions
+      integer, dimension(size(this%table_dims) - 1) :: coords, coords_b, coords_p, partition_dimensions_prev
+      integer :: i, i_new
       double precision, allocatable, dimension(:, :) :: elements_old
 
       !call mpi_comm_rank(mpi_comm_world, rank, ierror)
@@ -183,6 +144,7 @@ contains
       allocate (elements_old(this%table_dims_cvar_flat, this%table_dim_svar))
 
       elements_old = this%elements
+      partition_dimensions_prev = this%partition_dims
       this%partition_dims = partition_dimensions
       this%partition_dims_flat = product(this%partition_dims)
 
@@ -194,36 +156,33 @@ contains
          end do
       end do
 
-      this%table_dims_padded_cvar_flat = product(this%table_dims_padded &
-                                         (1:ubound(this%table_dims_padded, dim=1) - 1))
+      this%table_dims_padded_cvar_flat = &
+         product(this%table_dims_padded(1:ubound(this%table_dims_padded, dim=1) - 1))
       this%table_dims_padded_flat = product(this%table_dims_padded)
 
-      deallocate(this%elements)
+      deallocate (this%elements)
       allocate (this%elements(this%table_dims_padded_cvar_flat, this%table_dim_svar))
       this%elements = 0.d0
 
-      offset = 1
-
-      do i = 1, this%table_dims(2), this%partition_dims(2)
-         do j = 1, this%table_dims(1), this%partition_dims(1)
-            partition_bounds = get_partition_bounds(this, (/j, i/), this%partition_dims)
-            do k = partition_bounds(2), partition_bounds(4)
-               do l = partition_bounds(1), partition_bounds(3)
-                  this%elements(offset, 1) = elements_old(coords2flat(this, (/l, k/)), 1)
-                  if (k .gt. this%table_dims(2)) this%elements(offset, 1) = 0.0
-                  if (l .gt. this%table_dims(1)) this%elements(offset, 1) = 0.0
-                  offset = offset + 1
-               end do
-            end do
-         end do
+      do i = 1, this%table_dims_padded_cvar_flat
+         call this%get_local_coords(i, this%partition_dims, coords_p, coords_b)
+         coords = coords_p + (coords_b - 1)*this%partition_dims
+         !print *, "get_index_global_coords at ", coords, " = ", this%get_index_global_coords(coords)
+         !print *, "get_index_local_coords at ", coords_p, " + ", coords_b, " = ", &
+         !  this%get_index_local_coords(coords_p, coords_b)
+         i_new = this%get_index_global_coords(coords)
+         this%elements(i, 1) = elements_old(i_new, 1)
+         if (any(coords .gt. this%table_dims)) then
+            this%elements(i, 1) = 0
+         end if
       end do
 
       deallocate (elements_old)
 
    end subroutine partition_mapping
 
-   !> Write elements to stdout. 
-   !! 
+   !> Write elements to stdout.
+   !!
    !! @param this table object whose elements are to be written
    subroutine print_elements(this)
       class(table), intent(inout) :: this
@@ -233,74 +192,171 @@ contains
    end subroutine print_elements
 
    !> Deallocates the allocated (allocatable) member variables of the table object
-   !! 
+   !!
    !! @param this the table object whose allocatable member variables are to be deallocated
    !! @todo This is called by the destructor, but is it necessary?
    subroutine table_deallocate(this)
       class(table), intent(inout) :: this
 
-      if (allocated(this%table_dims))        deallocate (this%table_dims)
+      if (allocated(this%table_dims)) deallocate (this%table_dims)
       if (allocated(this%table_dims_padded)) deallocate (this%table_dims_padded)
-      if (allocated(this%partition_dims))    deallocate (this%partition_dims)
-      if (allocated(this%elements))          deallocate (this%elements)
+      if (allocated(this%partition_dims)) deallocate (this%partition_dims)
+      if (allocated(this%elements)) deallocate (this%elements)
 
    end subroutine table_deallocate
 
-   !> Converts entry (i, j) in coordinate indexing to flat index n
-   !! 
+   !> Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing
+   !!
+   !! @param this table object to which flat2coords belongs
+   !! @param flat the flat index to be returned in coordinate index
+   !! @result coords the coordinates of the entry at flat index flat
+   function flat2coords(this, flat, part_dims) result(coords)
+      class(table), intent(inout) :: this
+      integer :: flat, flat_cpy, part
+      integer, dimension(size(this%partition_dims)) :: coords, part_dims
+      integer :: k, div, N
+
+      N = size(part_dims)
+      div = product(part_dims(2:N))
+      flat_cpy = flat
+
+      do k = 1, N
+         coords(k) = ceiling(real(flat_cpy)/real(div))
+         if (mod(flat_cpy, div) .ne. 0) then
+            flat_cpy = mod(flat_cpy, div)
+         else
+            flat_cpy = div
+         end if
+         if (k .lt. N) div = div/part_dims(k + 1)
+      end do
+
+   end function flat2coords
+
+   !> Return linearized index from a partitioned index
+   !!
+   !! @param this table object
+   !! @param ind the partitioned index
+   !! @param part_dims_new the desired partition dimensions
+   !! @result flat the partitioned index
+   function get_global_coords(this, ind) result(coords)
+      class(table), intent(inout) :: this
+      integer :: ind
+      integer, dimension(size(this%partition_dims)) :: coords
+
+      coords = this%flat2coords(ind, this%table_dims_padded)
+
+   end function get_global_coords
+
+   !> Return linearized index from a partitioned index
+   !!
+   !! @param this table object
+   !! @param ind the partitioned index
+   !! @param part_dims_new the desired partition dimensions
+   !! @result flat the partitioned index
+   subroutine get_local_coords(this, ind, part_dims_new, coords_part, coords_box)
+      class(table), intent(inout) :: this
+      integer :: ind, ind_local, N, k, part
+      integer, dimension(size(this%partition_dims)) :: coords_part, coords_box
+      integer, dimension(size(this%partition_dims)) :: total_partitions, part_dims_new
+
+      N = size(this%partition_dims)
+
+      do k = 1, N
+         total_partitions(k) = this%table_dims_padded(k)/part_dims_new(k)
+      end do
+
+      part = ceiling(real(ind)/product(part_dims_new))
+
+      !! Compute inter-partition contribution to index
+      coords_box = this%flat2coords(part, total_partitions)
+
+      !! Localized intra-partition index
+      if (mod(ind, product(part_dims_new)) .ne. 0) then
+         ind_local = mod(ind, product(part_dims_new))
+      else
+         ind_local = product(part_dims_new)
+      end if
+
+      !! Compute intra-partition contribution to index
+      coords_part = this%flat2coords(ind_local, part_dims_new)
+
+   end subroutine get_local_coords
+
+   !> Converts entry (i_1, i_2, ..., i_N) in coordinate indexing to flat index n
+   !!
    !! @param this table object to which coords2flat belongs
    !! @param coords the coordinates of the entry to be returned in flat index
    !! @result flat the flat index of entry located at coordinates coords
-   function coords2flat(this, coords) result(flat)
+   function coords2flat(this, coords, part_dims) result(flat)
       class(table), intent(inout) :: this
-      integer, dimension(2), intent(in)  :: coords
-      integer :: flat
+      integer, dimension(size(this%partition_dims)) :: coords, part_dims
+      integer :: flat, k, N, div
 
-      flat = (coords(2) - 1)*this%table_dims(1) + coords(1)
+      N = size(this%partition_dims)
+      div = product(part_dims)
+      flat = coords(N)
 
-   end function
+      do k = 1, N - 1
+         div = div/part_dims(k)
+         flat = flat + (coords(k) - 1)*div
+      end do
+
+   end function coords2flat
+
+   !> Return linearized index from a partitioned index
+   !!
+   !! @param this table object
+   !! @param ind the partitioned index
+   !! @param part_dims_new the desired partition dimensions
+   !! @result flat the partitioned index
+   function get_index_global_coords(this, coords) result(ind)
+      class(table), intent(inout) :: this
+      integer :: ind
+      integer, dimension(size(this%partition_dims)) :: coords
+
+      ind = this%coords2flat(coords, this%table_dims_padded)
+
+   end function get_index_global_coords
+
+   !> Return linearized index from a partitioned index
+   !!
+   !! @param this table object
+   !! @param ind the partitioned index
+   !! @param part_dims_new the desired partition dimensions
+   !! @result flat the partitioned index
+   function get_index_local_coords(this, coords_part, coords_box) result(ind)
+      class(table), intent(inout) :: this
+      integer :: ind, ind_local, N, k, part
+      integer, dimension(size(this%partition_dims)) :: coords_part, coords_box
+      integer, dimension(size(this%partition_dims)) :: total_partitions
+
+      N = size(this%partition_dims)
+
+      do k = 1, N
+         total_partitions(k) = this%table_dims_padded(k)/this%partition_dims(k)
+      end do
+
+      ind = this%coords2flat(coords_part, this%partition_dims) + &
+            (this%coords2flat(coords_box, total_partitions) - 1)*this%partition_dims_flat
+
+   end function get_index_local_coords
 
    !> Return the dimensional coordinate bounds of the block beginning at
    !! given coordinates coords.
-   !! Currently only works on partition bases. The commented code is broken.
    !!
    !! @param this the table object to which get_partition_bounds belongs
    !! @param coords the entry (partition base only) whose four bounds is to be returned
    !! @param partition_dims dimensions of the partition in each direction
    !! @result partition_bounds coordinates of the entries which bound the partition containing coords
-   !! @todo fix the broken commented code which works on entries which are not partition bases
-   function get_partition_bounds(this, coords, partition_dims) result(partition_bounds)
+   function get_partition_bounds(this, coords) result(partition_bounds)
       class(table), intent(inout) :: this
-      integer, dimension(2), intent(in)  :: coords
-      integer, dimension(2) :: partition_dims
-      integer, dimension(4) :: partition_bounds
+      integer, dimension(size(this%partition_dims)), intent(in)  :: coords
+      integer, dimension(size(this%partition_dims)) :: partition_dims
+      integer, dimension(2*size(this%partition_dims)) :: partition_bounds
 
-      partition_bounds(1) = coords(1)
-      partition_bounds(2) = coords(2)
-      partition_bounds(3) = coords(1) + partition_dims(1) - 1
-      partition_bounds(4) = coords(2) + partition_dims(2) - 1
-
-    !! This, while more general, is broken here, so I use the above now
-    !! which is more simple but only works on partition bases.
-    !! Lower bound direction 1
-      !partition_bounds(1) = coords(1) - &
-      !  merge(mod(coords(1),partition_dims(1))-1,partition_dims(1)-1, &
-      !  mod(coords(1),partition_dims(1)) .ne. 0)
-
-    !! Lower bound direction 2
-      !partition_bounds(2) = coords(2) - &
-      !  merge(mod(coords(2),partition_dims(2))-1,partition_dims(2)-1, &
-      !  mod(coords(2),partition_dims(2)) .ne. 0)
-
-    !! Upper bound direction 1
-      !partition_bounds(3) = coords(1) - &
-      !  merge(partition_dims(1)-mod(coords(1),partition_dims(1)),0, &
-      !  mod(coords(1),partition_dims(1)) .ne. 0)
-
-    !! Upper bound direction 2
-      !partition_bounds(4) = coords(2) - &
-      !  merge(partition_dims(2)-mod(coords(2),partition_dims(2)),0, &
-      !  mod(coords(2),partition_dims(2)) .ne. 0)
+      partition_bounds(1:size(this%partition_dims)) = coords
+      partition_bounds(size(this%partition_dims) + 1:2*size(this%partition_dims)) = &
+         coords + this%partition_dims - 1
 
    end function
 
