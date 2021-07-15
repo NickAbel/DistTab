@@ -39,7 +39,7 @@ DistTab is a library being developed for use with combustion codes that use spra
 To compile and run the tests
 
 ```sh
-$ git clone https://github.com/username/project-url.git
+$ git clone https://github.com/NickAbel/DistTab.git
 $ cd DistTab
 $ mkdir build
 $ cd build
