@@ -53,11 +53,7 @@ contains
   !! solution to the partition mapping problem with table size of
   !! this%lookup and the partition dimensions of this%partition_dims.
   !!
-  !! The entries of elements_gold_std are selected to be easily understandable
-  !! values Phi_k. In particular,
-  !! Phi_k is the sum of the number of the partition which the entry is located,
-  !! and the local number of the entry in the partition divided by 1000.
-  !! For example, for block number 2 and entry number 3, Phi_k = 2.003.
+  !! The entries of elements_gold_std are ascending integers.
   !!
   !! elements_gold_std is then compared to this%lookup%elements. If all
   !! entries are equal, a pass is reported. If there is no difference in
@@ -75,7 +71,7 @@ contains
 
       print *, "partition_mapping_test begin"
 
-      ! Pad out table to maintain shape
+      !! Pad out table to maintain shape
       this%lookup%table_dims_padded = this%table_dims
       do i = lbound(this%lookup%table_dims_padded, dim=1), ubound(this%lookup%table_dims_padded, dim=1) - 1
          do while (mod(this%lookup%table_dims_padded(i), this%partition_dims(i)) .ne. 0)
@@ -88,33 +84,32 @@ contains
       deallocate (this%lookup%elements)
       allocate (this%lookup%elements(this%lookup%table_dims_padded_cvar_flat, this%lookup%table_dim_svar))
 
-      N = size(this%partition_dims)
+      !! Create gold standard and fill table with Alya-format sorted version of table
       call part_test_fill_table(this)
+      !! Run partition mapping algorithm
       call this%lookup%partition_mapping(this%partition_dims)
 
       allocate (elements_gold_std(this%lookup%table_dims_padded_cvar_flat, this%lookup%table_dim_svar))
 
+      !! Open, read, and close the file containing the unsorted gold standard
+      N = size(this%partition_dims)
       open (36, file='partition_test_table.tmp.dat', action='read')
-
       do i = 1, this%lookup%table_dims_padded_cvar_flat
          read (36, *) (coords(j), j=1, N), elements_gold_std(i, 1)
       end do
-
       close (36)
 
-      !call execute_command_line('rm partition_test_table.tmp.dat partition_test_table_sorted.tmp.dat')
-
+      !! Check if the partition mapping of the elements is equal to the gold standard generated in part_test_fill_table
       if (all(this%lookup%elements .eq. elements_gold_std)) then
          write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
-            this%partition_dims, "]: ", "partition_mapping_test passed!"
+            this%partition_dims, "]: ", "partition_mapping_test passed! Tables will be deleted."
+         call execute_command_line('rm partition_test_table.tmp.dat partition_test_table_sorted.tmp.dat')
       else if (all(abs(this%lookup%elements - elements_gold_std) .lt. 0.0005)) then
          write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
-            this%partition_dims, "]: ", "trivially small diff in partition_mapping_test. most likely a pass."
+            this%partition_dims, "]: ", "trivially small diff in partition_mapping_test. most likely a pass. Tables not deleted."
       else
          write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
-            this%partition_dims, "]: ", "partition_mapping_test conditional not working right..."
-!         write (*, *) "Sorted table    Gold std"
-!         write (*, fmt='(2(f9.3))') abs(this%lookup%elements), abs(elements_gold_std)
+            this%partition_dims, "]: ", "partition_mapping_test conditional not working right. Tables not deleted."
       end if
 
       deallocate (elements_gold_std)
@@ -125,19 +120,18 @@ contains
   !! which is in the correct partition-major ordering, with easy-to-
   !! understand values for the control and state variables:
   !!
-  !! phi_i phi_j Phi_k
+  !! phi_i1 phi_i2 ... phi_iN Eta_j
   !!
   !! where:
   !!
-  !! phi_i is the coordinate in direction 1
-  !! phi_j is the coordinate in direction 2
-  !! Phi_k is the sum of the number of the partition which the entry is located,
-  !! and the local number of the entry in the partition divided by 1000.
-  !! For example, for block number 2 and entry number 3, Phi_k = 2.003.
+  !! phi_i1 is the coordinate in direction 1
+  !! phi_i2 is the coordinate in direction 2
+  !! ... ... ...
+  !! phi_iN is the coordinate in direction N
+  !! Eta_j is an ascending integer.
   !!
-  !! The file that has been written is sorted according to the phi_j column first,
-  !! and then by the phi_i column second, which yields the order in which Alya-
-  !! formatted flamelet tables are stored.
+  !! The file that has been written is sorted with a GNU awk command,
+  !! which yields the order in which Alya-formatted flamelet tables are stored.
   !! @param this the partition_test object to which part_test_fill_table belongs
    subroutine part_test_fill_table(this)
       class(partitioning_test), intent(inout) :: this
@@ -147,27 +141,33 @@ contains
       character(len=400) :: sort_cmd
 
       N = size(this%partition_dims)
+      !! Find total partitions in each dimension
       allocate (total_partitions(N))
       total_partitions = this%lookup%table_dims_padded(1:N)/this%partition_dims
 
       open (34, file='partition_test_table.tmp.dat', action='write')
 
       do i = 1, this%lookup%table_dims_padded_cvar_flat
+         !! Find the inter-partition contribution to index
          part_ctr = ceiling(real(i)/product(this%partition_dims))
-
+         !! Find inter-partition contribution to coordinates
          coords_b = this%lookup%flat2coords(part_ctr, total_partitions)
 
-         !! Localized intra-partition index
+         !! Find localized intra-partition contribution to index
          if (mod(i, product(this%partition_dims)) .ne. 0) then
             ind_local = mod(i, product(this%partition_dims))
          else
             ind_local = product(this%partition_dims)
          end if
-
+         !! Find localized intra-partition coordinates
          coords_p = this%lookup%flat2coords(ind_local, this%partition_dims)
 
+         !! Add product of inter- and intra-partition coordinates to get
+         !! global coordinates
          coords = coords_p + this%partition_dims*(coords_b - 1)
+         !! Set state variable to ascending integer
          h = i
+         !! If the entry belongs to the pad of the table, set state variable value to 0
          if (any(coords .gt. this%table_dims)) h = 0
          write (34, *) (coords(j), j=1, N), h
       end do
@@ -176,6 +176,8 @@ contains
 
       close (34)
 
+      !! This gawk loop will sort the coordinate columns 1 to N in order, which
+      !! emulates the storage format of Alya tables.
       call execute_command_line("gawk -F ',' '                                &
                                     {                                         &
                                        for(i=1;i<=NF;i++){sorter[i][NR]=$i}   &
@@ -192,6 +194,7 @@ contains
 
       open (35, file='partition_test_table_sorted.tmp.dat', action='read')
 
+      !! After sorting to the "Alya format," load the table back into the elements array.
       do i = 1, this%lookup%table_dims_padded_cvar_flat
          read (35, *) (coords(j), j=1, N), this%lookup%elements(i, 1)
       end do

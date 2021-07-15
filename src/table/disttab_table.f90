@@ -35,8 +35,6 @@ module disttab_table
       procedure, public, pass(this) :: get_local_coords        ! Unravel a partitioned index to linear index
       procedure, public, pass(this) :: get_index_global_coords ! ravel a linear index to partitioned index
       procedure, public, pass(this) :: get_index_local_coords  ! Unravel a partitioned index to linear index
-
-      procedure, private, pass(this) :: get_partition_bounds   ! Get the bounds of the partition containing the argument
       final :: table_destructor
 
    end type table
@@ -136,11 +134,12 @@ contains
       class(table), intent(inout) :: this
       integer, dimension(size(this%table_dims) - 1), intent(in) :: partition_dimensions
       integer, dimension(size(this%table_dims) - 1) :: coords, coords_b, coords_p, partition_dimensions_prev
-      integer :: i, i_new
+      integer, dimension(size(this%table_dims) - 1) :: total_partitions
+      integer :: i, i_new, N
       double precision, allocatable, dimension(:, :) :: elements_old
 
       !call mpi_comm_rank(mpi_comm_world, rank, ierror)
-
+      N = size(this%table_dims) - 1
       allocate (elements_old(this%table_dims_cvar_flat, this%table_dim_svar))
 
       elements_old = this%elements
@@ -164,13 +163,17 @@ contains
       allocate (this%elements(this%table_dims_padded_cvar_flat, this%table_dim_svar))
       this%elements = 0.d0
 
+      do i = 1, N
+         total_partitions(i) = this%table_dims_padded(i)/this%partition_dims(i)
+      end do
+
       do i = 1, this%table_dims_padded_cvar_flat
-         call this%get_local_coords(i, this%partition_dims, coords_p, coords_b)
+         call this%get_local_coords(i, this%partition_dims, total_partitions, coords_p, coords_b)
          coords = coords_p + (coords_b - 1)*this%partition_dims
          !print *, "get_index_global_coords at ", coords, " = ", this%get_index_global_coords(coords)
          !print *, "get_index_local_coords at ", coords_p, " + ", coords_b, " = ", &
          !  this%get_index_local_coords(coords_p, coords_b)
-         i_new = this%get_index_global_coords(coords)
+         i_new = this%get_index_global_coords(coords, this%table_dims_padded(1:N))
          this%elements(i, 1) = elements_old(i_new, 1)
          if (any(coords .gt. this%table_dims)) then
             this%elements(i, 1) = 0
@@ -206,9 +209,11 @@ contains
    end subroutine table_deallocate
 
    !> Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing
+   !! using the dimensions given in part_dims
    !!
    !! @param this table object to which flat2coords belongs
    !! @param flat the flat index to be returned in coordinate index
+   !! @param part_dims table dimensions for coordinate indexing
    !! @result coords the coordinates of the entry at flat index flat
    function flat2coords(this, flat, part_dims) result(coords)
       class(table), intent(inout) :: this
@@ -232,12 +237,11 @@ contains
 
    end function flat2coords
 
-   !> Return linearized index from a partitioned index
+   !> Return coordinates from a global index on the object padded table dimensions.
    !!
    !! @param this table object
-   !! @param ind the partitioned index
-   !! @param part_dims_new the desired partition dimensions
-   !! @result flat the partitioned index
+   !! @param ind the index whose coordinates are to be found
+   !! @result coords global coordinates on the object padded table dimensions
    function get_global_coords(this, ind) result(coords)
       class(table), intent(inout) :: this
       integer :: ind
@@ -247,45 +251,47 @@ contains
 
    end function get_global_coords
 
-   !> Return linearized index from a partitioned index
+   !> Given an index, intra-partition dimensions part_dims, and inter-partition dimensions box_dims,
+   !! return the coordinates of index under the partitioning scheme defined by
+   !! part_dims and box_dims.
    !!
    !! @param this table object
    !! @param ind the partitioned index
-   !! @param part_dims_new the desired partition dimensions
-   !! @result flat the partitioned index
-   subroutine get_local_coords(this, ind, part_dims_new, coords_part, coords_box)
+   !! @param part_dims the intra-partition dimensions of the partitioning scheme
+   !! @param box_dims the inter-partition dimensions of the partitioning scheme
+   !! @param coords_part the array to return the intra-partition dimensions in
+   !! @param coords_box the array to return the inter-partition dimensions in
+   subroutine get_local_coords(this, ind, part_dims, box_dims, coords_part, coords_box)
       class(table), intent(inout) :: this
-      integer :: ind, ind_local, N, k, part
+      integer :: ind, ind_local, N, k, box
       integer, dimension(size(this%partition_dims)) :: coords_part, coords_box
-      integer, dimension(size(this%partition_dims)) :: total_partitions, part_dims_new
+      integer, dimension(size(this%partition_dims)) :: part_dims, box_dims
 
       N = size(this%partition_dims)
 
-      do k = 1, N
-         total_partitions(k) = this%table_dims_padded(k)/part_dims_new(k)
-      end do
-
-      part = ceiling(real(ind)/product(part_dims_new))
+      box = ceiling(real(ind)/product(part_dims))
 
       !! Compute inter-partition contribution to index
-      coords_box = this%flat2coords(part, total_partitions)
+      coords_box = this%flat2coords(box, box_dims)
 
       !! Localized intra-partition index
-      if (mod(ind, product(part_dims_new)) .ne. 0) then
-         ind_local = mod(ind, product(part_dims_new))
+      if (mod(ind, product(part_dims)) .ne. 0) then
+         ind_local = mod(ind, product(part_dims))
       else
-         ind_local = product(part_dims_new)
+         ind_local = product(part_dims)
       end if
 
       !! Compute intra-partition contribution to index
-      coords_part = this%flat2coords(ind_local, part_dims_new)
+      coords_part = this%flat2coords(ind_local, part_dims)
 
    end subroutine get_local_coords
 
    !> Converts entry (i_1, i_2, ..., i_N) in coordinate indexing to flat index n
+   !! in global order, according to the given partition size part_dims.
    !!
    !! @param this table object to which coords2flat belongs
    !! @param coords the coordinates of the entry to be returned in flat index
+   !! @param part_dims the partition dimensions on which to find the flat index.
    !! @result flat the flat index of entry located at coordinates coords
    function coords2flat(this, coords, part_dims) result(flat)
       class(table), intent(inout) :: this
@@ -303,61 +309,52 @@ contains
 
    end function coords2flat
 
-   !> Return linearized index from a partitioned index
+   !> Return the global flat index, given coordinates and control variable space dimensions.
    !!
    !! @param this table object
-   !! @param ind the partitioned index
-   !! @param part_dims_new the desired partition dimensions
-   !! @result flat the partitioned index
-   function get_index_global_coords(this, coords) result(ind)
+   !! @param coords the coordinates
+   !! @param table_dims_cvar the dimensions of the control variable space
+   !! @result ind global flat index
+   function get_index_global_coords(this, coords, table_dims_cvar) result(ind)
       class(table), intent(inout) :: this
       integer :: ind
-      integer, dimension(size(this%partition_dims)) :: coords
+      integer, dimension(size(this%partition_dims)) :: coords, table_dims_cvar
 
-      ind = this%coords2flat(coords, this%table_dims_padded)
+      ind = this%coords2flat(coords, table_dims_cvar)
 
    end function get_index_global_coords
 
-   !> Return linearized index from a partitioned index
+   !> Return partitioned flat index, given coordinates and an associated two-level partitioning scheme
+   !! described by the intra-partition dimensions part_dims and inter-partition dimensions box_dims.
    !!
    !! @param this table object
-   !! @param ind the partitioned index
-   !! @param part_dims_new the desired partition dimensions
-   !! @result flat the partitioned index
-   function get_index_local_coords(this, coords_part, coords_box) result(ind)
+   !! @param coords_part the intra-partition term of the coordinates
+   !! @param coords_box the inter-partition term of the coordinates
+   !! @param part_dims the intra-partition dimensions
+   !! @param box_dims the inter-partition box dimensions
+   !! @result ind the partitioned index
+   function get_index_local_coords(this, coords_part, coords_box, part_dims, box_dims) result(ind)
       class(table), intent(inout) :: this
       integer :: ind, ind_local, N, k, part
-      integer, dimension(size(this%partition_dims)) :: coords_part, coords_box
-      integer, dimension(size(this%partition_dims)) :: total_partitions
+      integer, dimension(size(this%partition_dims)) :: coords_part, coords_box, part_dims, box_dims
 
-      N = size(this%partition_dims)
+      N = size(part_dims)
 
       do k = 1, N
-         total_partitions(k) = this%table_dims_padded(k)/this%partition_dims(k)
+         if (coords_part(k) .gt. part_dims(k)) then
+            print '("get_index_local_coords ERROR: coords_part larger than part_dims at dimension ", I0)', k
+         end if
+         if (coords_box(k) .gt. box_dims(k)) then
+            print '("get_index_local_coords ERROR: coords_box larger than box_dims at dimension ", I0)', k
+         end if
+         if (mod(part_dims(k), box_dims(k)) .ne. 0) then
+            print '("get_index_local_coords ERROR: box_dims not divisible by part_dims at dimension ", I0)', k
+         end if
       end do
 
-      ind = this%coords2flat(coords_part, this%partition_dims) + &
-            (this%coords2flat(coords_box, total_partitions) - 1)*this%partition_dims_flat
+      ind = this%coords2flat(coords_part, part_dims) + &
+            (this%coords2flat(coords_box, box_dims) - 1)*(product(part_dims))
 
    end function get_index_local_coords
-
-   !> Return the dimensional coordinate bounds of the block beginning at
-   !! given coordinates coords.
-   !!
-   !! @param this the table object to which get_partition_bounds belongs
-   !! @param coords the entry (partition base only) whose four bounds is to be returned
-   !! @param partition_dims dimensions of the partition in each direction
-   !! @result partition_bounds coordinates of the entries which bound the partition containing coords
-   function get_partition_bounds(this, coords) result(partition_bounds)
-      class(table), intent(inout) :: this
-      integer, dimension(size(this%partition_dims)), intent(in)  :: coords
-      integer, dimension(size(this%partition_dims)) :: partition_dims
-      integer, dimension(2*size(this%partition_dims)) :: partition_bounds
-
-      partition_bounds(1:size(this%partition_dims)) = coords
-      partition_bounds(size(this%partition_dims) + 1:2*size(this%partition_dims)) = &
-         coords + this%partition_dims - 1
-
-   end function
 
 end module disttab_table

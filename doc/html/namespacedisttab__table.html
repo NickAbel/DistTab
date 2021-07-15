@@ -79,8 +79,7 @@ Data Types</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a6b30669a17ed75f6ebac958f890655af"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structdisttab__table_1_1table.html">table</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a6b30669a17ed75f6ebac958f890655af">table_constructor</a> (table_dimensions)</td></tr>
-<tr class="memdesc:a6b30669a17ed75f6ebac958f890655af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the table object. <br  />
- Allocates the elements array according to the table dimensions. Initializes the member variables table_dims, table_dims_padded. Computes the parameters table_dims_cvar_flat, table_dims_flat, table_dims_padded_cvar_flat, table_dims_padded_flat, table_dim_svar, which are all a property of the table_dimensions argument, necessary for partition mapping functionality.  <a href="namespacedisttab__table.html#a6b30669a17ed75f6ebac958f890655af">More...</a><br /></td></tr>
+<tr class="memdesc:a6b30669a17ed75f6ebac958f890655af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table_dims, table_dims_padded. Computes the parameters table_dims_cvar_flat, table_dims_flat, table_dims_padded_cvar_flat, table_dims_padded_flat, table_dim_svar, which are all a property of the table_dimensions argument, necessary for partition mapping functionality.  <a href="namespacedisttab__table.html#a6b30669a17ed75f6ebac958f890655af">More...</a><br /></td></tr>
 <tr class="separator:a6b30669a17ed75f6ebac958f890655af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00320b1b054be17b502e8bc01bdfb8cd"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a00320b1b054be17b502e8bc01bdfb8cd">table_destructor</a> (this)</td></tr>
 <tr class="memdesc:a00320b1b054be17b502e8bc01bdfb8cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">destructor for the table type  <a href="namespacedisttab__table.html#a00320b1b054be17b502e8bc01bdfb8cd">More...</a><br /></td></tr>
@@ -88,9 +87,6 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a47c132f14609e77c6bd02ed429aaa515"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a47c132f14609e77c6bd02ed429aaa515">read_in</a> (this, file_id)</td></tr>
 <tr class="memdesc:a47c132f14609e77c6bd02ed429aaa515"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format:  <a href="namespacedisttab__table.html#a47c132f14609e77c6bd02ed429aaa515">More...</a><br /></td></tr>
 <tr class="separator:a47c132f14609e77c6bd02ed429aaa515"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ebcbc269c4e666ca0725852783d6d76"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a5ebcbc269c4e666ca0725852783d6d76">fill_example</a> (this)</td></tr>
-<tr class="memdesc:a5ebcbc269c4e666ca0725852783d6d76"><td class="mdescLeft">&#160;</td><td class="mdescRight">A quick and dirty table filler that populates the table with integers 1, 2, ...  <a href="namespacedisttab__table.html#a5ebcbc269c4e666ca0725852783d6d76">More...</a><br /></td></tr>
-<tr class="separator:a5ebcbc269c4e666ca0725852783d6d76"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46780ef5ba062fbd4c874c575f6a3c46"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a46780ef5ba062fbd4c874c575f6a3c46">partition_mapping</a> (this, partition_dimensions)</td></tr>
 <tr class="memdesc:a46780ef5ba062fbd4c874c575f6a3c46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remaps the partition from assumed Alya-format ordering to given partition ordering.  <a href="namespacedisttab__table.html#a46780ef5ba062fbd4c874c575f6a3c46">More...</a><br /></td></tr>
 <tr class="separator:a46780ef5ba062fbd4c874c575f6a3c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -100,16 +96,28 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:aa09b941e14a6f94cd56d6531a3abc1cf"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#aa09b941e14a6f94cd56d6531a3abc1cf">table_deallocate</a> (this)</td></tr>
 <tr class="memdesc:aa09b941e14a6f94cd56d6531a3abc1cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deallocates the allocated (allocatable) member variables of the table object.  <a href="namespacedisttab__table.html#aa09b941e14a6f94cd56d6531a3abc1cf">More...</a><br /></td></tr>
 <tr class="separator:aa09b941e14a6f94cd56d6531a3abc1cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad4dced79753238edfa98673d1606e63"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#aad4dced79753238edfa98673d1606e63">coords2flat</a> (this, coords)</td></tr>
-<tr class="memdesc:aad4dced79753238edfa98673d1606e63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts entry (i, j) in coordinate indexing to flat index n.  <a href="namespacedisttab__table.html#aad4dced79753238edfa98673d1606e63">More...</a><br /></td></tr>
-<tr class="separator:aad4dced79753238edfa98673d1606e63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe75e53b5186b175b6e164ef565a5d7e"><td class="memItemLeft" align="right" valign="top">integer function, dimension(4)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#afe75e53b5186b175b6e164ef565a5d7e">get_partition_bounds</a> (this, coords, partition_dims)</td></tr>
-<tr class="memdesc:afe75e53b5186b175b6e164ef565a5d7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the dimensional coordinate bounds of the block beginning at given coordinates coords. Currently only works on partition bases. The commented code is broken.  <a href="namespacedisttab__table.html#afe75e53b5186b175b6e164ef565a5d7e">More...</a><br /></td></tr>
-<tr class="separator:afe75e53b5186b175b6e164ef565a5d7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50ba52169510282eb005f690ab3886a6"><td class="memItemLeft" align="right" valign="top">integer function, dimension(size(this%partition_dims))&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a50ba52169510282eb005f690ab3886a6">flat2coords</a> (this, flat, part_dims)</td></tr>
+<tr class="memdesc:a50ba52169510282eb005f690ab3886a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing using the dimensions given in part_dims.  <a href="namespacedisttab__table.html#a50ba52169510282eb005f690ab3886a6">More...</a><br /></td></tr>
+<tr class="separator:a50ba52169510282eb005f690ab3886a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a6cf1c7276cdeef161d4c33cdb409b2"><td class="memItemLeft" align="right" valign="top">integer function, dimension(size(this%partition_dims))&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a1a6cf1c7276cdeef161d4c33cdb409b2">get_global_coords</a> (this, ind)</td></tr>
+<tr class="memdesc:a1a6cf1c7276cdeef161d4c33cdb409b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return coordinates from a global index on the object padded table dimensions.  <a href="namespacedisttab__table.html#a1a6cf1c7276cdeef161d4c33cdb409b2">More...</a><br /></td></tr>
+<tr class="separator:a1a6cf1c7276cdeef161d4c33cdb409b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9b7bc8478aed0d185f239b7f21358ac"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#ac9b7bc8478aed0d185f239b7f21358ac">get_local_coords</a> (this, ind, part_dims, box_dims, coords_part, coords_box)</td></tr>
+<tr class="memdesc:ac9b7bc8478aed0d185f239b7f21358ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given an index, intra-partition dimensions part_dims, and inter-partition dimensions box_dims, return the coordinates of index under the partitioning scheme defined by part_dims and box_dims.  <a href="namespacedisttab__table.html#ac9b7bc8478aed0d185f239b7f21358ac">More...</a><br /></td></tr>
+<tr class="separator:ac9b7bc8478aed0d185f239b7f21358ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7dcae63efdb6ec0b25e7a2d1dd6d2500"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a7dcae63efdb6ec0b25e7a2d1dd6d2500">coords2flat</a> (this, coords, part_dims)</td></tr>
+<tr class="memdesc:a7dcae63efdb6ec0b25e7a2d1dd6d2500"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts entry (i_1, i_2, ..., i_N) in coordinate indexing to flat index n in global order, according to the given partition size part_dims.  <a href="namespacedisttab__table.html#a7dcae63efdb6ec0b25e7a2d1dd6d2500">More...</a><br /></td></tr>
+<tr class="separator:a7dcae63efdb6ec0b25e7a2d1dd6d2500"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e24b672c046c1e701675ba043cce5de"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a9e24b672c046c1e701675ba043cce5de">get_index_global_coords</a> (this, coords, table_dims_cvar)</td></tr>
+<tr class="memdesc:a9e24b672c046c1e701675ba043cce5de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the global flat index, given coordinates and control variable space dimensions.  <a href="namespacedisttab__table.html#a9e24b672c046c1e701675ba043cce5de">More...</a><br /></td></tr>
+<tr class="separator:a9e24b672c046c1e701675ba043cce5de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40f490bccfa49053cfd8dd1599a66875"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a40f490bccfa49053cfd8dd1599a66875">get_index_local_coords</a> (this, coords_part, coords_box, part_dims, box_dims)</td></tr>
+<tr class="memdesc:a40f490bccfa49053cfd8dd1599a66875"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return partitioned flat index, given coordinates and an associated two-level partitioning scheme described by the intra-partition dimensions part_dims and inter-partition dimensions box_dims.  <a href="namespacedisttab__table.html#a40f490bccfa49053cfd8dd1599a66875">More...</a><br /></td></tr>
+<tr class="separator:a40f490bccfa49053cfd8dd1599a66875"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a id="aad4dced79753238edfa98673d1606e63"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aad4dced79753238edfa98673d1606e63">&#9670;&nbsp;</a></span>coords2flat()</h2>
+<a id="a7dcae63efdb6ec0b25e7a2d1dd6d2500"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7dcae63efdb6ec0b25e7a2d1dd6d2500">&#9670;&nbsp;</a></span>coords2flat()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -126,8 +134,14 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">integer, dimension(2), intent(in)&#160;</td>
-          <td class="paramname"><em>coords</em>&#160;</td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>part_dims</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -142,11 +156,12 @@ Functions/Subroutines</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Converts entry (i, j) in coordinate indexing to flat index n. </p>
+<p>Converts entry (i_1, i_2, ..., i_N) in coordinate indexing to flat index n in global order, according to the given partition size part_dims. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">this</td><td>table object to which coords2flat belongs </td></tr>
     <tr><td class="paramname">coords</td><td>the coordinates of the entry to be returned in flat index </td></tr>
+    <tr><td class="paramname">part_dims</td><td>the partition dimensions on which to find the flat index. </td></tr>
   </table>
   </dd>
 </dl>
@@ -154,8 +169,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="a5ebcbc269c4e666ca0725852783d6d76"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ebcbc269c4e666ca0725852783d6d76">&#9670;&nbsp;</a></span>fill_example()</h2>
+<a id="a50ba52169510282eb005f690ab3886a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50ba52169510282eb005f690ab3886a6">&#9670;&nbsp;</a></span>flat2coords()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,42 +179,7 @@ Functions/Subroutines</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine disttab_table::fill_example </td>
-          <td>(</td>
-          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
-          <td class="paramname"><em>this</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>A quick and dirty table filler that populates the table with integers 1, 2, ... </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">this</td><td>the table object to fill </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>for N-dimensional lookup tables this is the first functionality to develop. Note the commented function prototype below. </dd></dl>
-
-</div>
-</div>
-<a id="afe75e53b5186b175b6e164ef565a5d7e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afe75e53b5186b175b6e164ef565a5d7e">&#9670;&nbsp;</a></span>get_partition_bounds()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">integer function, dimension(4) disttab_table::get_partition_bounds </td>
+          <td class="memname">integer function, dimension(size(this%partition_dims)) disttab_table::flat2coords </td>
           <td>(</td>
           <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
@@ -207,14 +187,14 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">integer, dimension(2), intent(in)&#160;</td>
-          <td class="paramname"><em>coords</em>, </td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>flat</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">integer, dimension(2)&#160;</td>
-          <td class="paramname"><em>partition_dims</em>&#160;</td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>part_dims</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -229,17 +209,255 @@ Functions/Subroutines</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the dimensional coordinate bounds of the block beginning at given coordinates coords. Currently only works on partition bases. The commented code is broken. </p>
+<p>Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing using the dimensions given in part_dims. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">this</td><td>the table object to which get_partition_bounds belongs </td></tr>
-    <tr><td class="paramname">coords</td><td>the entry (partition base only) whose four bounds is to be returned </td></tr>
-    <tr><td class="paramname">partition_dims</td><td>dimensions of the partition in each direction </td></tr>
+    <tr><td class="paramname">this</td><td>table object to which flat2coords belongs </td></tr>
+    <tr><td class="paramname">flat</td><td>the flat index to be returned in coordinate index </td></tr>
+    <tr><td class="paramname">part_dims</td><td>table dimensions for coordinate indexing </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>partition_bounds coordinates of the entries which bound the partition containing coords </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000007">Todo:</a></b></dt><dd>fix the broken commented code which works on entries which are not partition bases </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>coords the coordinates of the entry at flat index flat </dd></dl>
+
+</div>
+</div>
+<a id="a1a6cf1c7276cdeef161d4c33cdb409b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a6cf1c7276cdeef161d4c33cdb409b2">&#9670;&nbsp;</a></span>get_global_coords()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function, dimension(size(this%partition_dims)) disttab_table::get_global_coords </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>ind</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return coordinates from a global index on the object padded table dimensions. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>table object </td></tr>
+    <tr><td class="paramname">ind</td><td>the index whose coordinates are to be found </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>coords global coordinates on the object padded table dimensions </dd></dl>
+
+</div>
+</div>
+<a id="a9e24b672c046c1e701675ba043cce5de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e24b672c046c1e701675ba043cce5de">&#9670;&nbsp;</a></span>get_index_global_coords()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function disttab_table::get_index_global_coords </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>table_dims_cvar</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the global flat index, given coordinates and control variable space dimensions. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>table object </td></tr>
+    <tr><td class="paramname">coords</td><td>the coordinates </td></tr>
+    <tr><td class="paramname">table_dims_cvar</td><td>the dimensions of the control variable space </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>ind global flat index </dd></dl>
+
+</div>
+</div>
+<a id="a40f490bccfa49053cfd8dd1599a66875"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40f490bccfa49053cfd8dd1599a66875">&#9670;&nbsp;</a></span>get_index_local_coords()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function disttab_table::get_index_local_coords </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>coords_part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>coords_box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>part_dims</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>box_dims</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return partitioned flat index, given coordinates and an associated two-level partitioning scheme described by the intra-partition dimensions part_dims and inter-partition dimensions box_dims. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>table object </td></tr>
+    <tr><td class="paramname">coords_part</td><td>the intra-partition term of the coordinates </td></tr>
+    <tr><td class="paramname">coords_box</td><td>the inter-partition term of the coordinates </td></tr>
+    <tr><td class="paramname">part_dims</td><td>the intra-partition dimensions </td></tr>
+    <tr><td class="paramname">box_dims</td><td>the inter-partition box dimensions </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>ind the partitioned index </dd></dl>
+
+</div>
+</div>
+<a id="ac9b7bc8478aed0d185f239b7f21358ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9b7bc8478aed0d185f239b7f21358ac">&#9670;&nbsp;</a></span>get_local_coords()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine disttab_table::get_local_coords </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>ind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>part_dims</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>box_dims</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>coords_part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%partition_dims))&#160;</td>
+          <td class="paramname"><em>coords_box</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Given an index, intra-partition dimensions part_dims, and inter-partition dimensions box_dims, return the coordinates of index under the partitioning scheme defined by part_dims and box_dims. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>table object </td></tr>
+    <tr><td class="paramname">ind</td><td>the partitioned index </td></tr>
+    <tr><td class="paramname">part_dims</td><td>the intra-partition dimensions of the partitioning scheme </td></tr>
+    <tr><td class="paramname">box_dims</td><td>the inter-partition dimensions of the partitioning scheme </td></tr>
+    <tr><td class="paramname">coords_part</td><td>the array to return the intra-partition dimensions in </td></tr>
+    <tr><td class="paramname">coords_box</td><td>the array to return the inter-partition dimensions in </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -261,7 +479,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">integer, dimension(2), intent(in)&#160;</td>
+          <td class="paramtype">integer, dimension(size(this%table_dims) - 1), intent(in)&#160;</td>
           <td class="paramname"><em>partition_dimensions</em>&#160;</td>
         </tr>
         <tr>
@@ -285,7 +503,7 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd><p class="startdd">zero padding </p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd><p class="startdd">zero padding </p>
 <p class="interdd">n-dimensionalization </p>
 <p class="enddd">assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in. </p>
 </dd></dl>
@@ -385,7 +603,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="memname">type(<a class="el" href="structdisttab__table_1_1table.html">table</a>) function disttab_table::table_constructor </td>
           <td>(</td>
-          <td class="paramtype">integer, dimension(3), intent(in)&#160;</td>
+          <td class="paramtype">integer, dimension(:), intent(in)&#160;</td>
           <td class="paramname"><em>table_dimensions</em></td><td>)</td>
           <td></td>
         </tr>
@@ -397,8 +615,7 @@ Functions/Subroutines</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Constructor for the table object. <br  />
- Allocates the elements array according to the table dimensions. Initializes the member variables table_dims, table_dims_padded. Computes the parameters table_dims_cvar_flat, table_dims_flat, table_dims_padded_cvar_flat, table_dims_padded_flat, table_dim_svar, which are all a property of the table_dimensions argument, necessary for partition mapping functionality. </p>
+<p>Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table_dims, table_dims_padded. Computes the parameters table_dims_cvar_flat, table_dims_flat, table_dims_padded_cvar_flat, table_dims_padded_flat, table_dim_svar, which are all a property of the table_dimensions argument, necessary for partition mapping functionality. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">table_dimensions</td><td>the length of the control variable space in each dimension, and the number of state variables </td></tr>
@@ -441,7 +658,7 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000006">Todo:</a></b></dt><dd>This is called by the destructor, but is it necessary? </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>This is called by the destructor, but is it necessary? </dd></dl>
 
 </div>
 </div>

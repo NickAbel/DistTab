@@ -9,23 +9,17 @@ what is this exactly doing? is table\+\_\+deallocate call necessary?
 \item[Subprogram \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}{disttab\+\_\+table\+::read\+\_\+in}} (this, file\+\_\+id)]\label{todo__todo000003}%
 \Hypertarget{todo__todo000003}%
 Should read in a table in the \char`\"{}\+Alya format\char`\"{} (see tables/2d.\+dat)  
-\item[Subprogram \mbox{\hyperlink{namespacedisttab__table_a5ebcbc269c4e666ca0725852783d6d76}{disttab\+\_\+table\+::fill\+\_\+example}} (this)]\label{todo__todo000004}%
+\item[Subprogram \mbox{\hyperlink{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}{disttab\+\_\+table\+::partition\+\_\+mapping}} (this, partition\+\_\+dimensions)]\label{todo__todo000004}%
 \Hypertarget{todo__todo000004}%
-for N-\/dimensional lookup tables this is the first functionality to develop. Note the commented function prototype below.  
-\item[Subprogram \mbox{\hyperlink{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}{disttab\+\_\+table\+::partition\+\_\+mapping}} (this, partition\+\_\+dimensions)]\label{todo__todo000005}%
-\Hypertarget{todo__todo000005}%
 zero padding 
 
 n-\/dimensionalization 
 
 assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in.  
-\item[Subprogram \mbox{\hyperlink{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}{disttab\+\_\+table\+::table\+\_\+deallocate}} (this)]\label{todo__todo000006}%
-\Hypertarget{todo__todo000006}%
+\item[Subprogram \mbox{\hyperlink{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}{disttab\+\_\+table\+::table\+\_\+deallocate}} (this)]\label{todo__todo000005}%
+\Hypertarget{todo__todo000005}%
 This is called by the destructor, but is it necessary?  
-\item[Subprogram \mbox{\hyperlink{namespacedisttab__table_afe75e53b5186b175b6e164ef565a5d7e}{disttab\+\_\+table\+::get\+\_\+partition\+\_\+bounds}} (this, coords, partition\+\_\+dims)]\label{todo__todo000007}%
-\Hypertarget{todo__todo000007}%
-fix the broken commented code which works on entries which are not partition bases  
-\item[Subprogram \mbox{\hyperlink{namespacedisttab__test__partitioning_a5a71fcde2c7b22ebfad7d1ce5b142407}{disttab\+\_\+test\+\_\+partitioning\+::partition\+\_\+mapping\+\_\+test}} (this)]\label{todo__todo000008}%
-\Hypertarget{todo__todo000008}%
+\item[Subprogram \mbox{\hyperlink{namespacedisttab__test__partitioning_a5a71fcde2c7b22ebfad7d1ce5b142407}{disttab\+\_\+test\+\_\+partitioning\+::partition\+\_\+mapping\+\_\+test}} (this)]\label{todo__todo000006}%
+\Hypertarget{todo__todo000006}%
 be sure there is no precision issue 
 \end{DoxyRefList}

@@ -16,21 +16,26 @@ module \mbox{\hyperlink{namespacedisttab__table}{disttab\+\_\+table}}
 \begin{DoxyCompactItemize}
 \item 
 type(table) function \mbox{\hyperlink{namespacedisttab__table_a6b30669a17ed75f6ebac958f890655af}{disttab\+\_\+table\+::table\+\_\+constructor}} (table\+\_\+dimensions)
-\begin{DoxyCompactList}\small\item\em Constructor for the table object. ~\newline
- Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}{disttab\+\_\+table\+::table\+\_\+destructor}} (this)
 \begin{DoxyCompactList}\small\item\em destructor for the table type \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}{disttab\+\_\+table\+::read\+\_\+in}} (this, file\+\_\+id)
 \begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: \end{DoxyCompactList}\item 
-subroutine \mbox{\hyperlink{namespacedisttab__table_a5ebcbc269c4e666ca0725852783d6d76}{disttab\+\_\+table\+::fill\+\_\+example}} (this)
-\begin{DoxyCompactList}\small\item\em A quick and dirty table filler that populates the table with integers 1, 2, ... \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}{disttab\+\_\+table\+::partition\+\_\+mapping}} (this, partition\+\_\+dimensions)
 \begin{DoxyCompactList}\small\item\em Remaps the partition from assumed Alya-\/format ordering to given partition ordering. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}{disttab\+\_\+table\+::print\+\_\+elements}} (this)
 \begin{DoxyCompactList}\small\item\em Write elements to stdout. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}{disttab\+\_\+table\+::table\+\_\+deallocate}} (this)
 \begin{DoxyCompactList}\small\item\em Deallocates the allocated (allocatable) member variables of the table object. \end{DoxyCompactList}\item 
-integer function \mbox{\hyperlink{namespacedisttab__table_aad4dced79753238edfa98673d1606e63}{disttab\+\_\+table\+::coords2flat}} (this, coords)
-\begin{DoxyCompactList}\small\item\em Converts entry (i, j) in coordinate indexing to flat index n. \end{DoxyCompactList}\item 
-integer function, dimension(4) \mbox{\hyperlink{namespacedisttab__table_afe75e53b5186b175b6e164ef565a5d7e}{disttab\+\_\+table\+::get\+\_\+partition\+\_\+bounds}} (this, coords, partition\+\_\+dims)
-\begin{DoxyCompactList}\small\item\em Return the dimensional coordinate bounds of the block beginning at given coordinates coords. Currently only works on partition bases. The commented code is broken. \end{DoxyCompactList}\end{DoxyCompactItemize}
+integer function, dimension(size(this\%partition\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a50ba52169510282eb005f690ab3886a6}{disttab\+\_\+table\+::flat2coords}} (this, flat, part\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Converts flat index n entry (i\+\_\+1, i\+\_\+2, ..., i\+\_\+N) in coordinate indexing using the dimensions given in part\+\_\+dims. \end{DoxyCompactList}\item 
+integer function, dimension(size(this\%partition\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a1a6cf1c7276cdeef161d4c33cdb409b2}{disttab\+\_\+table\+::get\+\_\+global\+\_\+coords}} (this, ind)
+\begin{DoxyCompactList}\small\item\em Return coordinates from a global index on the object padded table dimensions. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_ac9b7bc8478aed0d185f239b7f21358ac}{disttab\+\_\+table\+::get\+\_\+local\+\_\+coords}} (this, ind, part\+\_\+dims, box\+\_\+dims, coords\+\_\+part, coords\+\_\+box)
+\begin{DoxyCompactList}\small\item\em Given an index, intra-\/partition dimensions part\+\_\+dims, and inter-\/partition dimensions box\+\_\+dims, return the coordinates of index under the partitioning scheme defined by part\+\_\+dims and box\+\_\+dims. \end{DoxyCompactList}\item 
+integer function \mbox{\hyperlink{namespacedisttab__table_a7dcae63efdb6ec0b25e7a2d1dd6d2500}{disttab\+\_\+table\+::coords2flat}} (this, coords, part\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Converts entry (i\+\_\+1, i\+\_\+2, ..., i\+\_\+N) in coordinate indexing to flat index n in global order, according to the given partition size part\+\_\+dims. \end{DoxyCompactList}\item 
+integer function \mbox{\hyperlink{namespacedisttab__table_a9e24b672c046c1e701675ba043cce5de}{disttab\+\_\+table\+::get\+\_\+index\+\_\+global\+\_\+coords}} (this, coords, table\+\_\+dims\+\_\+cvar)
+\begin{DoxyCompactList}\small\item\em Return the global flat index, given coordinates and control variable space dimensions. \end{DoxyCompactList}\item 
+integer function \mbox{\hyperlink{namespacedisttab__table_a40f490bccfa49053cfd8dd1599a66875}{disttab\+\_\+table\+::get\+\_\+index\+\_\+local\+\_\+coords}} (this, coords\+\_\+part, coords\+\_\+box, part\+\_\+dims, box\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Return partitioned flat index, given coordinates and an associated two-\/level partitioning scheme described by the intra-\/partition dimensions part\+\_\+dims and inter-\/partition dimensions box\+\_\+dims. \end{DoxyCompactList}\end{DoxyCompactItemize}

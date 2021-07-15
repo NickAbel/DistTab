@@ -2,8 +2,7 @@
 \label{structdisttab__test__partitioning_1_1partitioning__test}\index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
 
 
-Collaboration diagram for disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+:
-\nopagebreak
+Collaboration diagram for disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -13,19 +12,11 @@ Collaboration diagram for disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\
 \doxysubsection*{Private Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-procedure, pass(this) \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_ab9dc2c9ebb7a985128805174da045d35}{run\+\_\+test\+\_\+2d}}
-\item 
-procedure, pass(this) \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a2cbf08504220aa77bd2a60c3c4be1079}{run\+\_\+test\+\_\+2d\+\_\+0pad}}
-\item 
-procedure, pass(this) \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a5cc5b0b3d3558af1d494711c9a3fd9e9}{run\+\_\+test\+\_\+3d}}
-\item 
-procedure, pass(this) \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_aa483016c77d3b16b591cb4ca630b159e}{run\+\_\+test\+\_\+3d\+\_\+0pad}}
+procedure, pass(this) \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_ab1bffd538c38eba819f69c7b5cabff46}{run\+\_\+test}}
 \item 
 procedure, pass, private \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a56165a1d0d5f43b6678674e673c82b60}{partition\+\_\+mapping\+\_\+test}}
 \item 
 procedure, pass, private \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a4f1e527d3491fc20a871ff675ae819e6}{part\+\_\+test\+\_\+fill\+\_\+table}}
-\item 
-procedure, pass, private \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_acb235c896bded803943a29e9ab59c961}{zero\+\_\+padding\+\_\+test}}
 \item 
 type(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}) function \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a63d0dc84969c1d3d1737f573cf6b489c}{partitioning\+\_\+test\+\_\+constructor}} (table\+\_\+dimensions, partition\+\_\+dimensions)
 \begin{DoxyCompactList}\small\item\em The constructor for the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} type. Initializes the table and partition dimensions and creates a table object lookup for testing. \end{DoxyCompactList}\end{DoxyCompactItemize}
@@ -34,9 +25,9 @@ type(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{p
 \item 
 type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a6c8563624b6b8b8396f2e9350b4a0366}{lookup}}
 \item 
-integer, dimension(3) \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_ab27d74d3be0fb3877149a036d00d62db}{table\+\_\+dims}}
+integer, dimension(\+:), allocatable \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a8ac581ea24597f39b17b9ecde11bd91a}{table\+\_\+dims}}
 \item 
-integer, dimension(2) \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a440ad99599bd8fba3ce2af935a0d8726}{partition\+\_\+dims}}
+integer, dimension(\+:), allocatable \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test_a45bc60c7c45d6906b8116202ee643ba3}{partition\+\_\+dims}}
 \end{DoxyCompactItemize}
 
 
@@ -57,7 +48,7 @@ integer, dimension(2) \mbox{\hyperlink{structdisttab__test__partitioning_1_1part
 \index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!partitioning\_test\_constructor@{partitioning\_test\_constructor}}
 \index{partitioning\_test\_constructor@{partitioning\_test\_constructor}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
 \doxysubsubsection{\texorpdfstring{partitioning\_test\_constructor()}{partitioning\_test\_constructor()}}
-{\footnotesize\ttfamily type(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}) function disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::partitioning\+\_\+test\+\_\+constructor (\begin{DoxyParamCaption}\item[{integer, dimension(3), intent(in)}]{table\+\_\+dimensions,  }\item[{integer, dimension(2), intent(in)}]{partition\+\_\+dimensions }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily type(\mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}}) function disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::partitioning\+\_\+test\+\_\+constructor (\begin{DoxyParamCaption}\item[{integer, dimension(\+:), intent(in)}]{table\+\_\+dimensions,  }\item[{integer, dimension(\+:), intent(in)}]{partition\+\_\+dimensions }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -73,35 +64,11 @@ The constructor for the \mbox{\hyperlink{structdisttab__test__partitioning_1_1pa
 \begin{DoxyReturn}{Returns}
 this the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__test}{partitioning\+\_\+test}} object which partitioning\+\_\+test\+\_\+constructor instantiates 
 \end{DoxyReturn}
-\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_ab9dc2c9ebb7a985128805174da045d35}\label{structdisttab__test__partitioning_1_1partitioning__test_ab9dc2c9ebb7a985128805174da045d35}} 
-\index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!run\_test\_2d@{run\_test\_2d}}
-\index{run\_test\_2d@{run\_test\_2d}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
-\doxysubsubsection{\texorpdfstring{run\_test\_2d()}{run\_test\_2d()}}
-{\footnotesize\ttfamily procedure, pass(this) disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::run\+\_\+test\+\_\+2d\hspace{0.3cm}{\ttfamily [private]}}
-
-\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_a2cbf08504220aa77bd2a60c3c4be1079}\label{structdisttab__test__partitioning_1_1partitioning__test_a2cbf08504220aa77bd2a60c3c4be1079}} 
-\index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!run\_test\_2d\_0pad@{run\_test\_2d\_0pad}}
-\index{run\_test\_2d\_0pad@{run\_test\_2d\_0pad}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
-\doxysubsubsection{\texorpdfstring{run\_test\_2d\_0pad()}{run\_test\_2d\_0pad()}}
-{\footnotesize\ttfamily procedure, pass(this) disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::run\+\_\+test\+\_\+2d\+\_\+0pad\hspace{0.3cm}{\ttfamily [private]}}
-
-\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_a5cc5b0b3d3558af1d494711c9a3fd9e9}\label{structdisttab__test__partitioning_1_1partitioning__test_a5cc5b0b3d3558af1d494711c9a3fd9e9}} 
-\index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!run\_test\_3d@{run\_test\_3d}}
-\index{run\_test\_3d@{run\_test\_3d}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
-\doxysubsubsection{\texorpdfstring{run\_test\_3d()}{run\_test\_3d()}}
-{\footnotesize\ttfamily procedure, pass(this) disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::run\+\_\+test\+\_\+3d\hspace{0.3cm}{\ttfamily [private]}}
-
-\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_aa483016c77d3b16b591cb4ca630b159e}\label{structdisttab__test__partitioning_1_1partitioning__test_aa483016c77d3b16b591cb4ca630b159e}} 
-\index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!run\_test\_3d\_0pad@{run\_test\_3d\_0pad}}
-\index{run\_test\_3d\_0pad@{run\_test\_3d\_0pad}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
-\doxysubsubsection{\texorpdfstring{run\_test\_3d\_0pad()}{run\_test\_3d\_0pad()}}
-{\footnotesize\ttfamily procedure, pass(this) disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::run\+\_\+test\+\_\+3d\+\_\+0pad\hspace{0.3cm}{\ttfamily [private]}}
-
-\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_acb235c896bded803943a29e9ab59c961}\label{structdisttab__test__partitioning_1_1partitioning__test_acb235c896bded803943a29e9ab59c961}} 
-\index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!zero\_padding\_test@{zero\_padding\_test}}
-\index{zero\_padding\_test@{zero\_padding\_test}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
-\doxysubsubsection{\texorpdfstring{zero\_padding\_test()}{zero\_padding\_test()}}
-{\footnotesize\ttfamily procedure, pass, private disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::zero\+\_\+padding\+\_\+test\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_ab1bffd538c38eba819f69c7b5cabff46}\label{structdisttab__test__partitioning_1_1partitioning__test_ab1bffd538c38eba819f69c7b5cabff46}} 
+\index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!run\_test@{run\_test}}
+\index{run\_test@{run\_test}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
+\doxysubsubsection{\texorpdfstring{run\_test()}{run\_test()}}
+{\footnotesize\ttfamily procedure, pass(this) disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::run\+\_\+test\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -112,17 +79,17 @@ this the \mbox{\hyperlink{structdisttab__test__partitioning_1_1partitioning__tes
 \doxysubsubsection{\texorpdfstring{lookup}{lookup}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::lookup\hspace{0.3cm}{\ttfamily [private]}}
 
-\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_a440ad99599bd8fba3ce2af935a0d8726}\label{structdisttab__test__partitioning_1_1partitioning__test_a440ad99599bd8fba3ce2af935a0d8726}} 
+\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_a45bc60c7c45d6906b8116202ee643ba3}\label{structdisttab__test__partitioning_1_1partitioning__test_a45bc60c7c45d6906b8116202ee643ba3}} 
 \index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!partition\_dims@{partition\_dims}}
 \index{partition\_dims@{partition\_dims}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
 \doxysubsubsection{\texorpdfstring{partition\_dims}{partition\_dims}}
-{\footnotesize\ttfamily integer, dimension(2) disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::partition\+\_\+dims\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily integer, dimension(\+:), allocatable disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::partition\+\_\+dims\hspace{0.3cm}{\ttfamily [private]}}
 
-\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_ab27d74d3be0fb3877149a036d00d62db}\label{structdisttab__test__partitioning_1_1partitioning__test_ab27d74d3be0fb3877149a036d00d62db}} 
+\mbox{\Hypertarget{structdisttab__test__partitioning_1_1partitioning__test_a8ac581ea24597f39b17b9ecde11bd91a}\label{structdisttab__test__partitioning_1_1partitioning__test_a8ac581ea24597f39b17b9ecde11bd91a}} 
 \index{disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}!table\_dims@{table\_dims}}
 \index{table\_dims@{table\_dims}!disttab\_test\_partitioning::partitioning\_test@{disttab\_test\_partitioning::partitioning\_test}}
 \doxysubsubsection{\texorpdfstring{table\_dims}{table\_dims}}
-{\footnotesize\ttfamily integer, dimension(3) disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::table\+\_\+dims\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily integer, dimension(\+:), allocatable disttab\+\_\+test\+\_\+partitioning\+::partitioning\+\_\+test\+::table\+\_\+dims\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
