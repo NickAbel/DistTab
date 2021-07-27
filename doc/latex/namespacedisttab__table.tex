@@ -8,38 +8,54 @@ interface \mbox{\hyperlink{structdisttab__table_1_1table}{table}}
 \doxysubsection*{Functions/\+Subroutines}
 \begin{DoxyCompactItemize}
 \item 
-type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function \mbox{\hyperlink{namespacedisttab__table_a6b30669a17ed75f6ebac958f890655af}{table\+\_\+constructor}} (table\+\_\+dimensions)
-\begin{DoxyCompactList}\small\item\em Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a6f533f94635add87f3b9c4f839c9f0ad}{index\+\_\+to\+\_\+value}} (this, ind)
+\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a287fdc2bc0a2b031f28979b8df172d59}{local\+\_\+coord\+\_\+to\+\_\+value}} (this, coord\+\_\+p, coord\+\_\+b)
+\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}{global\+\_\+coord\+\_\+to\+\_\+value}} (this, coord)
+\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aa6002471157db65ab45db6b7ee84a2b9}{index\+\_\+to\+\_\+value\+\_\+cloud}} (this, ind)
+\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aadb1fcf36cd240b7bff3d00a1c18e8b6}{local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord\+\_\+p, coord\+\_\+b)
+\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aa2017128d9e68cfb29827161c65be1a3}{global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord)
+\item 
+type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function \mbox{\hyperlink{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}{table\+\_\+constructor}} (table\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dims argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}{table\+\_\+destructor}} (this)
 \begin{DoxyCompactList}\small\item\em destructor for the table type \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}{read\+\_\+in}} (this, file\+\_\+id)
 \begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: \end{DoxyCompactList}\item 
-subroutine \mbox{\hyperlink{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}{partition\+\_\+mapping}} (this, partition\+\_\+dimensions)
+subroutine \mbox{\hyperlink{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}{partition\+\_\+remap}} (this, part\+\_\+dims, part\+\_\+dims\+\_\+prev)
 \begin{DoxyCompactList}\small\item\em Remaps the partition from assumed Alya-\/format ordering to given partition ordering. \end{DoxyCompactList}\item 
-subroutine \mbox{\hyperlink{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}{print\+\_\+elements}} (this)
+subroutine \mbox{\hyperlink{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}{print\+\_\+elems}} (this)
 \begin{DoxyCompactList}\small\item\em Write elements to stdout. \end{DoxyCompactList}\item 
-subroutine \mbox{\hyperlink{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}{table\+\_\+deallocate}} (this)
+subroutine \mbox{\hyperlink{namespacedisttab__table_ab8a2b8fd8aed669c2284a5b070f39492}{deallocate\+\_\+table}} (this)
 \begin{DoxyCompactList}\small\item\em Deallocates the allocated (allocatable) member variables of the table object. \end{DoxyCompactList}\item 
-integer function, dimension(size(this\%partition\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a50ba52169510282eb005f690ab3886a6}{flat2coords}} (this, flat, part\+\_\+dims)
+integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}{index\+\_\+to\+\_\+coord}} (this, ind, dims)
 \begin{DoxyCompactList}\small\item\em Converts flat index n entry (i\+\_\+1, i\+\_\+2, ..., i\+\_\+N) in coordinate indexing using the dimensions given in part\+\_\+dims. \end{DoxyCompactList}\item 
-integer function, dimension(size(this\%partition\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a1a6cf1c7276cdeef161d4c33cdb409b2}{get\+\_\+global\+\_\+coords}} (this, ind)
+integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_abc3497c209557ca59ec3ec3502c5963a}{index\+\_\+to\+\_\+global\+\_\+coord}} (this, ind, part\+\_\+dims, box\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Return coordinates from a global index on the object padded table dimensions. \end{DoxyCompactList}\item 
-subroutine \mbox{\hyperlink{namespacedisttab__table_ac9b7bc8478aed0d185f239b7f21358ac}{get\+\_\+local\+\_\+coords}} (this, ind, part\+\_\+dims, box\+\_\+dims, coords\+\_\+part, coords\+\_\+box)
+subroutine \mbox{\hyperlink{namespacedisttab__table_a49d3da3af7837069fcda582748162bf9}{index\+\_\+to\+\_\+local\+\_\+coord}} (this, ind, part\+\_\+dims, box\+\_\+dims, coord\+\_\+p, coord\+\_\+b)
 \begin{DoxyCompactList}\small\item\em Given an index, intra-\/partition dimensions part\+\_\+dims, and inter-\/partition dimensions box\+\_\+dims, return the coordinates of index under the partitioning scheme defined by part\+\_\+dims and box\+\_\+dims. \end{DoxyCompactList}\item 
-integer function \mbox{\hyperlink{namespacedisttab__table_a7dcae63efdb6ec0b25e7a2d1dd6d2500}{coords2flat}} (this, coords, part\+\_\+dims)
+integer function \mbox{\hyperlink{namespacedisttab__table_a154cf9cf37a8c94a3171f4b751fd0e1c}{coord\+\_\+to\+\_\+index}} (this, coord, dims)
 \begin{DoxyCompactList}\small\item\em Converts entry (i\+\_\+1, i\+\_\+2, ..., i\+\_\+N) in coordinate indexing to flat index n in global order, according to the given partition size part\+\_\+dims. \end{DoxyCompactList}\item 
-integer function \mbox{\hyperlink{namespacedisttab__table_a9e24b672c046c1e701675ba043cce5de}{get\+\_\+index\+\_\+global\+\_\+coords}} (this, coords, table\+\_\+dims\+\_\+cvar)
+integer function \mbox{\hyperlink{namespacedisttab__table_a18b37d11d2b5aee7b289665e2147e72e}{global\+\_\+coord\+\_\+to\+\_\+index}} (this, coord, part\+\_\+dims, box\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Return the global flat index, given coordinates and control variable space dimensions. \end{DoxyCompactList}\item 
-integer function \mbox{\hyperlink{namespacedisttab__table_a40f490bccfa49053cfd8dd1599a66875}{get\+\_\+index\+\_\+local\+\_\+coords}} (this, coords\+\_\+part, coords\+\_\+box, part\+\_\+dims, box\+\_\+dims)
-\begin{DoxyCompactList}\small\item\em Return partitioned flat index, given coordinates and an associated two-\/level partitioning scheme described by the intra-\/partition dimensions part\+\_\+dims and inter-\/partition dimensions box\+\_\+dims. \end{DoxyCompactList}\end{DoxyCompactItemize}
+integer function \mbox{\hyperlink{namespacedisttab__table_a4c28f3477360f4c12e959c944cccf6df}{local\+\_\+coord\+\_\+to\+\_\+index}} (this, coord\+\_\+p, coord\+\_\+b, part\+\_\+dims, box\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Return partitioned flat index, given coordinates and an associated two-\/level partitioning scheme described by the intra-\/partition dimensions part\+\_\+dims and inter-\/partition dimensions box\+\_\+dims. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__table_a8a19ae7fc75673df318d42622928e9f2}{global\+\_\+coord\+\_\+to\+\_\+local\+\_\+coord}} (this, coord, part\+\_\+dims, box\+\_\+dims, coord\+\_\+p, coord\+\_\+b)
+\item 
+integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a41c2e819a011062a0abcf184a9dacb2f}{local\+\_\+coord\+\_\+to\+\_\+global\+\_\+coord}} (this, coord\+\_\+p, coord\+\_\+b, part\+\_\+dims, box\+\_\+dims)
+\end{DoxyCompactItemize}
 
 
 \doxysubsection{Function/\+Subroutine Documentation}
-\mbox{\Hypertarget{namespacedisttab__table_a7dcae63efdb6ec0b25e7a2d1dd6d2500}\label{namespacedisttab__table_a7dcae63efdb6ec0b25e7a2d1dd6d2500}} 
-\index{disttab\_table@{disttab\_table}!coords2flat@{coords2flat}}
-\index{coords2flat@{coords2flat}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{coords2flat()}{coords2flat()}}
-{\footnotesize\ttfamily integer function disttab\+\_\+table\+::coords2flat (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{coords,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{part\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\Hypertarget{namespacedisttab__table_a154cf9cf37a8c94a3171f4b751fd0e1c}\label{namespacedisttab__table_a154cf9cf37a8c94a3171f4b751fd0e1c}} 
+\index{disttab\_table@{disttab\_table}!coord\_to\_index@{coord\_to\_index}}
+\index{coord\_to\_index@{coord\_to\_index}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{coord\_to\_index()}{coord\_to\_index()}}
+{\footnotesize\ttfamily integer function disttab\+\_\+table\+::coord\+\_\+to\+\_\+index (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -47,21 +63,78 @@ Converts entry (i\+\_\+1, i\+\_\+2, ..., i\+\_\+N) in coordinate indexing to fla
 
 
 \begin{DoxyParams}{Parameters}
-{\em this} & table object to which coords2flat belongs \\
+{\em this} & table object \\
 \hline
-{\em coords} & the coordinates of the entry to be returned in flat index \\
+{\em coord} & the coordinates of the entry to be returned in flat index \\
 \hline
-{\em part\+\_\+dims} & the partition dimensions on which to find the flat index. \\
+{\em dims} & the dimensions on which to find the flat index. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-flat the flat index of entry located at coordinates coords 
+ind the flat index of entry located at coordinates coord 
 \end{DoxyReturn}
-\mbox{\Hypertarget{namespacedisttab__table_a50ba52169510282eb005f690ab3886a6}\label{namespacedisttab__table_a50ba52169510282eb005f690ab3886a6}} 
-\index{disttab\_table@{disttab\_table}!flat2coords@{flat2coords}}
-\index{flat2coords@{flat2coords}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{flat2coords()}{flat2coords()}}
-{\footnotesize\ttfamily integer function, dimension(size(this\%partition\+\_\+dims)) disttab\+\_\+table\+::flat2coords (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer}]{flat,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{part\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\Hypertarget{namespacedisttab__table_ab8a2b8fd8aed669c2284a5b070f39492}\label{namespacedisttab__table_ab8a2b8fd8aed669c2284a5b070f39492}} 
+\index{disttab\_table@{disttab\_table}!deallocate\_table@{deallocate\_table}}
+\index{deallocate\_table@{deallocate\_table}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{deallocate\_table()}{deallocate\_table()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::deallocate\+\_\+table (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Deallocates the allocated (allocatable) member variables of the table object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object whose allocatable member variables are to be deallocated \\
+\hline
+\end{DoxyParams}
+\begin{DoxyRefDesc}{Todo}
+\item[\mbox{\hyperlink{todo__todo000005}{Todo}}]This is called by the destructor, but is it necessary? \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_a18b37d11d2b5aee7b289665e2147e72e}\label{namespacedisttab__table_a18b37d11d2b5aee7b289665e2147e72e}} 
+\index{disttab\_table@{disttab\_table}!global\_coord\_to\_index@{global\_coord\_to\_index}}
+\index{global\_coord\_to\_index@{global\_coord\_to\_index}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{global\_coord\_to\_index()}{global\_coord\_to\_index()}}
+{\footnotesize\ttfamily integer function disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+index (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Return the global flat index, given coordinates and control variable space dimensions. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & table object \\
+\hline
+{\em coord} & the coordinates \\
+\hline
+{\em table\+\_\+dims\+\_\+cvar} & the dimensions of the control variable space \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ind global flat index 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__table_a8a19ae7fc75673df318d42622928e9f2}\label{namespacedisttab__table_a8a19ae7fc75673df318d42622928e9f2}} 
+\index{disttab\_table@{disttab\_table}!global\_coord\_to\_local\_coord@{global\_coord\_to\_local\_coord}}
+\index{global\_coord\_to\_local\_coord@{global\_coord\_to\_local\_coord}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{global\_coord\_to\_local\_coord()}{global\_coord\_to\_local\_coord()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+local\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+p,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}\label{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}} 
+\index{disttab\_table@{disttab\_table}!global\_coord\_to\_value@{global\_coord\_to\_value}}
+\index{global\_coord\_to\_value@{global\_coord\_to\_value}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{global\_coord\_to\_value()}{global\_coord\_to\_value()}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{namespacedisttab__table_aa2017128d9e68cfb29827161c65be1a3}\label{namespacedisttab__table_aa2017128d9e68cfb29827161c65be1a3}} 
+\index{disttab\_table@{disttab\_table}!global\_coord\_to\_value\_cloud@{global\_coord\_to\_value\_cloud}}
+\index{global\_coord\_to\_value\_cloud@{global\_coord\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{global\_coord\_to\_value\_cloud()}{global\_coord\_to\_value\_cloud()}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims) + 1) disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}\label{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}} 
+\index{disttab\_table@{disttab\_table}!index\_to\_coord@{index\_to\_coord}}
+\index{index\_to\_coord@{index\_to\_coord}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{index\_to\_coord()}{index\_to\_coord()}}
+{\footnotesize\ttfamily integer function, dimension(size(this\%part\+\_\+dims)) disttab\+\_\+table\+::index\+\_\+to\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer}]{ind,  }\item[{integer, dimension(size(this\%part\+\_\+dims)), intent(in)}]{dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -69,21 +142,21 @@ Converts flat index n entry (i\+\_\+1, i\+\_\+2, ..., i\+\_\+N) in coordinate in
 
 
 \begin{DoxyParams}{Parameters}
-{\em this} & table object to which flat2coords belongs \\
+{\em this} & table object to which flat2coord belongs \\
 \hline
-{\em flat} & the flat index to be returned in coordinate index \\
+{\em ind} & the flat index to be returned in coordinate index \\
 \hline
-{\em part\+\_\+dims} & table dimensions for coordinate indexing \\
+{\em dims} & dimensions for coordinate indexing \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-coords the coordinates of the entry at flat index flat 
+coord the coordinates of the entry at flat index flat 
 \end{DoxyReturn}
-\mbox{\Hypertarget{namespacedisttab__table_a1a6cf1c7276cdeef161d4c33cdb409b2}\label{namespacedisttab__table_a1a6cf1c7276cdeef161d4c33cdb409b2}} 
-\index{disttab\_table@{disttab\_table}!get\_global\_coords@{get\_global\_coords}}
-\index{get\_global\_coords@{get\_global\_coords}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{get\_global\_coords()}{get\_global\_coords()}}
-{\footnotesize\ttfamily integer function, dimension(size(this\%partition\+\_\+dims)) disttab\+\_\+table\+::get\+\_\+global\+\_\+coords (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer}]{ind }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\Hypertarget{namespacedisttab__table_abc3497c209557ca59ec3ec3502c5963a}\label{namespacedisttab__table_abc3497c209557ca59ec3ec3502c5963a}} 
+\index{disttab\_table@{disttab\_table}!index\_to\_global\_coord@{index\_to\_global\_coord}}
+\index{index\_to\_global\_coord@{index\_to\_global\_coord}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{index\_to\_global\_coord()}{index\_to\_global\_coord()}}
+{\footnotesize\ttfamily integer function, dimension(size(this\%part\+\_\+dims)) disttab\+\_\+table\+::index\+\_\+to\+\_\+global\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer}]{ind,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -97,61 +170,13 @@ Return coordinates from a global index on the object padded table dimensions.
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-coords global coordinates on the object padded table dimensions 
+coord global coordinates on the object padded table dimensions 
 \end{DoxyReturn}
-\mbox{\Hypertarget{namespacedisttab__table_a9e24b672c046c1e701675ba043cce5de}\label{namespacedisttab__table_a9e24b672c046c1e701675ba043cce5de}} 
-\index{disttab\_table@{disttab\_table}!get\_index\_global\_coords@{get\_index\_global\_coords}}
-\index{get\_index\_global\_coords@{get\_index\_global\_coords}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{get\_index\_global\_coords()}{get\_index\_global\_coords()}}
-{\footnotesize\ttfamily integer function disttab\+\_\+table\+::get\+\_\+index\+\_\+global\+\_\+coords (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{coords,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{table\+\_\+dims\+\_\+cvar }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
-
-
-
-Return the global flat index, given coordinates and control variable space dimensions. 
-
-
-\begin{DoxyParams}{Parameters}
-{\em this} & table object \\
-\hline
-{\em coords} & the coordinates \\
-\hline
-{\em table\+\_\+dims\+\_\+cvar} & the dimensions of the control variable space \\
-\hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-ind global flat index 
-\end{DoxyReturn}
-\mbox{\Hypertarget{namespacedisttab__table_a40f490bccfa49053cfd8dd1599a66875}\label{namespacedisttab__table_a40f490bccfa49053cfd8dd1599a66875}} 
-\index{disttab\_table@{disttab\_table}!get\_index\_local\_coords@{get\_index\_local\_coords}}
-\index{get\_index\_local\_coords@{get\_index\_local\_coords}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{get\_index\_local\_coords()}{get\_index\_local\_coords()}}
-{\footnotesize\ttfamily integer function disttab\+\_\+table\+::get\+\_\+index\+\_\+local\+\_\+coords (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{coords\+\_\+part,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{coords\+\_\+box,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
-
-
-
-Return partitioned flat index, given coordinates and an associated two-\/level partitioning scheme described by the intra-\/partition dimensions part\+\_\+dims and inter-\/partition dimensions box\+\_\+dims. 
-
-
-\begin{DoxyParams}{Parameters}
-{\em this} & table object \\
-\hline
-{\em coords\+\_\+part} & the intra-\/partition term of the coordinates \\
-\hline
-{\em coords\+\_\+box} & the inter-\/partition term of the coordinates \\
-\hline
-{\em part\+\_\+dims} & the intra-\/partition dimensions \\
-\hline
-{\em box\+\_\+dims} & the inter-\/partition box dimensions \\
-\hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-ind the partitioned index 
-\end{DoxyReturn}
-\mbox{\Hypertarget{namespacedisttab__table_ac9b7bc8478aed0d185f239b7f21358ac}\label{namespacedisttab__table_ac9b7bc8478aed0d185f239b7f21358ac}} 
-\index{disttab\_table@{disttab\_table}!get\_local\_coords@{get\_local\_coords}}
-\index{get\_local\_coords@{get\_local\_coords}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{get\_local\_coords()}{get\_local\_coords()}}
-{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::get\+\_\+local\+\_\+coords (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer}]{ind,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{box\+\_\+dims,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{coords\+\_\+part,  }\item[{integer, dimension(size(this\%partition\+\_\+dims))}]{coords\+\_\+box }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\Hypertarget{namespacedisttab__table_a49d3da3af7837069fcda582748162bf9}\label{namespacedisttab__table_a49d3da3af7837069fcda582748162bf9}} 
+\index{disttab\_table@{disttab\_table}!index\_to\_local\_coord@{index\_to\_local\_coord}}
+\index{index\_to\_local\_coord@{index\_to\_local\_coord}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{index\_to\_local\_coord()}{index\_to\_local\_coord()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::index\+\_\+to\+\_\+local\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer}]{ind,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+p,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -163,20 +188,76 @@ Given an index, intra-\/partition dimensions part\+\_\+dims, and inter-\/partiti
 \hline
 {\em ind} & the partitioned index \\
 \hline
-{\em part\+\_\+dims} & the intra-\/partition dimensions of the partitioning scheme \\
+{\em part\+\_\+dims} & the inter-\/partition dimensions of the partitioning scheme \\
 \hline
-{\em box\+\_\+dims} & the inter-\/partition dimensions of the partitioning scheme \\
+{\em box\+\_\+dims} & the intra-\/partition dimensions of the partitioning scheme \\
 \hline
-{\em coords\+\_\+part} & the array to return the intra-\/partition dimensions in \\
+{\em coord\+\_\+p} & the array to return the inter-\/partition dimensions in \\
 \hline
-{\em coords\+\_\+box} & the array to return the inter-\/partition dimensions in \\
+{\em coord\+\_\+b} & the array to return the intra-\/partition dimensions in \\
 \hline
 \end{DoxyParams}
-\mbox{\Hypertarget{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}\label{namespacedisttab__table_a46780ef5ba062fbd4c874c575f6a3c46}} 
-\index{disttab\_table@{disttab\_table}!partition\_mapping@{partition\_mapping}}
-\index{partition\_mapping@{partition\_mapping}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{partition\_mapping()}{partition\_mapping()}}
-{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::partition\+\_\+mapping (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%table\+\_\+dims) -\/ 1), intent(in)}]{partition\+\_\+dimensions }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+\mbox{\Hypertarget{namespacedisttab__table_a6f533f94635add87f3b9c4f839c9f0ad}\label{namespacedisttab__table_a6f533f94635add87f3b9c4f839c9f0ad}} 
+\index{disttab\_table@{disttab\_table}!index\_to\_value@{index\_to\_value}}
+\index{index\_to\_value@{index\_to\_value}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{index\_to\_value()}{index\_to\_value()}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::index\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{ind }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{namespacedisttab__table_aa6002471157db65ab45db6b7ee84a2b9}\label{namespacedisttab__table_aa6002471157db65ab45db6b7ee84a2b9}} 
+\index{disttab\_table@{disttab\_table}!index\_to\_value\_cloud@{index\_to\_value\_cloud}}
+\index{index\_to\_value\_cloud@{index\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{index\_to\_value\_cloud()}{index\_to\_value\_cloud()}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims) + 1) disttab\+\_\+table\+::index\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{ind }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{namespacedisttab__table_a41c2e819a011062a0abcf184a9dacb2f}\label{namespacedisttab__table_a41c2e819a011062a0abcf184a9dacb2f}} 
+\index{disttab\_table@{disttab\_table}!local\_coord\_to\_global\_coord@{local\_coord\_to\_global\_coord}}
+\index{local\_coord\_to\_global\_coord@{local\_coord\_to\_global\_coord}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{local\_coord\_to\_global\_coord()}{local\_coord\_to\_global\_coord()}}
+{\footnotesize\ttfamily integer function, dimension(size(this\%part\+\_\+dims)) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+global\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+p,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+b,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{namespacedisttab__table_a4c28f3477360f4c12e959c944cccf6df}\label{namespacedisttab__table_a4c28f3477360f4c12e959c944cccf6df}} 
+\index{disttab\_table@{disttab\_table}!local\_coord\_to\_index@{local\_coord\_to\_index}}
+\index{local\_coord\_to\_index@{local\_coord\_to\_index}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{local\_coord\_to\_index()}{local\_coord\_to\_index()}}
+{\footnotesize\ttfamily integer function disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+index (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims)), intent(in)}]{coord\+\_\+p,  }\item[{integer, dimension(size(this\%part\+\_\+dims)), intent(in)}]{coord\+\_\+b,  }\item[{integer, dimension(size(this\%part\+\_\+dims)), intent(in)}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims)), intent(in)}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Return partitioned flat index, given coordinates and an associated two-\/level partitioning scheme described by the intra-\/partition dimensions part\+\_\+dims and inter-\/partition dimensions box\+\_\+dims. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & table object \\
+\hline
+{\em coord\+\_\+part} & the intra-\/partition term of the coordinates \\
+\hline
+{\em coord\+\_\+box} & the inter-\/partition term of the coordinates \\
+\hline
+{\em part\+\_\+dims} & the intra-\/partition dimensions \\
+\hline
+{\em box\+\_\+dims} & the inter-\/partition box dimensions \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ind the partitioned index 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__table_a287fdc2bc0a2b031f28979b8df172d59}\label{namespacedisttab__table_a287fdc2bc0a2b031f28979b8df172d59}} 
+\index{disttab\_table@{disttab\_table}!local\_coord\_to\_value@{local\_coord\_to\_value}}
+\index{local\_coord\_to\_value@{local\_coord\_to\_value}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{local\_coord\_to\_value()}{local\_coord\_to\_value()}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+p,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{namespacedisttab__table_aadb1fcf36cd240b7bff3d00a1c18e8b6}\label{namespacedisttab__table_aadb1fcf36cd240b7bff3d00a1c18e8b6}} 
+\index{disttab\_table@{disttab\_table}!local\_coord\_to\_value\_cloud@{local\_coord\_to\_value\_cloud}}
+\index{local\_coord\_to\_value\_cloud@{local\_coord\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{local\_coord\_to\_value\_cloud()}{local\_coord\_to\_value\_cloud()}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims) + 1) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+p,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\mbox{\Hypertarget{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}\label{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}} 
+\index{disttab\_table@{disttab\_table}!partition\_remap@{partition\_remap}}
+\index{partition\_remap@{partition\_remap}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{partition\_remap()}{partition\_remap()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::partition\+\_\+remap (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%table\+\_\+dims) -\/ 1), intent(in)}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%table\+\_\+dims) -\/ 1), intent(in)}]{part\+\_\+dims\+\_\+prev }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -186,20 +267,18 @@ Remaps the partition from assumed Alya-\/format ordering to given partition orde
 \begin{DoxyParams}{Parameters}
 {\em this} & table object to perform partition mapping \\
 \hline
-{\em partition\+\_\+dimensions} & partition dimensions to use \\
+{\em part\+\_\+dims} & partition dims to use \\
 \hline
 \end{DoxyParams}
 \begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000004}{Todo}}]zero padding 
+\item[\mbox{\hyperlink{todo__todo000004}{Todo}}]assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. 
 
-n-\/dimensionalization 
-
-assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. \end{DoxyRefDesc}
-\mbox{\Hypertarget{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}\label{namespacedisttab__table_a95bea9c2f10963e2842688e6b6ecea53}} 
-\index{disttab\_table@{disttab\_table}!print\_elements@{print\_elements}}
-\index{print\_elements@{print\_elements}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{print\_elements()}{print\_elements()}}
-{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::print\+\_\+elements (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+move nasty reshaping code to another function \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}\label{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}} 
+\index{disttab\_table@{disttab\_table}!print\_elems@{print\_elems}}
+\index{print\_elems@{print\_elems}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{print\_elems()}{print\_elems()}}
+{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::print\+\_\+elems (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
@@ -231,43 +310,26 @@ Where phi\+\_\+i,j are control variables, and Phi\+\_\+k are state variables.
 \end{DoxyParams}
 \begin{DoxyRefDesc}{Todo}
 \item[\mbox{\hyperlink{todo__todo000003}{Todo}}]Should read in a table in the \char`\"{}\+Alya format\char`\"{} (see tables/2d.\+dat) \end{DoxyRefDesc}
-\mbox{\Hypertarget{namespacedisttab__table_a6b30669a17ed75f6ebac958f890655af}\label{namespacedisttab__table_a6b30669a17ed75f6ebac958f890655af}} 
+\mbox{\Hypertarget{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}\label{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}} 
 \index{disttab\_table@{disttab\_table}!table\_constructor@{table\_constructor}}
 \index{table\_constructor@{table\_constructor}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{table\_constructor()}{table\_constructor()}}
-{\footnotesize\ttfamily type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function disttab\+\_\+table\+::table\+\_\+constructor (\begin{DoxyParamCaption}\item[{integer, dimension(\+:), intent(in)}]{table\+\_\+dimensions }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function disttab\+\_\+table\+::table\+\_\+constructor (\begin{DoxyParamCaption}\item[{integer, dimension(\+:), intent(in)}]{table\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 
-Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+cvar\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dimensions argument, necessary for partition mapping functionality. 
+Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dims argument, necessary for partition mapping functionality. 
 
 
 \begin{DoxyParams}{Parameters}
-{\em table\+\_\+dimensions} & the length of the control variable space in each dimension, and the number of state variables \\
+{\em table\+\_\+dims} & the length of the control variable space in each dimension, and the number of state variables \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 this table object 
 \end{DoxyReturn}
 \begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000001}{Todo}}]if partition dimensions are a property of a lookup table which may change, the partition\+\_\+dimensions can be stored as a member variable but perhaps not initialized here. Then, the same is true of the \char`\"{}padded\char`\"{} variables which generally will change as the partition\+\_\+dimensions change. Organize the code as such. Perhaps use an optional argument for partition\+\_\+dimensions here instead. \end{DoxyRefDesc}
-\mbox{\Hypertarget{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}\label{namespacedisttab__table_aa09b941e14a6f94cd56d6531a3abc1cf}} 
-\index{disttab\_table@{disttab\_table}!table\_deallocate@{table\_deallocate}}
-\index{table\_deallocate@{table\_deallocate}!disttab\_table@{disttab\_table}}
-\doxysubsubsection{\texorpdfstring{table\_deallocate()}{table\_deallocate()}}
-{\footnotesize\ttfamily subroutine disttab\+\_\+table\+::table\+\_\+deallocate (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
-
-
-
-Deallocates the allocated (allocatable) member variables of the table object. 
-
-
-\begin{DoxyParams}{Parameters}
-{\em this} & the table object whose allocatable member variables are to be deallocated \\
-\hline
-\end{DoxyParams}
-\begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000005}{Todo}}]This is called by the destructor, but is it necessary? \end{DoxyRefDesc}
+\item[\mbox{\hyperlink{todo__todo000001}{Todo}}]if partition dimensions are a property of a lookup table which may change, the part\+\_\+dims can be stored as a member variable but perhaps not initialized here. Then, the same is true of the \char`\"{}padded\char`\"{} variables which generally will change as the part\+\_\+dims change. Organize the code as such. Perhaps use an optional argument for part\+\_\+dims here instead. \end{DoxyRefDesc}
 \mbox{\Hypertarget{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}\label{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}} 
 \index{disttab\_table@{disttab\_table}!table\_destructor@{table\_destructor}}
 \index{table\_destructor@{table\_destructor}!disttab\_table@{disttab\_table}}
@@ -284,4 +346,4 @@ destructor for the table type
 \hline
 \end{DoxyParams}
 \begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000002}{Todo}}]what is this exactly doing? is table\+\_\+deallocate call necessary? \end{DoxyRefDesc}
+\item[\mbox{\hyperlink{todo__todo000002}{Todo}}]what is this exactly doing? is deallocate\+\_\+table call necessary? \end{DoxyRefDesc}

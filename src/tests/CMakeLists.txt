@@ -4,6 +4,7 @@
 
 # Add the source files
 SET(DISTTAB_src ${SRCTESTS}/disttab_test_partitioning.f90
+                ${SRCTESTS}/disttab_test_access.f90
                 ${SRCTESTS}/test.f90 
 )
 
