@@ -84,12 +84,16 @@ Functions/Subroutines</h2></td></tr>
 <tr class="separator:a287fdc2bc0a2b031f28979b8df172d59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ace34a0254fad2cdb1e2fbcb1f0dc0e"><td class="memItemLeft" align="right" valign="top">real function, dimension(this%table_dim_svar)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a7ace34a0254fad2cdb1e2fbcb1f0dc0e">global_coord_to_value</a> (this, coord)</td></tr>
 <tr class="separator:a7ace34a0254fad2cdb1e2fbcb1f0dc0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6002471157db65ab45db6b7ee84a2b9"><td class="memItemLeft" align="right" valign="top">real function, dimension(this%table_dim_svar, size(this%part_dims)+1)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#aa6002471157db65ab45db6b7ee84a2b9">index_to_value_cloud</a> (this, ind)</td></tr>
-<tr class="separator:aa6002471157db65ab45db6b7ee84a2b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aadb1fcf36cd240b7bff3d00a1c18e8b6"><td class="memItemLeft" align="right" valign="top">real function, dimension(this%table_dim_svar, size(this%part_dims)+1)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#aadb1fcf36cd240b7bff3d00a1c18e8b6">local_coord_to_value_cloud</a> (this, coord_p, coord_b)</td></tr>
-<tr class="separator:aadb1fcf36cd240b7bff3d00a1c18e8b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2017128d9e68cfb29827161c65be1a3"><td class="memItemLeft" align="right" valign="top">real function, dimension(this%table_dim_svar, size(this%part_dims)+1)&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#aa2017128d9e68cfb29827161c65be1a3">global_coord_to_value_cloud</a> (this, coord)</td></tr>
-<tr class="separator:aa2017128d9e68cfb29827161c65be1a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4646bad33562b6bda2bcb3dbcab09dab"><td class="memItemLeft" align="right" valign="top">real function, dimension(this%table_dim_svar, 2 **size(this%part_dims))&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a4646bad33562b6bda2bcb3dbcab09dab">index_to_value_cloud</a> (this, ind)</td></tr>
+<tr class="separator:a4646bad33562b6bda2bcb3dbcab09dab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c7b278e354868116b97b0bcca763810"><td class="memItemLeft" align="right" valign="top">real function, dimension(this%table_dim_svar, 2 **size(this%part_dims))&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a4c7b278e354868116b97b0bcca763810">local_coord_to_value_cloud</a> (this, coord_p, coord_b)</td></tr>
+<tr class="separator:a4c7b278e354868116b97b0bcca763810"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adadb3a82f2810807d2dc153d284ef3b2"><td class="memItemLeft" align="right" valign="top">real function, dimension(this%table_dim_svar, 2 **size(this%part_dims))&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#adadb3a82f2810807d2dc153d284ef3b2">global_coord_to_value_cloud</a> (this, coord)</td></tr>
+<tr class="separator:adadb3a82f2810807d2dc153d284ef3b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae87025495cf9b6f48e98b5e9d5b05c56"><td class="memItemLeft" align="right" valign="top">real function, dimension(this%table_dim_svar, 2 **size(this%part_dims))&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#ae87025495cf9b6f48e98b5e9d5b05c56">real_to_value_cloud</a> (this, real_val)</td></tr>
+<tr class="separator:ae87025495cf9b6f48e98b5e9d5b05c56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59875ab6dff08ec19ac0db2a56e27039"><td class="memItemLeft" align="right" valign="top">recursive subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a59875ab6dff08ec19ac0db2a56e27039">gather_value_cloud</a> (this, idx, ctrs, uppers, val_cloud, j, box_dims)</td></tr>
+<tr class="separator:a59875ab6dff08ec19ac0db2a56e27039"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51096402e00064f68a6c890b6c0d8500"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structdisttab__table_1_1table.html">table</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a51096402e00064f68a6c890b6c0d8500">table_constructor</a> (table_dims)</td></tr>
 <tr class="memdesc:a51096402e00064f68a6c890b6c0d8500"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table_dims, table_dims_padded. Computes the parameters table_dims_flat, table_dims_padded_flat, table_dim_svar, which are all a property of the table_dims argument, necessary for partition mapping functionality.  <a href="namespacedisttab__table.html#a51096402e00064f68a6c890b6c0d8500">More...</a><br /></td></tr>
 <tr class="separator:a51096402e00064f68a6c890b6c0d8500"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -97,7 +101,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a00320b1b054be17b502e8bc01bdfb8cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">destructor for the table type  <a href="namespacedisttab__table.html#a00320b1b054be17b502e8bc01bdfb8cd">More...</a><br /></td></tr>
 <tr class="separator:a00320b1b054be17b502e8bc01bdfb8cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47c132f14609e77c6bd02ed429aaa515"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a47c132f14609e77c6bd02ed429aaa515">read_in</a> (this, file_id)</td></tr>
-<tr class="memdesc:a47c132f14609e77c6bd02ed429aaa515"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format:  <a href="namespacedisttab__table.html#a47c132f14609e77c6bd02ed429aaa515">More...</a><br /></td></tr>
+<tr class="memdesc:a47c132f14609e77c6bd02ed429aaa515"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in a lookup table to the elements array of the table object. Assumes that the first size(thispart_dims) lines are normalized control variable discretizations, and the following lines are state variable values.  <a href="namespacedisttab__table.html#a47c132f14609e77c6bd02ed429aaa515">More...</a><br /></td></tr>
 <tr class="separator:a47c132f14609e77c6bd02ed429aaa515"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48241397777b4e586f1d9cf4389fae7d"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a48241397777b4e586f1d9cf4389fae7d">partition_remap</a> (this, part_dims, part_dims_prev)</td></tr>
 <tr class="memdesc:a48241397777b4e586f1d9cf4389fae7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remaps the partition from assumed Alya-format ordering to given partition ordering.  <a href="namespacedisttab__table.html#a48241397777b4e586f1d9cf4389fae7d">More...</a><br /></td></tr>
@@ -216,7 +220,73 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>This is called by the destructor, but is it necessary? </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>This is called by the destructor, but is it necessary? </dd></dl>
+
+</div>
+</div>
+<a id="a59875ab6dff08ec19ac0db2a56e27039"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59875ab6dff08ec19ac0db2a56e27039">&#9670;&nbsp;</a></span>gather_value_cloud()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">recursive subroutine disttab_table::gather_value_cloud </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>idx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%part_dims))&#160;</td>
+          <td class="paramname"><em>ctrs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%part_dims))&#160;</td>
+          <td class="paramname"><em>uppers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real, dimension(this%table_dim_svar, 2**size(this%part_dims))&#160;</td>
+          <td class="paramname"><em>val_cloud</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%part_dims))&#160;</td>
+          <td class="paramname"><em>box_dims</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -375,8 +445,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="aa2017128d9e68cfb29827161c65be1a3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2017128d9e68cfb29827161c65be1a3">&#9670;&nbsp;</a></span>global_coord_to_value_cloud()</h2>
+<a id="adadb3a82f2810807d2dc153d284ef3b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adadb3a82f2810807d2dc153d284ef3b2">&#9670;&nbsp;</a></span>global_coord_to_value_cloud()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -385,7 +455,7 @@ Functions/Subroutines</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">real function, dimension(this%table_dim_svar, size(this%part_dims) + 1) disttab_table::global_coord_to_value_cloud </td>
+          <td class="memname">real function, dimension(this%table_dim_svar, 2**size(this%part_dims)) disttab_table::global_coord_to_value_cloud </td>
           <td>(</td>
           <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
@@ -631,8 +701,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="aa6002471157db65ab45db6b7ee84a2b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6002471157db65ab45db6b7ee84a2b9">&#9670;&nbsp;</a></span>index_to_value_cloud()</h2>
+<a id="a4646bad33562b6bda2bcb3dbcab09dab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4646bad33562b6bda2bcb3dbcab09dab">&#9670;&nbsp;</a></span>index_to_value_cloud()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -641,7 +711,7 @@ Functions/Subroutines</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">real function, dimension(this%table_dim_svar, size(this%part_dims) + 1) disttab_table::index_to_value_cloud </td>
+          <td class="memname">real function, dimension(this%table_dim_svar, 2**size(this%part_dims)) disttab_table::index_to_value_cloud </td>
           <td>(</td>
           <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
@@ -830,8 +900,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="aadb1fcf36cd240b7bff3d00a1c18e8b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aadb1fcf36cd240b7bff3d00a1c18e8b6">&#9670;&nbsp;</a></span>local_coord_to_value_cloud()</h2>
+<a id="a4c7b278e354868116b97b0bcca763810"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c7b278e354868116b97b0bcca763810">&#9670;&nbsp;</a></span>local_coord_to_value_cloud()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -840,7 +910,7 @@ Functions/Subroutines</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">real function, dimension(this%table_dim_svar, size(this%part_dims) + 1) disttab_table::local_coord_to_value_cloud </td>
+          <td class="memname">real function, dimension(this%table_dim_svar, 2**size(this%part_dims)) disttab_table::local_coord_to_value_cloud </td>
           <td>(</td>
           <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
@@ -920,7 +990,7 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd><p class="startdd">assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in. </p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd><p class="startdd">assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in. </p>
 <p class="enddd">move nasty reshaping code to another function </p>
 </dd></dl>
 
@@ -994,16 +1064,50 @@ Functions/Subroutines</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format: </p>
-<p>phi_1,1 phi_2,1 Phi_1 phi_1,2 phi_2,2 Phi_2 ... ... ...</p>
-<p>Where phi_i,j are control variables, and Phi_k are state variables. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Reads in a lookup table to the elements array of the table object. Assumes that the first size(thispart_dims) lines are normalized control variable discretizations, and the following lines are state variable values. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">this</td><td>table object to which read_in is a member. </td></tr>
     <tr><td class="paramname">file_id</td><td>the lookup table filename to read in. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>Should read in a table in the "Alya format" (see tables/2d.dat) </dd></dl>
+
+</div>
+</div>
+<a id="ae87025495cf9b6f48e98b5e9d5b05c56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae87025495cf9b6f48e98b5e9d5b05c56">&#9670;&nbsp;</a></span>real_to_value_cloud()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">real function, dimension(this%table_dim_svar, 2**size(this%part_dims)) disttab_table::real_to_value_cloud </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real, dimension(size(this%part_dims)), intent(in)&#160;</td>
+          <td class="paramname"><em>real_val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

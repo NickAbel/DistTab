@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['r_216',['R',['../nloop_8m.html#acb95449a94688af33f6e9bb090cf2936',1,'nloop.m']]]
+  ['r_224',['R',['../nloop_8m.html#acb95449a94688af33f6e9bb090cf2936',1,'nloop.m']]]
 ];

@@ -14,18 +14,22 @@ real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namesp
 \item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}{global\+\_\+coord\+\_\+to\+\_\+value}} (this, coord)
 \item 
-real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aa6002471157db65ab45db6b7ee84a2b9}{index\+\_\+to\+\_\+value\+\_\+cloud}} (this, ind)
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}{index\+\_\+to\+\_\+value\+\_\+cloud}} (this, ind)
 \item 
-real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aadb1fcf36cd240b7bff3d00a1c18e8b6}{local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord\+\_\+p, coord\+\_\+b)
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}{local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord\+\_\+p, coord\+\_\+b)
 \item 
-real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aa2017128d9e68cfb29827161c65be1a3}{global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord)
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}{global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord)
+\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}{real\+\_\+to\+\_\+value\+\_\+cloud}} (this, real\+\_\+val)
+\item 
+recursive subroutine \mbox{\hyperlink{namespacedisttab__table_a59875ab6dff08ec19ac0db2a56e27039}{gather\+\_\+value\+\_\+cloud}} (this, idx, ctrs, uppers, val\+\_\+cloud, j, box\+\_\+dims)
 \item 
 type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function \mbox{\hyperlink{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}{table\+\_\+constructor}} (table\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dims argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}{table\+\_\+destructor}} (this)
 \begin{DoxyCompactList}\small\item\em destructor for the table type \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}{read\+\_\+in}} (this, file\+\_\+id)
-\begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Assumes that the first size(thispart\+\_\+dims) lines are normalized control variable discretizations, and the following lines are state variable values. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}{partition\+\_\+remap}} (this, part\+\_\+dims, part\+\_\+dims\+\_\+prev)
 \begin{DoxyCompactList}\small\item\em Remaps the partition from assumed Alya-\/format ordering to given partition ordering. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}{print\+\_\+elems}} (this)
@@ -89,7 +93,13 @@ Deallocates the allocated (allocatable) member variables of the table object.
 \hline
 \end{DoxyParams}
 \begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000005}{Todo}}]This is called by the destructor, but is it necessary? \end{DoxyRefDesc}
+\item[\mbox{\hyperlink{todo__todo000004}{Todo}}]This is called by the destructor, but is it necessary? \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_a59875ab6dff08ec19ac0db2a56e27039}\label{namespacedisttab__table_a59875ab6dff08ec19ac0db2a56e27039}} 
+\index{disttab\_table@{disttab\_table}!gather\_value\_cloud@{gather\_value\_cloud}}
+\index{gather\_value\_cloud@{gather\_value\_cloud}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{gather\_value\_cloud()}{gather\_value\_cloud()}}
+{\footnotesize\ttfamily recursive subroutine disttab\+\_\+table\+::gather\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{idx,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{ctrs,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{uppers,  }\item[{real, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims))}]{val\+\_\+cloud,  }\item[{integer}]{j,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
 \mbox{\Hypertarget{namespacedisttab__table_a18b37d11d2b5aee7b289665e2147e72e}\label{namespacedisttab__table_a18b37d11d2b5aee7b289665e2147e72e}} 
 \index{disttab\_table@{disttab\_table}!global\_coord\_to\_index@{global\_coord\_to\_index}}
 \index{global\_coord\_to\_index@{global\_coord\_to\_index}!disttab\_table@{disttab\_table}}
@@ -124,11 +134,11 @@ ind global flat index
 \doxysubsubsection{\texorpdfstring{global\_coord\_to\_value()}{global\_coord\_to\_value()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
-\mbox{\Hypertarget{namespacedisttab__table_aa2017128d9e68cfb29827161c65be1a3}\label{namespacedisttab__table_aa2017128d9e68cfb29827161c65be1a3}} 
+\mbox{\Hypertarget{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}\label{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}} 
 \index{disttab\_table@{disttab\_table}!global\_coord\_to\_value\_cloud@{global\_coord\_to\_value\_cloud}}
 \index{global\_coord\_to\_value\_cloud@{global\_coord\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{global\_coord\_to\_value\_cloud()}{global\_coord\_to\_value\_cloud()}}
-{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims) + 1) disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims)) disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}\label{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}} 
 \index{disttab\_table@{disttab\_table}!index\_to\_coord@{index\_to\_coord}}
@@ -203,11 +213,11 @@ Given an index, intra-\/partition dimensions part\+\_\+dims, and inter-\/partiti
 \doxysubsubsection{\texorpdfstring{index\_to\_value()}{index\_to\_value()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::index\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{ind }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
-\mbox{\Hypertarget{namespacedisttab__table_aa6002471157db65ab45db6b7ee84a2b9}\label{namespacedisttab__table_aa6002471157db65ab45db6b7ee84a2b9}} 
+\mbox{\Hypertarget{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}\label{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}} 
 \index{disttab\_table@{disttab\_table}!index\_to\_value\_cloud@{index\_to\_value\_cloud}}
 \index{index\_to\_value\_cloud@{index\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{index\_to\_value\_cloud()}{index\_to\_value\_cloud()}}
-{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims) + 1) disttab\+\_\+table\+::index\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{ind }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims)) disttab\+\_\+table\+::index\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{ind }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{namespacedisttab__table_a41c2e819a011062a0abcf184a9dacb2f}\label{namespacedisttab__table_a41c2e819a011062a0abcf184a9dacb2f}} 
 \index{disttab\_table@{disttab\_table}!local\_coord\_to\_global\_coord@{local\_coord\_to\_global\_coord}}
@@ -247,11 +257,11 @@ ind the partitioned index
 \doxysubsubsection{\texorpdfstring{local\_coord\_to\_value()}{local\_coord\_to\_value()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+p,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
-\mbox{\Hypertarget{namespacedisttab__table_aadb1fcf36cd240b7bff3d00a1c18e8b6}\label{namespacedisttab__table_aadb1fcf36cd240b7bff3d00a1c18e8b6}} 
+\mbox{\Hypertarget{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}\label{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}} 
 \index{disttab\_table@{disttab\_table}!local\_coord\_to\_value\_cloud@{local\_coord\_to\_value\_cloud}}
 \index{local\_coord\_to\_value\_cloud@{local\_coord\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{local\_coord\_to\_value\_cloud()}{local\_coord\_to\_value\_cloud()}}
-{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims) + 1) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+p,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims)) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+p,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 \mbox{\Hypertarget{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}\label{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}} 
 \index{disttab\_table@{disttab\_table}!partition\_remap@{partition\_remap}}
@@ -271,7 +281,7 @@ Remaps the partition from assumed Alya-\/format ordering to given partition orde
 \hline
 \end{DoxyParams}
 \begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000004}{Todo}}]assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. 
+\item[\mbox{\hyperlink{todo__todo000003}{Todo}}]assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. 
 
 move nasty reshaping code to another function \end{DoxyRefDesc}
 \mbox{\Hypertarget{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}\label{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}} 
@@ -297,19 +307,21 @@ Write elements to stdout.
 
 
 
-Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: 
+Reads in a lookup table to the elements array of the table object. Assumes that the first size(thispart\+\_\+dims) lines are normalized control variable discretizations, and the following lines are state variable values. 
 
-phi\+\_\+1,1 phi\+\_\+2,1 Phi\+\_\+1 phi\+\_\+1,2 phi\+\_\+2,2 Phi\+\_\+2 ... ... ...
 
-Where phi\+\_\+i,j are control variables, and Phi\+\_\+k are state variables. 
 \begin{DoxyParams}{Parameters}
 {\em this} & table object to which read\+\_\+in is a member. \\
 \hline
 {\em file\+\_\+id} & the lookup table filename to read in. \\
 \hline
 \end{DoxyParams}
-\begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000003}{Todo}}]Should read in a table in the \char`\"{}\+Alya format\char`\"{} (see tables/2d.\+dat) \end{DoxyRefDesc}
+\mbox{\Hypertarget{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}\label{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}} 
+\index{disttab\_table@{disttab\_table}!real\_to\_value\_cloud@{real\_to\_value\_cloud}}
+\index{real\_to\_value\_cloud@{real\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{real\_to\_value\_cloud()}{real\_to\_value\_cloud()}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims)) disttab\+\_\+table\+::real\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{real, dimension(size(this\%part\+\_\+dims)), intent(in)}]{real\+\_\+val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
 \mbox{\Hypertarget{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}\label{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}} 
 \index{disttab\_table@{disttab\_table}!table\_constructor@{table\_constructor}}
 \index{table\_constructor@{table\_constructor}!disttab\_table@{disttab\_table}}

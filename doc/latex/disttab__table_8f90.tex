@@ -19,18 +19,22 @@ real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namesp
 \item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}{disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value}} (this, coord)
 \item 
-real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aa6002471157db65ab45db6b7ee84a2b9}{disttab\+\_\+table\+::index\+\_\+to\+\_\+value\+\_\+cloud}} (this, ind)
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}{disttab\+\_\+table\+::index\+\_\+to\+\_\+value\+\_\+cloud}} (this, ind)
 \item 
-real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aadb1fcf36cd240b7bff3d00a1c18e8b6}{disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord\+\_\+p, coord\+\_\+b)
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}{disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord\+\_\+p, coord\+\_\+b)
 \item 
-real function, dimension(this\%table\+\_\+dim\+\_\+svar, size(this\%part\+\_\+dims)+1) \mbox{\hyperlink{namespacedisttab__table_aa2017128d9e68cfb29827161c65be1a3}{disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord)
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}{disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord)
+\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}{disttab\+\_\+table\+::real\+\_\+to\+\_\+value\+\_\+cloud}} (this, real\+\_\+val)
+\item 
+recursive subroutine \mbox{\hyperlink{namespacedisttab__table_a59875ab6dff08ec19ac0db2a56e27039}{disttab\+\_\+table\+::gather\+\_\+value\+\_\+cloud}} (this, idx, ctrs, uppers, val\+\_\+cloud, j, box\+\_\+dims)
 \item 
 type(table) function \mbox{\hyperlink{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}{disttab\+\_\+table\+::table\+\_\+constructor}} (table\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dims argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}{disttab\+\_\+table\+::table\+\_\+destructor}} (this)
 \begin{DoxyCompactList}\small\item\em destructor for the table type \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}{disttab\+\_\+table\+::read\+\_\+in}} (this, file\+\_\+id)
-\begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Currently reads in tables with the following format\+: \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Assumes that the first size(thispart\+\_\+dims) lines are normalized control variable discretizations, and the following lines are state variable values. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}{disttab\+\_\+table\+::partition\+\_\+remap}} (this, part\+\_\+dims, part\+\_\+dims\+\_\+prev)
 \begin{DoxyCompactList}\small\item\em Remaps the partition from assumed Alya-\/format ordering to given partition ordering. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}{disttab\+\_\+table\+::print\+\_\+elems}} (this)

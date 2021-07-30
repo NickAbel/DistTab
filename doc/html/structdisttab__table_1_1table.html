@@ -81,10 +81,11 @@ Collaboration diagram for disttab_table::table:</div>
 <div class="dyncontent">
 <div class="center"><img src="structdisttab__table_1_1table__coll__graph.png" border="0" usemap="#adisttab__table_1_1table_coll__map" alt="Collaboration graph"/></div>
 <map name="adisttab__table_1_1table_coll__map" id="adisttab__table_1_1table_coll__map">
-<area shape="rect" title=" " alt="" coords="141,248,334,663"/>
-<area shape="rect" title=" " alt="" coords="5,5,141,97"/>
-<area shape="rect" title=" " alt="" coords="165,5,309,97"/>
-<area shape="rect" title=" " alt="" coords="367,13,435,90"/>
+<area shape="rect" title=" " alt="" coords="215,248,409,692"/>
+<area shape="rect" title=" " alt="" coords="5,5,147,97"/>
+<area shape="rect" title=" " alt="" coords="171,5,307,97"/>
+<area shape="rect" title=" " alt="" coords="331,5,475,97"/>
+<area shape="rect" title=" " alt="" coords="515,13,583,90"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -110,6 +111,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a180ba0cfa90879f0e04655cffd31ff7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42b4fd438d940cbf93118a3c5d6f7097"><td class="memItemLeft" align="right" valign="top">procedure, pass(this), public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a42b4fd438d940cbf93118a3c5d6f7097">global_coord_to_value_cloud</a></td></tr>
 <tr class="separator:a42b4fd438d940cbf93118a3c5d6f7097"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f86f5ce20a408bf157d011a22a2d99e"><td class="memItemLeft" align="right" valign="top">procedure, pass(this), public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a4f86f5ce20a408bf157d011a22a2d99e">real_to_value_cloud</a></td></tr>
+<tr class="separator:a4f86f5ce20a408bf157d011a22a2d99e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add7747371a61bf9826b3574dce8a2b61"><td class="memItemLeft" align="right" valign="top">procedure, pass(this), public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#add7747371a61bf9826b3574dce8a2b61">gather_value_cloud</a></td></tr>
+<tr class="separator:add7747371a61bf9826b3574dce8a2b61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c12870fa7edc3bcc0c1e975b5851e41"><td class="memItemLeft" align="right" valign="top">procedure, pass(this), public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a9c12870fa7edc3bcc0c1e975b5851e41">index_to_coord</a></td></tr>
 <tr class="separator:a9c12870fa7edc3bcc0c1e975b5851e41"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4789ae4b42be9dc0e69b29ad4d03508"><td class="memItemLeft" align="right" valign="top">procedure, pass(this), public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#aa4789ae4b42be9dc0e69b29ad4d03508">index_to_global_coord</a></td></tr>
@@ -139,6 +144,8 @@ Private Member Functions</h2></td></tr>
 Private Attributes</h2></td></tr>
 <tr class="memitem:a8f5f5fd6c90dd61b729e3a8f392341b9"><td class="memItemLeft" align="right" valign="top">real, dimension(:, :), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#a8f5f5fd6c90dd61b729e3a8f392341b9">elems</a></td></tr>
 <tr class="separator:a8f5f5fd6c90dd61b729e3a8f392341b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5d891358d6b1884c042ec5598e9c412"><td class="memItemLeft" align="right" valign="top">real, dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#ae5d891358d6b1884c042ec5598e9c412">ctrl_vars</a></td></tr>
+<tr class="separator:ae5d891358d6b1884c042ec5598e9c412"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad5567f62dd6fc6787b2b9b3bad350915"><td class="memItemLeft" align="right" valign="top">integer, dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#ad5567f62dd6fc6787b2b9b3bad350915">table_dims</a></td></tr>
 <tr class="separator:ad5567f62dd6fc6787b2b9b3bad350915"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad79e69a04e834635593b34d444acd14a"><td class="memItemLeft" align="right" valign="top">integer, dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdisttab__table_1_1table.html#ad79e69a04e834635593b34d444acd14a">table_dims_padded</a></td></tr>
@@ -177,6 +184,20 @@ Private Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">procedure, pass(this), public disttab_table::table::deallocate_table</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="add7747371a61bf9826b3574dce8a2b61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add7747371a61bf9826b3574dce8a2b61">&#9670;&nbsp;</a></span>gather_value_cloud()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, pass(this), public disttab_table::table::gather_value_cloud</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -407,6 +428,20 @@ Private Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a4f86f5ce20a408bf157d011a22a2d99e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f86f5ce20a408bf157d011a22a2d99e">&#9670;&nbsp;</a></span>real_to_value_cloud()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">procedure, pass(this), public disttab_table::table::real_to_value_cloud</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a08d5663cb14f7151a69dbf764fd76537"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a08d5663cb14f7151a69dbf764fd76537">&#9670;&nbsp;</a></span>table_constructor()</h2>
 
@@ -466,6 +501,28 @@ Private Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="ae5d891358d6b1884c042ec5598e9c412"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5d891358d6b1884c042ec5598e9c412">&#9670;&nbsp;</a></span>ctrl_vars</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">real, dimension(:), allocatable disttab_table::table::ctrl_vars</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a8f5f5fd6c90dd61b729e3a8f392341b9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8f5f5fd6c90dd61b729e3a8f392341b9">&#9670;&nbsp;</a></span>elems</h2>
 

@@ -69,19 +69,17 @@ $(function() {
 <div class="contents">
 <div class="textblock"><dl class="reflist">
 <dt>Subprogram <a class="el" href="namespacedisttab__table.html#ab8a2b8fd8aed669c2284a5b070f39492">disttab_table::deallocate_table</a>  (this)</dt>
-<dd><a class="anchor" id="_todo000005"></a>This is called by the destructor, but is it necessary?  </dd>
+<dd><a class="anchor" id="_todo000004"></a>This is called by the destructor, but is it necessary?  </dd>
 <dt>Subprogram <a class="el" href="namespacedisttab__table.html#a48241397777b4e586f1d9cf4389fae7d">disttab_table::partition_remap</a>  (this, part_dims, part_dims_prev)</dt>
-<dd><p class="startdd"><a class="anchor" id="_todo000004"></a>assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in. </p>
+<dd><p class="startdd"><a class="anchor" id="_todo000003"></a>assumed currently that table is in Alya-format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test_partitioningpart_test_fill_table to recover the Alya format and then reading that sorted file back in. </p>
 <p class="enddd">move nasty reshaping code to another function  </p>
 </dd>
-<dt>Subprogram <a class="el" href="namespacedisttab__table.html#a47c132f14609e77c6bd02ed429aaa515">disttab_table::read_in</a>  (this, file_id)</dt>
-<dd><a class="anchor" id="_todo000003"></a>Should read in a table in the "Alya format" (see tables/2d.dat)  </dd>
 <dt>Subprogram <a class="el" href="namespacedisttab__table.html#a51096402e00064f68a6c890b6c0d8500">disttab_table::table_constructor</a>  (table_dims)</dt>
 <dd><a class="anchor" id="_todo000001"></a>if partition dimensions are a property of a lookup table which may change, the part_dims can be stored as a member variable but perhaps not initialized here. Then, the same is true of the "padded" variables which generally will change as the part_dims change. Organize the code as such. Perhaps use an optional argument for part_dims here instead.  </dd>
 <dt>Subprogram <a class="el" href="namespacedisttab__table.html#a00320b1b054be17b502e8bc01bdfb8cd">disttab_table::table_destructor</a>  (this)</dt>
 <dd><a class="anchor" id="_todo000002"></a>what is this exactly doing? is deallocate_table call necessary?  </dd>
 <dt>Subprogram <a class="el" href="namespacedisttab__test__partitioning.html#a9e95059f35b6a076292c47ebb6a31763">disttab_test_partitioning::partition_map_test</a>  (this)</dt>
-<dd><a class="anchor" id="_todo000006"></a>be sure there is no precision issue </dd>
+<dd><a class="anchor" id="_todo000005"></a>be sure there is no precision issue </dd>
 </dl>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

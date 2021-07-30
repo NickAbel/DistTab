@@ -33,6 +33,10 @@ procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_a18
 \item 
 procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_a42b4fd438d940cbf93118a3c5d6f7097}{global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}}
 \item 
+procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_a4f86f5ce20a408bf157d011a22a2d99e}{real\+\_\+to\+\_\+value\+\_\+cloud}}
+\item 
+procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_add7747371a61bf9826b3574dce8a2b61}{gather\+\_\+value\+\_\+cloud}}
+\item 
 procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_a9c12870fa7edc3bcc0c1e975b5851e41}{index\+\_\+to\+\_\+coord}}
 \item 
 procedure, pass(this), public \mbox{\hyperlink{structdisttab__table_1_1table_aa4789ae4b42be9dc0e69b29ad4d03508}{index\+\_\+to\+\_\+global\+\_\+coord}}
@@ -60,6 +64,8 @@ type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function \mbox{\hy
 \begin{DoxyCompactItemize}
 \item 
 real, dimension(\+:, \+:), allocatable \mbox{\hyperlink{structdisttab__table_1_1table_a8f5f5fd6c90dd61b729e3a8f392341b9}{elems}}
+\item 
+real, dimension(\+:), allocatable \mbox{\hyperlink{structdisttab__table_1_1table_ae5d891358d6b1884c042ec5598e9c412}{ctrl\+\_\+vars}}
 \item 
 integer, dimension(\+:), allocatable \mbox{\hyperlink{structdisttab__table_1_1table_ad5567f62dd6fc6787b2b9b3bad350915}{table\+\_\+dims}}
 \item 
@@ -89,6 +95,12 @@ integer \mbox{\hyperlink{structdisttab__table_1_1table_a7eb0b1eecd4272d02a830081
 \index{deallocate\_table@{deallocate\_table}!disttab\_table::table@{disttab\_table::table}}
 \doxysubsubsection{\texorpdfstring{deallocate\_table()}{deallocate\_table()}}
 {\footnotesize\ttfamily procedure, pass(this), public disttab\+\_\+table\+::table\+::deallocate\+\_\+table}
+
+\mbox{\Hypertarget{structdisttab__table_1_1table_add7747371a61bf9826b3574dce8a2b61}\label{structdisttab__table_1_1table_add7747371a61bf9826b3574dce8a2b61}} 
+\index{disttab\_table::table@{disttab\_table::table}!gather\_value\_cloud@{gather\_value\_cloud}}
+\index{gather\_value\_cloud@{gather\_value\_cloud}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{gather\_value\_cloud()}{gather\_value\_cloud()}}
+{\footnotesize\ttfamily procedure, pass(this), public disttab\+\_\+table\+::table\+::gather\+\_\+value\+\_\+cloud}
 
 \mbox{\Hypertarget{structdisttab__table_1_1table_a04c2eec00bb0cc3f82b64684439179d5}\label{structdisttab__table_1_1table_a04c2eec00bb0cc3f82b64684439179d5}} 
 \index{disttab\_table::table@{disttab\_table::table}!global\_coord\_to\_index@{global\_coord\_to\_index}}
@@ -186,6 +198,12 @@ integer \mbox{\hyperlink{structdisttab__table_1_1table_a7eb0b1eecd4272d02a830081
 \doxysubsubsection{\texorpdfstring{read\_in()}{read\_in()}}
 {\footnotesize\ttfamily procedure, pass(this), public disttab\+\_\+table\+::table\+::read\+\_\+in}
 
+\mbox{\Hypertarget{structdisttab__table_1_1table_a4f86f5ce20a408bf157d011a22a2d99e}\label{structdisttab__table_1_1table_a4f86f5ce20a408bf157d011a22a2d99e}} 
+\index{disttab\_table::table@{disttab\_table::table}!real\_to\_value\_cloud@{real\_to\_value\_cloud}}
+\index{real\_to\_value\_cloud@{real\_to\_value\_cloud}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{real\_to\_value\_cloud()}{real\_to\_value\_cloud()}}
+{\footnotesize\ttfamily procedure, pass(this), public disttab\+\_\+table\+::table\+::real\+\_\+to\+\_\+value\+\_\+cloud}
+
 \mbox{\Hypertarget{structdisttab__table_1_1table_a08d5663cb14f7151a69dbf764fd76537}\label{structdisttab__table_1_1table_a08d5663cb14f7151a69dbf764fd76537}} 
 \index{disttab\_table::table@{disttab\_table::table}!table\_constructor@{table\_constructor}}
 \index{table\_constructor@{table\_constructor}!disttab\_table::table@{disttab\_table::table}}
@@ -215,6 +233,12 @@ this table object
 
 
 \doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{structdisttab__table_1_1table_ae5d891358d6b1884c042ec5598e9c412}\label{structdisttab__table_1_1table_ae5d891358d6b1884c042ec5598e9c412}} 
+\index{disttab\_table::table@{disttab\_table::table}!ctrl\_vars@{ctrl\_vars}}
+\index{ctrl\_vars@{ctrl\_vars}!disttab\_table::table@{disttab\_table::table}}
+\doxysubsubsection{\texorpdfstring{ctrl\_vars}{ctrl\_vars}}
+{\footnotesize\ttfamily real, dimension(\+:), allocatable disttab\+\_\+table\+::table\+::ctrl\+\_\+vars\hspace{0.3cm}{\ttfamily [private]}}
+
 \mbox{\Hypertarget{structdisttab__table_1_1table_a8f5f5fd6c90dd61b729e3a8f392341b9}\label{structdisttab__table_1_1table_a8f5f5fd6c90dd61b729e3a8f392341b9}} 
 \index{disttab\_table::table@{disttab\_table::table}!elems@{elems}}
 \index{elems@{elems}!disttab\_table::table@{disttab\_table::table}}
