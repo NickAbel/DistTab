@@ -9,21 +9,21 @@ interface \mbox{\hyperlink{structdisttab__table_1_1table}{table}}
 \begin{DoxyCompactItemize}
 \item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a6f533f94635add87f3b9c4f839c9f0ad}{index\+\_\+to\+\_\+value}} (this, ind)
-\item 
+\begin{DoxyCompactList}\small\item\em Given index, return corresponding value. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a287fdc2bc0a2b031f28979b8df172d59}{local\+\_\+coord\+\_\+to\+\_\+value}} (this, coord\+\_\+p, coord\+\_\+b)
-\item 
+\begin{DoxyCompactList}\small\item\em Given local coordinate decomposition, return corresponding value. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}{global\+\_\+coord\+\_\+to\+\_\+value}} (this, coord)
-\item 
+\begin{DoxyCompactList}\small\item\em Given global coordinate, return corresponding value. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}{index\+\_\+to\+\_\+value\+\_\+cloud}} (this, ind)
-\item 
+\begin{DoxyCompactList}\small\item\em Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the given index. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}{local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord\+\_\+p, coord\+\_\+b)
-\item 
+\begin{DoxyCompactList}\small\item\em Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the point indicated by the local coordinate decomposition given. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}{global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord)
-\item 
+\begin{DoxyCompactList}\small\item\em Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the point indicated by the global coordinate given. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}{real\+\_\+to\+\_\+value\+\_\+cloud}} (this, real\+\_\+val)
-\item 
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0,1\mbox{]}x\mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} in the normalized state space, return a value cloud. \end{DoxyCompactList}\item 
 recursive subroutine \mbox{\hyperlink{namespacedisttab__table_a59875ab6dff08ec19ac0db2a56e27039}{gather\+\_\+value\+\_\+cloud}} (this, idx, ctrs, uppers, val\+\_\+cloud, j, box\+\_\+dims)
-\item 
+\begin{DoxyCompactList}\small\item\em Fills a 2$^\wedge$\+N-\/sized array with a value cloud of neighbors in state space. \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function \mbox{\hyperlink{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}{table\+\_\+constructor}} (table\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Constructor for the table object. Allocates the elements array according to the table dimensions. Initializes the member variables table\+\_\+dims, table\+\_\+dims\+\_\+padded. Computes the parameters table\+\_\+dims\+\_\+flat, table\+\_\+dims\+\_\+padded\+\_\+flat, table\+\_\+dim\+\_\+svar, which are all a property of the table\+\_\+dims argument, necessary for partition mapping functionality. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a00320b1b054be17b502e8bc01bdfb8cd}{table\+\_\+destructor}} (this)
@@ -31,7 +31,7 @@ subroutine \mbox{\hyperlink{namespacedisttab__table_a00320b1b054be17b502e8bc01bd
 subroutine \mbox{\hyperlink{namespacedisttab__table_a47c132f14609e77c6bd02ed429aaa515}{read\+\_\+in}} (this, file\+\_\+id)
 \begin{DoxyCompactList}\small\item\em Reads in a lookup table to the elements array of the table object. Assumes that the first size(thispart\+\_\+dims) lines are normalized control variable discretizations, and the following lines are state variable values. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}{partition\+\_\+remap}} (this, part\+\_\+dims, part\+\_\+dims\+\_\+prev)
-\begin{DoxyCompactList}\small\item\em Remaps the partition from assumed Alya-\/format ordering to given partition ordering. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Remaps the partition from a given previous partition ordering to given new partition ordering. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}{print\+\_\+elems}} (this)
 \begin{DoxyCompactList}\small\item\em Write elements to stdout. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_ab8a2b8fd8aed669c2284a5b070f39492}{deallocate\+\_\+table}} (this)
@@ -49,8 +49,8 @@ integer function \mbox{\hyperlink{namespacedisttab__table_a18b37d11d2b5aee7b2896
 integer function \mbox{\hyperlink{namespacedisttab__table_a4c28f3477360f4c12e959c944cccf6df}{local\+\_\+coord\+\_\+to\+\_\+index}} (this, coord\+\_\+p, coord\+\_\+b, part\+\_\+dims, box\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Return partitioned flat index, given coordinates and an associated two-\/level partitioning scheme described by the intra-\/partition dimensions part\+\_\+dims and inter-\/partition dimensions box\+\_\+dims. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__table_a8a19ae7fc75673df318d42622928e9f2}{global\+\_\+coord\+\_\+to\+\_\+local\+\_\+coord}} (this, coord, part\+\_\+dims, box\+\_\+dims, coord\+\_\+p, coord\+\_\+b)
-\item 
-integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a41c2e819a011062a0abcf184a9dacb2f}{local\+\_\+coord\+\_\+to\+\_\+global\+\_\+coord}} (this, coord\+\_\+p, coord\+\_\+b, part\+\_\+dims, box\+\_\+dims)
+\begin{DoxyCompactList}\small\item\em Decompose global coordinate to local coordinate pair in given partition and box dimension scheme. \end{DoxyCompactList}\item 
+integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a61e3cd5682eff7687cb3c035f48dde67}{local\+\_\+coord\+\_\+to\+\_\+global\+\_\+coord}} (this, coord\+\_\+p, coord\+\_\+b, box\+\_\+dims)
 \end{DoxyCompactItemize}
 
 
@@ -100,6 +100,27 @@ Deallocates the allocated (allocatable) member variables of the table object.
 \doxysubsubsection{\texorpdfstring{gather\_value\_cloud()}{gather\_value\_cloud()}}
 {\footnotesize\ttfamily recursive subroutine disttab\+\_\+table\+::gather\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{idx,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{ctrs,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{uppers,  }\item[{real, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims))}]{val\+\_\+cloud,  }\item[{integer}]{j,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+
+Fills a 2$^\wedge$\+N-\/sized array with a value cloud of neighbors in state space. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em idx} & index of the array to increment \\
+\hline
+{\em ctrs} & counter array \\
+\hline
+{\em uppers} & when the counter array reaches this value, stop incrementing \\
+\hline
+{\em val\+\_\+cloud} & output 2$\ast$$\ast$N value cloud \\
+\hline
+{\em j} & incrementer for value cloud array \\
+\hline
+{\em box\+\_\+dims} & intra-\/partition box dimension size in partitioning scheme \\
+\hline
+\end{DoxyParams}
 \mbox{\Hypertarget{namespacedisttab__table_a18b37d11d2b5aee7b289665e2147e72e}\label{namespacedisttab__table_a18b37d11d2b5aee7b289665e2147e72e}} 
 \index{disttab\_table@{disttab\_table}!global\_coord\_to\_index@{global\_coord\_to\_index}}
 \index{global\_coord\_to\_index@{global\_coord\_to\_index}!disttab\_table@{disttab\_table}}
@@ -116,7 +137,9 @@ Return the global flat index, given coordinates and control variable space dimen
 \hline
 {\em coord} & the coordinates \\
 \hline
-{\em table\+\_\+dims\+\_\+cvar} & the dimensions of the control variable space \\
+{\em part\+\_\+dims} & the intra-\/partition dimensions \\
+\hline
+{\em box\+\_\+dims} & the inter-\/partition box dimensions \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
@@ -128,18 +151,65 @@ ind global flat index
 \doxysubsubsection{\texorpdfstring{global\_coord\_to\_local\_coord()}{global\_coord\_to\_local\_coord()}}
 {\footnotesize\ttfamily subroutine disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+local\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+p,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+
+Decompose global coordinate to local coordinate pair in given partition and box dimension scheme. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & table object \\
+\hline
+{\em coord} & input global coordinate \\
+\hline
+{\em part\+\_\+dims} & intra-\/partition dimension size \\
+\hline
+{\em box\+\_\+dims} & inter-\/partition box dimension size \\
+\hline
+{\em coord\+\_\+p} & output intra-\/partition coordinate term \\
+\hline
+{\em coord\+\_\+b} & output inter-\/partition box coordinate term \\
+\hline
+\end{DoxyParams}
 \mbox{\Hypertarget{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}\label{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}} 
 \index{disttab\_table@{disttab\_table}!global\_coord\_to\_value@{global\_coord\_to\_value}}
 \index{global\_coord\_to\_value@{global\_coord\_to\_value}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{global\_coord\_to\_value()}{global\_coord\_to\_value()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+
+Given global coordinate, return corresponding value. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em coord} & global coordinate \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+val state variable values located at coordinate coord 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}\label{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}} 
 \index{disttab\_table@{disttab\_table}!global\_coord\_to\_value\_cloud@{global\_coord\_to\_value\_cloud}}
 \index{global\_coord\_to\_value\_cloud@{global\_coord\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{global\_coord\_to\_value\_cloud()}{global\_coord\_to\_value\_cloud()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims)) disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+
+Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the point indicated by the global coordinate given. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em coord} & global coordinate \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}\label{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}} 
 \index{disttab\_table@{disttab\_table}!index\_to\_coord@{index\_to\_coord}}
 \index{index\_to\_coord@{index\_to\_coord}!disttab\_table@{disttab\_table}}
@@ -178,6 +248,10 @@ Return coordinates from a global index on the object padded table dimensions.
 \hline
 {\em ind} & the index whose coordinates are to be found \\
 \hline
+{\em part\+\_\+dims} & the inter-\/partition dimensions of the partitioning scheme \\
+\hline
+{\em box\+\_\+dims} & the intra-\/partition dimensions of the partitioning scheme \\
+\hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 coord global coordinates on the object padded table dimensions 
@@ -213,18 +287,60 @@ Given an index, intra-\/partition dimensions part\+\_\+dims, and inter-\/partiti
 \doxysubsubsection{\texorpdfstring{index\_to\_value()}{index\_to\_value()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::index\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{ind }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+
+Given index, return corresponding value. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em ind} & linear index in lookup table \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+val state variable values located at ind 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}\label{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}} 
 \index{disttab\_table@{disttab\_table}!index\_to\_value\_cloud@{index\_to\_value\_cloud}}
 \index{index\_to\_value\_cloud@{index\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{index\_to\_value\_cloud()}{index\_to\_value\_cloud()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims)) disttab\+\_\+table\+::index\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, intent(in)}]{ind }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
-\mbox{\Hypertarget{namespacedisttab__table_a41c2e819a011062a0abcf184a9dacb2f}\label{namespacedisttab__table_a41c2e819a011062a0abcf184a9dacb2f}} 
+
+
+Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the given index. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em ind} & linearized index of point \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+val\+\_\+cloud cloud of values based at coordinate corresponding to linearized index ind. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__table_a61e3cd5682eff7687cb3c035f48dde67}\label{namespacedisttab__table_a61e3cd5682eff7687cb3c035f48dde67}} 
 \index{disttab\_table@{disttab\_table}!local\_coord\_to\_global\_coord@{local\_coord\_to\_global\_coord}}
 \index{local\_coord\_to\_global\_coord@{local\_coord\_to\_global\_coord}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{local\_coord\_to\_global\_coord()}{local\_coord\_to\_global\_coord()}}
-{\footnotesize\ttfamily integer function, dimension(size(this\%part\+\_\+dims)) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+global\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+p,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+b,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{part\+\_\+dims,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily integer function, dimension(size(this\%part\+\_\+dims)) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+global\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+p,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{coord\+\_\+b,  }\item[{integer, dimension(size(this\%part\+\_\+dims))}]{box\+\_\+dims }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+\begin{DoxyParams}{Parameters}
+{\em this} & table object \\
+\hline
+{\em coord\+\_\+p} & intra-\/partition coordinate \\
+\hline
+{\em coord\+\_\+b} & inter-\/partition box coordinate \\
+\hline
+{\em box\+\_\+dims} & size of inter-\/partition box \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+coord global coordinate 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a4c28f3477360f4c12e959c944cccf6df}\label{namespacedisttab__table_a4c28f3477360f4c12e959c944cccf6df}} 
 \index{disttab\_table@{disttab\_table}!local\_coord\_to\_index@{local\_coord\_to\_index}}
 \index{local\_coord\_to\_index@{local\_coord\_to\_index}!disttab\_table@{disttab\_table}}
@@ -239,9 +355,9 @@ Return partitioned flat index, given coordinates and an associated two-\/level p
 \begin{DoxyParams}{Parameters}
 {\em this} & table object \\
 \hline
-{\em coord\+\_\+part} & the intra-\/partition term of the coordinates \\
+{\em coord\+\_\+p} & the intra-\/partition term of the coordinates \\
 \hline
-{\em coord\+\_\+box} & the inter-\/partition term of the coordinates \\
+{\em coord\+\_\+b} & the inter-\/partition term of the coordinates \\
 \hline
 {\em part\+\_\+dims} & the intra-\/partition dimensions \\
 \hline
@@ -257,12 +373,44 @@ ind the partitioned index
 \doxysubsubsection{\texorpdfstring{local\_coord\_to\_value()}{local\_coord\_to\_value()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+p,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+
+Given local coordinate decomposition, return corresponding value. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em coord\+\_\+p} & the intra-\/partition term of the coordinates \\
+\hline
+{\em coord\+\_\+b} & the inter-\/partition term of the coordinates \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+val state variable values located at coordinate given in (coord\+\_\+p, coord\+\_\+b) 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}\label{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}} 
 \index{disttab\_table@{disttab\_table}!local\_coord\_to\_value\_cloud@{local\_coord\_to\_value\_cloud}}
 \index{local\_coord\_to\_value\_cloud@{local\_coord\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
 \doxysubsubsection{\texorpdfstring{local\_coord\_to\_value\_cloud()}{local\_coord\_to\_value\_cloud()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims)) disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+p,  }\item[{integer, dimension(\+:), intent(in)}]{coord\+\_\+b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+
+Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the point indicated by the local coordinate decomposition given. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em coord\+\_\+p} & the intra-\/partition term of the coordinates \\
+\hline
+{\em coord\+\_\+b} & the inter-\/partition term of the coordinates \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}\label{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}} 
 \index{disttab\_table@{disttab\_table}!partition\_remap@{partition\_remap}}
 \index{partition\_remap@{partition\_remap}!disttab\_table@{disttab\_table}}
@@ -271,7 +419,7 @@ ind the partitioned index
 
 
 
-Remaps the partition from assumed Alya-\/format ordering to given partition ordering. 
+Remaps the partition from a given previous partition ordering to given new partition ordering. 
 
 
 \begin{DoxyParams}{Parameters}
@@ -279,11 +427,11 @@ Remaps the partition from assumed Alya-\/format ordering to given partition orde
 \hline
 {\em part\+\_\+dims} & partition dims to use \\
 \hline
+{\em part\+\_\+dims\+\_\+prev} & partition dims in previous partition scheme \\
+\hline
 \end{DoxyParams}
 \begin{DoxyRefDesc}{Todo}
-\item[\mbox{\hyperlink{todo__todo000003}{Todo}}]assumed currently that table is in Alya-\/format. Add functionality to remap from one partition size to another. This can be achieved by writing and sorting the table as in test\+\_\+partitioningpart\+\_\+test\+\_\+fill\+\_\+table to recover the Alya format and then reading that sorted file back in. 
-
-move nasty reshaping code to another function \end{DoxyRefDesc}
+\item[\mbox{\hyperlink{todo__todo000003}{Todo}}]move nasty reshaping code to another function \end{DoxyRefDesc}
 \mbox{\Hypertarget{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}\label{namespacedisttab__table_a6647a1dbf7c634f5c5144d1e8358dbd1}} 
 \index{disttab\_table@{disttab\_table}!print\_elems@{print\_elems}}
 \index{print\_elems@{print\_elems}!disttab\_table@{disttab\_table}}
@@ -322,6 +470,20 @@ Reads in a lookup table to the elements array of the table object. Assumes that 
 \doxysubsubsection{\texorpdfstring{real\_to\_value\_cloud()}{real\_to\_value\_cloud()}}
 {\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2$\ast$$\ast$size(this\%part\+\_\+dims)) disttab\+\_\+table\+::real\+\_\+to\+\_\+value\+\_\+cloud (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{real, dimension(size(this\%part\+\_\+dims)), intent(in)}]{real\+\_\+val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
+
+
+Given coordinates \mbox{[}0,1\mbox{]}x\mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} in the normalized state space, return a value cloud. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em real\+\_\+val} & Coordinates of length N \mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} in normalized state space \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}\label{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}} 
 \index{disttab\_table@{disttab\_table}!table\_constructor@{table\_constructor}}
 \index{table\_constructor@{table\_constructor}!disttab\_table@{disttab\_table}}

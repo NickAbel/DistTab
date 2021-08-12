@@ -10,7 +10,9 @@ module disttab_test_partitioning
     type(table) :: lookup
     integer, allocatable, dimension(:) :: table_dims
     integer, allocatable, dimension(:) :: part_dims
+
   contains
+
     procedure, pass(this) :: run_map_test
     procedure, pass(this) :: run_map_unmap_test
 
@@ -74,7 +76,7 @@ contains
 
     print *, "partition_map_test begin"
 
-      !! Compute padded dimensions for test tables
+    ! Compute padded dimensions for test tables
     this%lookup%table_dims_padded = this%table_dims
     do i = lbound(this%lookup%table_dims_padded, dim=1), ubound(this%lookup%table_dims_padded, dim=1) - 1
       do while (mod(this%lookup%table_dims_padded(i), this%part_dims(i)) .ne. 0)
@@ -89,9 +91,9 @@ contains
     allocate (this%lookup%elems(this%lookup%table_dim_svar, this%lookup%table_dims_padded_flat))
     this%lookup%elems = 0.d0
 
-      !! Create gold standard and fill table with Alya-format sorted version of table
+    ! Create gold standard and fill table with Alya-format sorted version of table
     call this%create_test_tables_padded()
-      !! Run partition mapping algorithm
+    ! Run partition mapping algorithm
     call this%lookup%partition_remap(this%part_dims, this%lookup%table_dims_padded)
 
     ! Open, read, and close the file to the gold standard
@@ -103,7 +105,7 @@ contains
     end do
     close (36)
 
-      !! Check if the partition mapping of the elements is equal to the gold standard generated in create_test_tables
+    ! Check if the partition mapping of the elements is equal to the gold standard generated in create_test_tables
     if (all(this%lookup%elems .eq. elems_gold_std)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
         this%part_dims, "]: ", "partition_map_test passed! Tables will be deleted."
@@ -131,13 +133,13 @@ contains
     print *, "partition_map_unmap_test begin"
 
     N = size(this%part_dims)
-      !! Create gold standard and fill table with Alya-format sorted version of table
+    ! Create gold standard and fill table with Alya-format sorted version of table
     call this%create_test_tables_unpadded()
-      !! Run partition mapping algorithm
+    ! Run partition mapping algorithm
     call this%lookup%partition_remap(this%part_dims, this%lookup%table_dims)
     call this%lookup%partition_remap(this%lookup%table_dims, this%part_dims)
 
-      !! Open, read, and close the file to the gold standard
+    ! Open, read, and close the file to the gold standard
     allocate (elems_gold_std(this%lookup%table_dim_svar, this%lookup%table_dims_flat))
     open (36, file='partition_test_table_sorted.nopad.tmp.dat', action='read')
     do i = 1, this%lookup%table_dims_flat
@@ -145,7 +147,7 @@ contains
     end do
     close (36)
 
-      !! Check if the partition mapping of the elements is equal to the gold standard generated in create_test_tables
+    ! Check if the partition mapping of the elements is equal to the gold standard generated in create_test_tables
     if (all(this%lookup%elems .eq. elems_gold_std)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
         this%part_dims, "]: ", "partition_map_unmap_test passed!"
@@ -185,7 +187,7 @@ contains
     integer, dimension(size(this%part_dims)) :: coord
 
     N = size(this%part_dims)
-      !! Find total partitions in each dimension
+    ! Find total partitions in each dimension
     allocate (box_dims(N))
     box_dims = this%lookup%table_dims_padded(1:N) / this%part_dims
 
@@ -201,8 +203,8 @@ contains
     close (34)
     deallocate (box_dims)
 
-      !! This gawk loop will sort the coordinate columns 1 to N in order, which
-      !! emulates the storage format of Alya tables.
+    ! This gawk loop will sort the coordinate columns 1 to N in order, which
+    ! emulates the storage format of Alya tables.
     call execute_command_line("gawk -F ',' '                                &
                               &   {                                         &
                               &      for(i=1;i<=NF;i++){sorter[i][NR]=$i}   &
@@ -220,7 +222,7 @@ contains
 
     open (35, file='partition_test_table_sorted.pad.tmp.dat', action='read')
 
-      !! After sorting to the "Alya format," load the table back into the elements array.
+    ! After sorting to the "Alya format," load the table back into the elements array.
     do i = 1, this%lookup%table_dims_padded_flat
       read (35, *) (coord(j), j=1, N), this%lookup%elems(:, i)
     end do
@@ -253,7 +255,7 @@ contains
     integer, dimension(size(this%part_dims)) :: coord
 
     N = size(this%part_dims)
-      !! Find total partitions in each dimension
+    ! Find total partitions in each dimension
     allocate (box_dims(N))
     box_dims = this%lookup%table_dims_padded(1:N) / this%part_dims
 
@@ -268,8 +270,8 @@ contains
     close (34)
     deallocate (box_dims)
 
-      !! This gawk loop will sort the coordinate columns 1 to N in order, which
-      !! emulates the storage format of Alya tables.
+    ! This gawk loop will sort the coordinate columns 1 to N in order, which
+    ! emulates the storage format of Alya tables.
     call execute_command_line("gawk -F ',' '                                &
                               &   {                                         &
                               &      for(i=1;i<=NF;i++){sorter[i][NR]=$i}   &
@@ -287,7 +289,7 @@ contains
 
     open (35, file='partition_test_table_sorted.nopad.tmp.dat', action='read')
 
-      !! After sorting to the "Alya format," load the table back into the elements array.
+    ! After sorting to the "Alya format," load the table back into the elements array.
     do i = 1, this%lookup%table_dims_flat
       read (35, *) (coord(j), j=1, N), this%lookup%elems(:, i)
     end do

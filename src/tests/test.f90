@@ -15,7 +15,7 @@ program test
   call square_test()
   call rand_test_full()
   ! Other tests
-  call read_test()
+  !call read_test()
 
 contains
 
@@ -40,8 +40,8 @@ contains
   !> Test of 2-dim to 5-dim partitioning with randomly generated
   !! table and partition sizes on each dimension.
   subroutine rand_test_full()
-    do dims = 2, 3
-      do i = 1, 3
+    do dims = 2, 5
+      do i = 1, 5
         allocate (nr(dims + 1))
         allocate (qr(dims))
         allocate (n(dims + 1))
@@ -61,6 +61,7 @@ contains
         test_access = access_test(n)
         call test_access%run_value_test()
         call test_access%run_value_cloud_test()
+        call test_access%run_get_map_get_test()
         deallocate (nr)
         deallocate (qr)
         deallocate (n)
@@ -91,7 +92,7 @@ contains
     call lookup%read_in(file_id)
     call lookup%partition_remap(q, q_prev)
     call lookup%partition_remap(q_prev, q)
-    print *, lookup%real_to_value_cloud(interp_random_cvars)
+    !print *, lookup%real_to_value_cloud(interp_random_cvars)
     deallocate (nr)
     deallocate (qr)
     deallocate (n)

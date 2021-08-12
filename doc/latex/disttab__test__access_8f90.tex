@@ -19,9 +19,15 @@ subroutine \mbox{\hyperlink{namespacedisttab__test__access_a44fadfce7f568130d013
 \begin{DoxyCompactList}\small\item\em Test the ability to get correct values from the table from index, local coordinate, and global coordinates. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_a34326ceda4c639022fa764333e16cbdb}{disttab\+\_\+test\+\_\+access\+::get\+\_\+value\+\_\+cloud\+\_\+test}} (this)
 \begin{DoxyCompactList}\small\item\em Test the ability to get correct value clouds from the table from index, local coordinate, and global coordinates. Example in 3D case\+: In general, when the value at coordinate (i,j,k) is desired, return \{i,i+1\}x\{j,j+1\}x\{k,k+1\} (returning err if i+1,j+1,k+1, etc $>$ Z). \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__access_ab86c88f5c12394add323ed6822fa5369}{disttab\+\_\+test\+\_\+access\+::get\+\_\+map\+\_\+get\+\_\+test}} (this)
+\begin{DoxyCompactList}\small\item\em Get a table value from random global coordinates, stash the result, change the partitioning scheme, get a table value from the same global coordinates, and check that the two values remain the same. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_a225f81f00e1338a1d32fed81970a074f}{disttab\+\_\+test\+\_\+access\+::fill\+\_\+table\+\_\+ascending\+\_\+integers}} (this)
 \begin{DoxyCompactList}\small\item\em Fill lookup\textquotesingle{}s table with ascending integers. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__access_abed197424c45969ad7c7342da47a2d93}{disttab\+\_\+test\+\_\+access\+::fill\+\_\+cvars\+\_\+linspace}} (this)
+\begin{DoxyCompactList}\small\item\em Fill lookup\textquotesingle{}s control variables with linspace values in \mbox{[}0, 1\mbox{]}. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_af8dd95f9a456c6e53605bcdd3b1a76e8}{disttab\+\_\+test\+\_\+access\+::run\+\_\+value\+\_\+test}} (this)
 \begin{DoxyCompactList}\small\item\em Runs the get value test. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_a08ff6be7542641dadb3def69fb530427}{disttab\+\_\+test\+\_\+access\+::run\+\_\+value\+\_\+cloud\+\_\+test}} (this)
-\begin{DoxyCompactList}\small\item\em Runs the get value cloud test. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Runs the get value cloud test. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__access_ae087b6cb051e3b47712d7ec384b56f99}{disttab\+\_\+test\+\_\+access\+::run\+\_\+get\+\_\+map\+\_\+get\+\_\+test}} (this)
+\begin{DoxyCompactList}\small\item\em Runs the get value-\/remap-\/get value test. \end{DoxyCompactList}\end{DoxyCompactItemize}
