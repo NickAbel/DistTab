@@ -61,12 +61,15 @@ contains
 
     print *, "get_value_test begin, ind = ", ind
 
+    ! Via index
     val_ind = this%lookup%index_to_value(ind)
 
+    ! Via local coord
     box_dims = this%lookup%table_dims_padded(1:N) / this%lookup%part_dims
     call this%lookup%index_to_local_coord(ind, this%lookup%part_dims, box_dims, coord_p, coord_b)
     val_local_coord = this%lookup%local_coord_to_value(coord_p, coord_b)
 
+    ! Via global coord
     coord = this%lookup%local_coord_to_global_coord(coord_p, coord_b, box_dims)
     val_global_coord = this%lookup%global_coord_to_value(coord)
 

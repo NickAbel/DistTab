@@ -33,6 +33,7 @@ contains
     test_access = access_test(n)
     call test_access%run_value_test()
     call test_access%run_value_cloud_test()
+    call test_access%run_get_map_get_test()
     deallocate (q)
     deallocate (n)
   end subroutine square_test
