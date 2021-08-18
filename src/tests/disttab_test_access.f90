@@ -153,16 +153,54 @@ contains
   !! change the partitioning scheme, get a table value from the same
   !! global coordinates, and check that the two values remain the same.
   !! @param this access_test object
-  subroutine get_map_get_test(this)
+  subroutine get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
+    real :: real_val(size(this%lookup%part_dims)), r
+    integer :: ind, N
+    integer, dimension(size(this%lookup%part_dims)) :: coord, coord_p, coord_b, box_dims
+    integer, dimension(size(this%lookup%part_dims)), intent(in) :: partition_dims
+    real, dimension(this%lookup%table_dim_svar, 2**size(this%lookup%part_dims)) :: val_cloud_global_coord, val_cloud_real, &
+                                                                                  & val_cloud_global_coord_map, val_real_map
 
-    print *, "get_map_get_test start"
+    N = size(this%lookup%part_dims)
 
-    !! Test here
-    !! Test here
-    !! Test here
+    call random_number(r)
+    r = r * this%lookup%table_dims_flat
+    ind = ceiling(r)
 
-    print *, "get_map_get_test passed!"
+    box_dims = this%lookup%table_dims_padded(1:N) / this%lookup%part_dims
+
+    ! Re-roll if the value cloud would spill off the table's end
+    do while (any(this%lookup%index_to_global_coord(ind, this%lookup%part_dims, box_dims) &
+      & .ge. this%lookup%table_dims(1:N)))
+      print *, "Random cloud will fall off table! Re-rolling..."
+      call random_number(r)
+      r = r * this%lookup%table_dims_flat
+      ind = ceiling(r)
+    end do
+
+    print *, "get_map_get_test start", this%lookup%part_dims
+
+    ! Get value cloud from global coordinate index
+    coord = this%lookup%index_to_global_coord(ind, this%lookup%part_dims, box_dims)
+    val_cloud_global_coord = this%lookup%global_coord_to_value_cloud(coord)
+
+    ! Get value cloud from normalized control variable location
+    call this%fill_cvars_linspace()
+    real_val = 0.0
+    val_cloud_real = this%lookup%real_to_value_cloud(real_val)
+
+    ! Remap
+    call this%lookup%partition_remap(partition_dims, this%lookup%table_dims)
+
+    ! Get value cloud from global coordinate index
+    val_cloud_global_coord_map = this%lookup%global_coord_to_value_cloud(coord)
+    val_real_map = this%lookup%real_to_value_cloud(real_val)
+    if (any(val_cloud_global_coord .ne. val_cloud_global_coord_map)) then
+      print *, "<FAIL> get_map_get_test", this%lookup%part_dims
+    else
+      print *, "get_map_get_test passed!", this%lookup%part_dims
+    end if
 
   end subroutine get_map_get_test
 
@@ -214,10 +252,11 @@ contains
 
   !> Runs the get value-remap-get value test.
   !! @param this access_test object
-  subroutine run_get_map_get_test(this)
+  subroutine run_get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
+    integer, dimension(size(this%lookup%part_dims)) :: partition_dims
 
-    call this%get_map_get_test()
+    call this%get_map_get_test(partition_dims)
 
   end subroutine run_get_map_get_test
 
