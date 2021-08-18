@@ -19,6 +19,12 @@ real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namesp
 \begin{DoxyCompactList}\small\item\em Given local coordinate decomposition, return corresponding value. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}{disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value}} (this, coord)
 \begin{DoxyCompactList}\small\item\em Given global coordinate, return corresponding value. \end{DoxyCompactList}\item 
+integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a01cdec6dbc9c2661a059f314256dab4a}{disttab\+\_\+table\+::real\+\_\+to\+\_\+global\+\_\+coord}} (this, real\+\_\+val)
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding global coordinates. \end{DoxyCompactList}\item 
+integer function \mbox{\hyperlink{namespacedisttab__table_a9840b60ea5fad0d2d06f652213af633f}{disttab\+\_\+table\+::real\+\_\+to\+\_\+index}} (this, real\+\_\+val)
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding linear index. \end{DoxyCompactList}\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_aec3fafe9ac16efeef40851f6f9d67a7d}{disttab\+\_\+table\+::real\+\_\+to\+\_\+value}} (this, real\+\_\+val)
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding state variable values. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}{disttab\+\_\+table\+::index\+\_\+to\+\_\+value\+\_\+cloud}} (this, ind)
 \begin{DoxyCompactList}\small\item\em Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the given index. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}{disttab\+\_\+table\+::local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord\+\_\+p, coord\+\_\+b)
@@ -26,7 +32,7 @@ real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}{disttab\+\_\+table\+::global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord)
 \begin{DoxyCompactList}\small\item\em Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the point indicated by the global coordinate given. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}{disttab\+\_\+table\+::real\+\_\+to\+\_\+value\+\_\+cloud}} (this, real\+\_\+val)
-\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0,1\mbox{]}x\mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} in the normalized state space, return a value cloud. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return a value cloud. \end{DoxyCompactList}\item 
 recursive subroutine \mbox{\hyperlink{namespacedisttab__table_a59875ab6dff08ec19ac0db2a56e27039}{disttab\+\_\+table\+::gather\+\_\+value\+\_\+cloud}} (this, idx, ctrs, uppers, val\+\_\+cloud, j, box\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Fills a 2$^\wedge$\+N-\/sized array with a value cloud of neighbors in state space. \end{DoxyCompactList}\item 
 type(table) function \mbox{\hyperlink{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}{disttab\+\_\+table\+::table\+\_\+constructor}} (table\+\_\+dims)

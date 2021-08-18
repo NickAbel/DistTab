@@ -153,6 +153,7 @@ contains
   !! change the partitioning scheme, get a table value from the same
   !! global coordinates, and check that the two values remain the same.
   !! @param this access_test object
+  !! @param partition_dims partition dimensions to remap to before re-obtaining values
   subroutine get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
     real :: real_coords_rand(size(this%lookup%part_dims)), r
@@ -254,6 +255,7 @@ contains
 
   !> Runs the get value-remap-get value test.
   !! @param this access_test object
+  !! @param partition_dims partition dimensions to remap to before re-obtaining values
   subroutine run_get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
     integer, dimension(size(this%lookup%part_dims)) :: partition_dims

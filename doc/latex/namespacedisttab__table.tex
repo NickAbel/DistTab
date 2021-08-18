@@ -14,6 +14,12 @@ real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namesp
 \begin{DoxyCompactList}\small\item\em Given local coordinate decomposition, return corresponding value. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_a7ace34a0254fad2cdb1e2fbcb1f0dc0e}{global\+\_\+coord\+\_\+to\+\_\+value}} (this, coord)
 \begin{DoxyCompactList}\small\item\em Given global coordinate, return corresponding value. \end{DoxyCompactList}\item 
+integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a01cdec6dbc9c2661a059f314256dab4a}{real\+\_\+to\+\_\+global\+\_\+coord}} (this, real\+\_\+val)
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding global coordinates. \end{DoxyCompactList}\item 
+integer function \mbox{\hyperlink{namespacedisttab__table_a9840b60ea5fad0d2d06f652213af633f}{real\+\_\+to\+\_\+index}} (this, real\+\_\+val)
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding linear index. \end{DoxyCompactList}\item 
+real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_aec3fafe9ac16efeef40851f6f9d67a7d}{real\+\_\+to\+\_\+value}} (this, real\+\_\+val)
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding state variable values. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4646bad33562b6bda2bcb3dbcab09dab}{index\+\_\+to\+\_\+value\+\_\+cloud}} (this, ind)
 \begin{DoxyCompactList}\small\item\em Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the given index. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a4c7b278e354868116b97b0bcca763810}{local\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord\+\_\+p, coord\+\_\+b)
@@ -21,7 +27,7 @@ real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_adadb3a82f2810807d2dc153d284ef3b2}{global\+\_\+coord\+\_\+to\+\_\+value\+\_\+cloud}} (this, coord)
 \begin{DoxyCompactList}\small\item\em Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginning at the point indicated by the global coordinate given. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar, 2 $\ast$$\ast$size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}{real\+\_\+to\+\_\+value\+\_\+cloud}} (this, real\+\_\+val)
-\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0,1\mbox{]}x\mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} in the normalized state space, return a value cloud. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return a value cloud. \end{DoxyCompactList}\item 
 recursive subroutine \mbox{\hyperlink{namespacedisttab__table_a59875ab6dff08ec19ac0db2a56e27039}{gather\+\_\+value\+\_\+cloud}} (this, idx, ctrs, uppers, val\+\_\+cloud, j, box\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Fills a 2$^\wedge$\+N-\/sized array with a value cloud of neighbors in state space. \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}) function \mbox{\hyperlink{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}{table\+\_\+constructor}} (table\+\_\+dims)
@@ -208,7 +214,7 @@ Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginn
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} 
+val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} 
 \end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}\label{namespacedisttab__table_a6af601647f70b9debfa91294ff7b3109}} 
 \index{disttab\_table@{disttab\_table}!index\_to\_coord@{index\_to\_coord}}
@@ -409,7 +415,7 @@ Return corresponding 2$\ast$$\ast$N cloud of neighbors in the state space beginn
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} 
+val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} 
 \end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}\label{namespacedisttab__table_a48241397777b4e586f1d9cf4389fae7d}} 
 \index{disttab\_table@{disttab\_table}!partition\_remap@{partition\_remap}}
@@ -464,6 +470,66 @@ Reads in a lookup table to the elements array of the table object. Assumes that 
 {\em file\+\_\+id} & the lookup table filename to read in. \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{namespacedisttab__table_a01cdec6dbc9c2661a059f314256dab4a}\label{namespacedisttab__table_a01cdec6dbc9c2661a059f314256dab4a}} 
+\index{disttab\_table@{disttab\_table}!real\_to\_global\_coord@{real\_to\_global\_coord}}
+\index{real\_to\_global\_coord@{real\_to\_global\_coord}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{real\_to\_global\_coord()}{real\_to\_global\_coord()}}
+{\footnotesize\ttfamily integer function, dimension(size(this\%part\+\_\+dims)) disttab\+\_\+table\+::real\+\_\+to\+\_\+global\+\_\+coord (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{real, dimension(size(this\%part\+\_\+dims)), intent(in)}]{real\+\_\+val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding global coordinates. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em real\+\_\+val} & Coordinates of length N \mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in normalized state space \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+global\+\_\+coord resultant global coordinates 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__table_a9840b60ea5fad0d2d06f652213af633f}\label{namespacedisttab__table_a9840b60ea5fad0d2d06f652213af633f}} 
+\index{disttab\_table@{disttab\_table}!real\_to\_index@{real\_to\_index}}
+\index{real\_to\_index@{real\_to\_index}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{real\_to\_index()}{real\_to\_index()}}
+{\footnotesize\ttfamily integer function disttab\+\_\+table\+::real\+\_\+to\+\_\+index (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{real, dimension(size(this\%part\+\_\+dims)), intent(in)}]{real\+\_\+val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding linear index. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em real\+\_\+val} & Coordinates of length N \mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in normalized state space \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+resultant index 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__table_aec3fafe9ac16efeef40851f6f9d67a7d}\label{namespacedisttab__table_aec3fafe9ac16efeef40851f6f9d67a7d}} 
+\index{disttab\_table@{disttab\_table}!real\_to\_value@{real\_to\_value}}
+\index{real\_to\_value@{real\_to\_value}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{real\_to\_value()}{real\_to\_value()}}
+{\footnotesize\ttfamily real function, dimension(this\%table\+\_\+dim\+\_\+svar) disttab\+\_\+table\+::real\+\_\+to\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{real, dimension(size(this\%part\+\_\+dims)), intent(in)}]{real\+\_\+val }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding state variable values. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em real\+\_\+val} & Coordinates of length N \mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in normalized state space \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+val resultant SV values 
+\end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}\label{namespacedisttab__table_ae87025495cf9b6f48e98b5e9d5b05c56}} 
 \index{disttab\_table@{disttab\_table}!real\_to\_value\_cloud@{real\_to\_value\_cloud}}
 \index{real\_to\_value\_cloud@{real\_to\_value\_cloud}!disttab\_table@{disttab\_table}}
@@ -472,17 +538,17 @@ Reads in a lookup table to the elements array of the table object. Assumes that 
 
 
 
-Given coordinates \mbox{[}0,1\mbox{]}x\mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} in the normalized state space, return a value cloud. 
+Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return a value cloud. 
 
 
 \begin{DoxyParams}{Parameters}
 {\em this} & the table object \\
 \hline
-{\em real\+\_\+val} & Coordinates of length N \mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} in normalized state space \\
+{\em real\+\_\+val} & Coordinates of length N \mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in normalized state space \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0,1\mbox{]}x...x\mbox{[}0,1\mbox{]} 
+val\+\_\+cloud resultant value cloud of 2$\ast$$\ast$N \mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} 
 \end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}\label{namespacedisttab__table_a51096402e00064f68a6c890b6c0d8500}} 
 \index{disttab\_table@{disttab\_table}!table\_constructor@{table\_constructor}}

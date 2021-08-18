@@ -140,7 +140,7 @@ Documentation</h2>
 <h2><a class="anchor" id="autotoc_md8"></a>
 Todo</h2>
 <ul>
-<li>[ ] Relevant documentation/comments for the completed items below</li>
+<li>[x] Relevant documentation/comments for the completed items below</li>
 <li>[x] Simple test for two-dimensional partitioning, divisible partition sizes</li>
 <li>[x] Two-dimensional partitioning, partition sizes perfectly divisible by table sizes</li>
 <li>[x] Fulsome test for two-dimensional partitioning, divisible partition sizes</li>
@@ -154,9 +154,12 @@ Todo</h2>
 <li>[x] n-dimensional partitioning, with zero-padding for nondivisible partition sizes</li>
 <li>[x] Fulsome test for n-dimensional partitioning, nondivisible partition sizes</li>
 <li>[x] When number of state variables &gt; 1, the state variables per-value must be contiguous in memory</li>
-<li>[x] Given integer-ized spatial coordinates, return state variables from partitioned table</li>
+<li>[x] Given spatial coordinates in integer, local, or global form, return state variables from partitioned table</li>
+<li>[x] Given spatial coordinates in integer, local, or global form, return state variable value cloud from partitioned table</li>
+<li>[x] Given control variable coordinates in [0,1]x...x[0,1], return state variable value cloud from partitioned table</li>
 <li>[x] Repartitioning; accept 'old' partition dimensions as option instead of assuming 'Alya format'</li>
-<li>[/] Don't rely on the sort command to generate input for tests</li>
+<li>[x] Don't rely on the sort command to generate input for tests</li>
+<li>[ ] Make output verbiage from tests easier to understand, should see at a glance all PASS/FAIL/DIFFs.</li>
 <li>[ ] Re-introduce MPI calls and split table among ranks in simple manner</li>
 <li>[ ] Begin working on local pile</li>
 <li>[ ] Explain new functionalities in <a class="el" href="README_8md.html">README.md</a></li>
