@@ -15,7 +15,7 @@ program test
   call square_test()
   call rand_test_full()
   ! Other tests
-  !call read_test()
+  call read_test()
 
 contains
 
@@ -41,8 +41,8 @@ contains
   !> Test of 2-dim to 5-dim partitioning with randomly generated
   !! table and partition sizes on each dimension.
   subroutine rand_test_full()
-    do dims = 2, 3
-      do i = 1, 1
+    do dims = 2, 5
+      do i = 1, 5
         allocate (nr(dims + 1))
         allocate (qr(dims))
         allocate (n(dims + 1))
@@ -56,12 +56,12 @@ contains
         n(1:dims) = q + n(1:dims)
         n(dims + 1) = 1
         test_partition = partitioning_test(n, q)
-        !call test_partition%run_map_test()
+        call test_partition%run_map_test()
         test_partition = partitioning_test(n, q)
-        !call test_partition%run_map_unmap_test()
+        call test_partition%run_map_unmap_test()
         test_access = access_test(n)
-        !call test_access%run_value_test()
-        !call test_access%run_value_cloud_test()
+        call test_access%run_value_test()
+        call test_access%run_value_cloud_test()
         call test_access%run_get_map_get_test(q)
         deallocate (nr)
         deallocate (qr)

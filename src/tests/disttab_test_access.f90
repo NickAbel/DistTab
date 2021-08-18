@@ -155,12 +155,13 @@ contains
   !! @param this access_test object
   subroutine get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
-    real :: real_val(size(this%lookup%part_dims)), r
+    real :: real_coords_rand(size(this%lookup%part_dims)), r
     integer :: ind, N
     integer, dimension(size(this%lookup%part_dims)) :: coord, coord_p, coord_b, box_dims
     integer, dimension(size(this%lookup%part_dims)), intent(in) :: partition_dims
-    real, dimension(this%lookup%table_dim_svar, 2**size(this%lookup%part_dims)) :: val_cloud_global_coord, val_cloud_real, &
-                                                                                  & val_cloud_global_coord_map, val_real_map
+    real, dimension(this%lookup%table_dim_svar) :: val_real, val_real_map
+    real, dimension(this%lookup%table_dim_svar, 2**size(this%lookup%part_dims)) :: val_cloud_global_coord, &
+                                                                                  & val_cloud_global_coord_map
 
     N = size(this%lookup%part_dims)
 
@@ -187,16 +188,17 @@ contains
 
     ! Get value cloud from normalized control variable location
     call this%fill_cvars_linspace()
-    real_val = 0.0
-    val_cloud_real = this%lookup%real_to_value_cloud(real_val)
+    call random_number(real_coords_rand)
+    val_real = this%lookup%real_to_value(real_coords_rand)
 
     ! Remap
     call this%lookup%partition_remap(partition_dims, this%lookup%table_dims)
 
     ! Get value cloud from global coordinate index
     val_cloud_global_coord_map = this%lookup%global_coord_to_value_cloud(coord)
-    val_real_map = this%lookup%real_to_value_cloud(real_val)
-    if (any(val_cloud_global_coord .ne. val_cloud_global_coord_map)) then
+    val_real_map = this%lookup%real_to_value(real_coords_rand)
+    if (any(val_cloud_global_coord .ne. val_cloud_global_coord_map) .or. &
+        & any(val_real .ne. val_real_map)) then
       print *, "<FAIL> get_map_get_test", this%lookup%part_dims
     else
       print *, "get_map_get_test passed!", this%lookup%part_dims

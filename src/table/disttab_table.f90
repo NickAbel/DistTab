@@ -44,6 +44,11 @@ module disttab_table
     ! Given real coordinates in CV space, return SV value cloud for interpolation
     procedure, public, pass(this) :: real_to_value_cloud
 
+    ! Find integerized coordinates or indices given real coordinates in the CV space
+    procedure, public, pass(this) :: real_to_global_coord
+    procedure, public, pass(this) :: real_to_index
+    procedure, public, pass(this) :: real_to_value
+
     procedure, public, pass(this) :: gather_value_cloud
 
     ! Convert index to table coordinates
@@ -133,6 +138,69 @@ contains
     val = this%elems(:, ind)
 
   end function global_coord_to_value
+
+  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+        !! corresponding global coordinates.
+        !!
+        !! @param this the table object
+        !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
+        !! @result global_coord resultant global coordinates
+  function real_to_global_coord(this, real_val) result(global_coord)
+    class(table), intent(inout) :: this
+    integer :: N, i, j
+    real, dimension(size(this%part_dims)), intent(in) :: real_val
+    integer, dimension(size(this%part_dims)) :: global_coord
+
+    N = size(this%part_dims)
+
+    do i = 1, N
+      do j = 1, this%table_dims(i) - 1
+        if ((real_val(i) .ge. this%ctrl_vars(j + sum(this%table_dims(:i - 1)))) &
+                & .and. (real_val(i) .le. this%ctrl_vars(j + 1 + sum(this%table_dims(:i - 1))))) then
+          global_coord(i) = j
+        end if
+      end do
+    end do
+
+  end function real_to_global_coord
+
+  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+        !! corresponding linear index
+        !!
+        !! @param this the table object
+        !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
+        !! @result resultant index
+  function real_to_index(this, real_val) result(ind)
+    class(table), intent(inout) :: this
+    integer :: N, i, j
+    real, dimension(size(this%part_dims)), intent(in) :: real_val
+    integer, dimension(size(this%part_dims)) :: box_dims, global_coord
+    integer :: ind
+
+    N = size(this%part_dims)
+
+    global_coord = this%real_to_global_coord(real_val)
+    box_dims = this%table_dims_padded(1:N) / this%part_dims
+    ind = this%global_coord_to_index(global_coord, this%part_dims, box_dims)
+
+  end function real_to_index
+
+  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+        !! corresponding state variable values.
+        !!
+        !! @param this the table object
+        !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
+        !! @result val resultant SV values
+  function real_to_value(this, real_val) result(val)
+    class(table), intent(inout) :: this
+    real, dimension(size(this%part_dims)), intent(in) :: real_val
+    real, dimension(this%table_dim_svar) :: val
+    integer :: ind
+
+    ind = this%real_to_index(real_val)
+    val = this%elems(:, ind)
+
+  end function real_to_value
 
   !> Return corresponding 2**N cloud of neighbors in the state space
         !! beginning at the given index.
@@ -238,12 +306,12 @@ contains
     N = size(this%part_dims)
 
     do i = 1, N
-    do j = 1, this%table_dims(i) - 1
-    if ((real_val(i) .ge. this%ctrl_vars(j + sum(this%table_dims(:i - 1)))) &
-            & .and. (real_val(i) .le. this%ctrl_vars(j + 1 + sum(this%table_dims(:i - 1))))) then
-      coord_base(i) = j
-    end if
-    end do
+      do j = 1, this%table_dims(i) - 1
+        if ((real_val(i) .ge. this%ctrl_vars(j + sum(this%table_dims(:i - 1)))) &
+                & .and. (real_val(i) .le. this%ctrl_vars(j + 1 + sum(this%table_dims(:i - 1))))) then
+          coord_base(i) = j
+        end if
+      end do
     end do
 
     box_dims = this%table_dims_padded(1:N) / this%part_dims
@@ -391,9 +459,9 @@ contains
     ! Find padded table dims
     this%table_dims_padded = this%table_dims
     do i = lbound(this%table_dims_padded, dim=1), ubound(this%table_dims_padded, dim=1) - 1
-    do while (mod(this%table_dims_padded(i), part_dims(i)) .ne. 0)
-      this%table_dims_padded(i) = this%table_dims_padded(i) + 1
-    end do
+      do while (mod(this%table_dims_padded(i), part_dims(i)) .ne. 0)
+        this%table_dims_padded(i) = this%table_dims_padded(i) + 1
+      end do
     end do
     this%table_dims_padded_flat = &
       product(this%table_dims_padded(1:ubound(this%table_dims_padded, dim=1) - 1))
