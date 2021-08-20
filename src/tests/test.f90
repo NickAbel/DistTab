@@ -7,15 +7,16 @@ program test
   real, allocatable, dimension(:) :: nr, qr
   integer, allocatable, dimension(:) :: n, q
   integer :: dims, i
+  integer, parameter :: runs = 100
   type(partitioning_test) :: test_partition
   type(access_test) :: test_access
   type(table) :: lookup
 
   ! Built-in tests that verify mapping and padding
-  call square_test()
+  !call square_test()
   call rand_test_full()
   ! Other tests
-  call read_test()
+  !call read_test()
 
 contains
 
@@ -34,6 +35,7 @@ contains
     call test_access%run_value_test()
     call test_access%run_value_cloud_test()
     call test_access%run_get_map_get_test(q)
+    call test_access%run_get_perf_test(runs)
     deallocate (q)
     deallocate (n)
   end subroutine square_test
@@ -41,28 +43,29 @@ contains
   !> Test of 2-dim to 5-dim partitioning with randomly generated
   !! table and partition sizes on each dimension.
   subroutine rand_test_full()
-    do dims = 2, 5
-      do i = 1, 5
+    do dims = 5, 5
+      do i = 1, 1
         allocate (nr(dims + 1))
         allocate (qr(dims))
         allocate (n(dims + 1))
         allocate (q(dims))
         call random_number(qr)
-        qr = qr * 10.0
+        qr = qr * 50.0
         q = ceiling(qr)
         call random_number(nr)
-        nr = nr * 20.0
+        nr = nr * 120.0
         n = ceiling(nr)
         n(1:dims) = q + n(1:dims)
         n(dims + 1) = 1
-        test_partition = partitioning_test(n, q)
-        call test_partition%run_map_test()
-        test_partition = partitioning_test(n, q)
-        call test_partition%run_map_unmap_test()
+        !test_partition = partitioning_test(n, q)
+        !call test_partition%run_map_test()
+        !test_partition = partitioning_test(n, q)
+        !call test_partition%run_map_unmap_test()
         test_access = access_test(n)
-        call test_access%run_value_test()
-        call test_access%run_value_cloud_test()
-        call test_access%run_get_map_get_test(q)
+        !call test_access%run_value_test()
+        !call test_access%run_value_cloud_test()
+        !call test_access%run_get_map_get_test(q)
+        call test_access%run_get_perf_test(runs)
         deallocate (nr)
         deallocate (qr)
         deallocate (n)

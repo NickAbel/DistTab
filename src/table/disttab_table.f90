@@ -46,6 +46,7 @@ module disttab_table
 
     ! Find integerized coordinates or indices given real coordinates in the CV space
     procedure, public, pass(this) :: real_to_global_coord
+    procedure, public, pass(this) :: real_to_global_coord_opt
     procedure, public, pass(this) :: real_to_index
     procedure, public, pass(this) :: real_to_value
 
@@ -149,6 +150,33 @@ contains
     class(table), intent(inout) :: this
     integer :: N, i, j
     real, dimension(size(this%part_dims)), intent(in) :: real_val
+    integer, dimension(size(this%part_dims)) :: global_coord
+
+    N = size(this%part_dims)
+
+    do i = 1, N
+      do j = 1, this%table_dims(i) - 1
+        if ((real_val(i) .ge. this%ctrl_vars(j + sum(this%table_dims(:i - 1)))) &
+                & .and. (real_val(i) .le. this%ctrl_vars(j + 1 + sum(this%table_dims(:i - 1))))) then
+          global_coord(i) = j
+        end if
+      end do
+    end do
+
+  end function real_to_global_coord
+
+  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+        !! corresponding global coordinates.
+        !! Uses optimized bucketed preprocessed technique.
+        !!
+        !! @param this the table object
+        !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
+        !! @result global_coord resultant global coordinates
+  function real_to_global_coord_opt(this, real_val, delta) result(global_coord)
+    class(table), intent(inout) :: this
+    integer :: N, i, j
+    real, dimension(size(this%part_dims)), intent(in) :: real_val
+    real, dimension(size(this%part_dims)), intent(in) :: delta
     integer, dimension(size(this%part_dims)) :: global_coord
 
     N = size(this%part_dims)
@@ -305,14 +333,7 @@ contains
 
     N = size(this%part_dims)
 
-    do i = 1, N
-      do j = 1, this%table_dims(i) - 1
-        if ((real_val(i) .ge. this%ctrl_vars(j + sum(this%table_dims(:i - 1)))) &
-                & .and. (real_val(i) .le. this%ctrl_vars(j + 1 + sum(this%table_dims(:i - 1))))) then
-          coord_base(i) = j
-        end if
-      end do
-    end do
+    coord_base = this%real_to_global_coord(real_val)
 
     box_dims = this%table_dims_padded(1:N) / this%part_dims
     l = 1

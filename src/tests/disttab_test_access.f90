@@ -14,10 +14,12 @@ module disttab_test_access
     procedure, pass(this) :: run_value_test
     procedure, pass(this) :: run_value_cloud_test
     procedure, pass(this) :: run_get_map_get_test
+    procedure, pass(this) :: run_get_perf_test
 
     procedure, pass(this), private :: get_value_test
     procedure, pass(this), private :: get_value_cloud_test
     procedure, pass(this), private :: get_map_get_test
+    procedure, pass(this), private :: get_perf_test
 
     procedure, pass(this), private :: fill_table_ascending_integers
     procedure, pass(this), private :: fill_cvars_linspace
@@ -40,6 +42,7 @@ contains
 
     this%lookup = table(table_dimensions)
     call this%fill_table_ascending_integers()
+    call this%fill_cvars_linspace()
 
   end function access_test_constructor
 
@@ -74,7 +77,7 @@ contains
     val_global_coord = this%lookup%global_coord_to_value(coord)
 
     if (any(val_ind .ne. val_local_coord) .or. any(val_local_coord .ne. val_global_coord)) then
-      print *, "get_value_test not working correctly..."
+      print *, "<FAIL> get_value_test not working correctly..."
     else
       print *, "get_value_test passed!"
     end if
@@ -127,14 +130,13 @@ contains
     val_cloud_global_coord = this%lookup%global_coord_to_value_cloud(coord)
 
     ! Get value cloud from normalized control variable location
-    call this%fill_cvars_linspace()
     real_val = 0.0
     val_cloud_real = this%lookup%real_to_value_cloud(real_val)
 
     ! Compare value clouds (except the real value which is not related)
     if (any(val_cloud_ind .ne. val_cloud_local_coord)   &
       & .or. any(val_cloud_local_coord .ne. val_cloud_global_coord)) then
-      print *, "get_value_cloud_test not working correctly..."
+      print *, "<FAIL> get_value_cloud_test not working correctly..."
       print *, "Index --> Val Cloud: "
       print *, val_cloud_ind
       print *, "Local Coord --> Val Cloud: "
@@ -188,7 +190,6 @@ contains
     val_cloud_global_coord = this%lookup%global_coord_to_value_cloud(coord)
 
     ! Get value cloud from normalized control variable location
-    call this%fill_cvars_linspace()
     call random_number(real_coords_rand)
     val_real = this%lookup%real_to_value(real_coords_rand)
 
@@ -200,12 +201,83 @@ contains
     val_real_map = this%lookup%real_to_value(real_coords_rand)
     if (any(val_cloud_global_coord .ne. val_cloud_global_coord_map) .or. &
         & any(val_real .ne. val_real_map)) then
-      print *, "<FAIL> get_map_get_test", this%lookup%part_dims
+      print *, "<FAIL> get_map_get_test not working correctly...", this%lookup%part_dims
     else
       print *, "get_map_get_test passed!", this%lookup%part_dims
     end if
 
   end subroutine get_map_get_test
+
+  !> Get a table value from random global coordinates, stash the result,
+  !! change the partitioning scheme, get a table value from the same
+  !! global coordinates, and check that the two values remain the same.
+  !! @param this access_test object
+  !! @param runs the number of times to fetch a random real coordinate
+  subroutine get_perf_test(this, runs)
+    class(access_test), intent(inout) :: this
+    real :: real_coords_rand(size(this%lookup%part_dims))
+    real :: r, diff, a_diff, rate, t1, t2
+    integer :: i, c1, c2, cr, cm, runs, s, n
+    integer, dimension(size(this%lookup%part_dims)) :: coord
+
+    ! Initialize clock
+    call system_clock(count_rate=cr)
+    call system_clock(count_max=cm)
+    rate = real(cr)
+
+    print *, "starting get_perf_test"
+    write (*, *) "system_clock rate ", rate
+
+    diff = 0.0
+    a_diff = 0.0
+    s = 0
+
+    do n = 1, runs
+      call random_number(real_coords_rand)
+      call cpu_time(t1)
+      call system_clock(c1)
+
+      coord = this%lookup%real_to_global_coord(real_coords_rand)
+      print *, real_coords_rand
+      print *, coord
+
+      call cpu_time(t2)
+      call system_clock(c2)
+      print *, t2 - t1
+      if ((c2 - c1) / rate < (t2 - t1)) s = s + 1
+      diff = (c2 - c1) / rate - (t2 - t1) + diff
+      a_diff = abs((c2 - c1) / rate - (t2 - t1)) + a_diff
+    end do
+
+    write (*, *) "system_clock : ", (c2 - c1) / rate
+    write (*, *) "cpu_time     : ", (t2 - t1)
+    write (*, *) "sc < ct      : ", s, "of", runs
+    write (*, *) "mean diff    : ", diff / runs
+    write (*, *) "abs mean diff: ", a_diff / runs
+
+    do n = 1, runs
+      call random_number(real_coords_rand)
+      call cpu_time(t1)
+      call system_clock(c1)
+
+      coord = this%lookup%real_to_global_coord_opt(real_coords_rand, 1.0)
+      print *, real_coords_rand
+      print *, coord
+
+      call cpu_time(t2)
+      call system_clock(c2)
+      print *, t2 - t1
+      if ((c2 - c1) / rate < (t2 - t1)) s = s + 1
+      diff = (c2 - c1) / rate - (t2 - t1) + diff
+      a_diff = abs((c2 - c1) / rate - (t2 - t1)) + a_diff
+    end do
+
+    write (*, *) "system_clock : ", (c2 - c1) / rate
+    write (*, *) "cpu_time     : ", (t2 - t1)
+    write (*, *) "sc < ct      : ", s, "of", runs
+    write (*, *) "mean diff    : ", diff / runs
+    write (*, *) "abs mean diff: ", a_diff / runs
+  end subroutine get_perf_test
 
   !> Fill lookup's table with ascending integers.
   !! @param this access_test object
@@ -263,5 +335,16 @@ contains
     call this%get_map_get_test(partition_dims)
 
   end subroutine run_get_map_get_test
+
+  !> Runs the performance test for get functionality.
+  !! @param this access_test object
+  !! @param runs number of times to access a random real-valued coordinate
+  subroutine run_get_perf_test(this, runs)
+    class(access_test), intent(inout) :: this
+    integer, intent(in) :: runs
+
+    call this%get_perf_test(runs)
+
+  end subroutine run_get_perf_test
 
 end module disttab_test_access
