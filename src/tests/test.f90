@@ -7,7 +7,7 @@ program test
   real, allocatable, dimension(:) :: nr, qr
   integer, allocatable, dimension(:) :: n, q
   integer :: dims, i
-  integer, parameter :: runs = 100
+  integer, parameter :: runs = 1
   type(partitioning_test) :: test_partition
   type(access_test) :: test_access
   type(table) :: lookup
@@ -43,7 +43,7 @@ contains
   !> Test of 2-dim to 5-dim partitioning with randomly generated
   !! table and partition sizes on each dimension.
   subroutine rand_test_full()
-    do dims = 5, 5
+    do dims = 2, 2
       do i = 1, 1
         allocate (nr(dims + 1))
         allocate (qr(dims))

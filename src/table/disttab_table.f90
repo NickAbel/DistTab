@@ -47,6 +47,7 @@ module disttab_table
     ! Find integerized coordinates or indices given real coordinates in the CV space
     procedure, public, pass(this) :: real_to_global_coord
     procedure, public, pass(this) :: real_to_global_coord_opt
+    procedure, public, pass(this) :: real_to_global_coord_opt_preprocessor
     procedure, public, pass(this) :: real_to_index
     procedure, public, pass(this) :: real_to_value
 
@@ -79,13 +80,13 @@ module disttab_table
     module procedure :: table_constructor
   end interface table
 
-  !   interface get_value
-  !     module procedure:: index_to_value, local_coord_to_value, global_coord_to_value
-  !   end interface get_value
+!   interface get_value
+!     module procedure:: index_to_value, local_coord_to_value, global_coord_to_value
+!   end interface get_value
 
 contains
 
-  !> Given index, return corresponding value.
+!> Given index, return corresponding value.
         !!
         !! @param this the table object
         !! @param ind linear index in lookup table
@@ -99,7 +100,7 @@ contains
 
   end function index_to_value
 
-  !> Given local coordinate decomposition, return corresponding value.
+!> Given local coordinate decomposition, return corresponding value.
         !!
         !! @param this the table object
         !! @param coord_p the intra-partition term of the coordinates
@@ -120,7 +121,7 @@ contains
 
   end function local_coord_to_value
 
-  !> Given global coordinate, return corresponding value.
+!> Given global coordinate, return corresponding value.
         !!
         !! @param this the table object
         !! @param coord global coordinate
@@ -140,7 +141,7 @@ contains
 
   end function global_coord_to_value
 
-  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
         !! corresponding global coordinates.
         !!
         !! @param this the table object
@@ -165,34 +166,81 @@ contains
 
   end function real_to_global_coord
 
-  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+  !> Preprocessor for bucketed real to global coord function.
+  !! Populates the bucket array used.
+  !! The argument M must be equal to the argument M passed to the real_to_global_coord_opt
+  !! function.
+  !!
+  !! @param this table object
+  !! @param M desired number of segments per dimension in the bucket array
+  !! @result buckets the bucket array
+  function real_to_global_coord_opt_preprocessor(this, M) result(buckets)
+    class(table), intent(inout) :: this
+    integer, dimension(size(this%part_dims)), intent(in) :: M
+    integer, dimension(:), allocatable :: buckets
+    integer :: i, j, k, l, N
+    real :: offset, delta
+
+    allocate (buckets(sum(M)))
+    N = size(this%part_dims)
+
+    l = 1
+    do i = 1, N
+      delta = 1.0 / (M(i))
+      do j = 0, M(i) - 1
+        offset = delta * j
+        k = sum(this%table_dims(:i - 1)) + 1
+        do while (offset .gt. this%ctrl_vars(k))
+          k = k + 1
+        end do
+        buckets(l) = max(sum(this%table_dims(:i - 1)) + 1, k - 1)
+        l = l + 1
+      end do
+    end do
+
+  end function real_to_global_coord_opt_preprocessor
+
+!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
         !! corresponding global coordinates.
         !! Uses optimized bucketed preprocessed technique.
         !!
         !! @param this the table object
         !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
+        !! @param M number of segments in the pre-processing array
         !! @result global_coord resultant global coordinates
-  function real_to_global_coord_opt(this, real_val, delta) result(global_coord)
+  function real_to_global_coord_opt(this, real_val, M, buckets) result(global_coord)
     class(table), intent(inout) :: this
-    integer :: N, i, j
+    integer :: N, i, j, k, l, p
+    real :: delta, offset
+    integer, dimension(size(this%part_dims)), intent(in) :: M
     real, dimension(size(this%part_dims)), intent(in) :: real_val
-    real, dimension(size(this%part_dims)), intent(in) :: delta
-    integer, dimension(size(this%part_dims)) :: global_coord
+    integer, dimension(size(this%part_dims)) :: global_coord, coord_start_indices
+    integer, dimension(sum(M)), intent(in) :: buckets
 
-    N = size(this%part_dims)
+    N = size(this%table_dims)
 
+    ! Step 2: Find which bucket each of the CVs are in
     do i = 1, N
-      do j = 1, this%table_dims(i) - 1
-        if ((real_val(i) .ge. this%ctrl_vars(j + sum(this%table_dims(:i - 1)))) &
-                & .and. (real_val(i) .le. this%ctrl_vars(j + 1 + sum(this%table_dims(:i - 1))))) then
-          global_coord(i) = j
+      delta = 1.0 / (M(i))
+      coord_start_indices(i) = buckets(ceiling(real_val(i) / delta) + sum(M(:i - 1)))
+    end do
+
+    ! Step 3: Locate CVs within buckets
+    do i = 1, N
+      do j = coord_start_indices(i), sum(this%table_dims(:i))
+        if (real_val(i) .eq. this%ctrl_vars(j)) then
+          global_coord(i) = j - sum(this%table_dims(:i - 1))
+        else if ((real_val(i) .gt. this%ctrl_vars(j)) &
+                & .and. (real_val(i) .lt. this%ctrl_vars(j + 1))) then
+          global_coord(i) = j - sum(this%table_dims(:i - 1))
+          exit
         end if
       end do
     end do
 
-  end function real_to_global_coord
+  end function real_to_global_coord_opt
 
-  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
         !! corresponding linear index
         !!
         !! @param this the table object
@@ -213,7 +261,7 @@ contains
 
   end function real_to_index
 
-  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
         !! corresponding state variable values.
         !!
         !! @param this the table object
@@ -230,7 +278,7 @@ contains
 
   end function real_to_value
 
-  !> Return corresponding 2**N cloud of neighbors in the state space
+!> Return corresponding 2**N cloud of neighbors in the state space
         !! beginning at the given index.
         !!
         !! @param this the table object
@@ -259,7 +307,7 @@ contains
 
   end function index_to_value_cloud
 
-  !> Return corresponding 2**N cloud of neighbors in the state space
+!> Return corresponding 2**N cloud of neighbors in the state space
         !! beginning at the point indicated by the local coordinate decomposition
         !! given.
         !!
@@ -290,7 +338,7 @@ contains
 
   end function local_coord_to_value_cloud
 
-  !> Return corresponding 2**N cloud of neighbors in the state space
+!> Return corresponding 2**N cloud of neighbors in the state space
         !! beginning at the point indicated by the global coordinate given.
         !!
         !! @param this the table object
@@ -318,7 +366,7 @@ contains
 
   end function global_coord_to_value_cloud
 
-  !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
         !! a value cloud.
         !!
         !! @param this the table object
@@ -341,7 +389,7 @@ contains
 
   end function real_to_value_cloud
 
-  !> Fills a 2^N-sized array with a value cloud of neighbors in state space.
+!> Fills a 2^N-sized array with a value cloud of neighbors in state space.
         !!
         !!
         !! @param this the table object
@@ -381,7 +429,7 @@ contains
 
   end subroutine gather_value_cloud
 
-  !> Constructor for the table object.
+!> Constructor for the table object.
         !! Allocates the elements array according to the table dimensions.
         !! Initializes the member variables table_dims, table_dims_padded.
         !! Computes the parameters table_dims_flat,
@@ -421,7 +469,7 @@ contains
 
   end function table_constructor
 
-  !> destructor for the table type
+!> destructor for the table type
         !!
         !! @param this the table object to destruct
         !! @todo what is this exactly doing? is deallocate_table call necessary?
@@ -432,7 +480,7 @@ contains
 
   end subroutine table_destructor
 
-  !> Reads in a lookup table to the elements array of the table object.
+!> Reads in a lookup table to the elements array of the table object.
         !! Assumes that the first size(this%part_dims) lines are normalized
         !! control variable discretizations, and the following lines are
         !! state variable values.
@@ -456,7 +504,7 @@ contains
 
   end subroutine read_in
 
-  !> Remaps the partition from a given previous partition ordering to given new partition
+!> Remaps the partition from a given previous partition ordering to given new partition
         !! ordering.
         !!
         !! @param this table object to perform partition mapping
@@ -510,7 +558,7 @@ contains
 
   end subroutine partition_remap
 
-  !> Write elements to stdout.
+!> Write elements to stdout.
         !!
         !! @param this table object whose elements are to be written
   subroutine print_elems(this)
@@ -523,7 +571,7 @@ contains
 
   end subroutine print_elems
 
-  !> Deallocates the allocated (allocatable) member variables of the table object
+!> Deallocates the allocated (allocatable) member variables of the table object
         !!
         !! @param this the table object whose allocatable member variables are to be deallocated
         !! @todo This is called by the destructor, but is it necessary?
@@ -537,7 +585,7 @@ contains
 
   end subroutine deallocate_table
 
-  !> Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing
+!> Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing
         !! using the dimensions given in part_dims
         !!
         !! @param this table object to which flat2coord belongs
@@ -569,7 +617,7 @@ contains
 
   end function index_to_coord
 
-  !> Return coordinates from a global index on the object padded table dimensions.
+!> Return coordinates from a global index on the object padded table dimensions.
         !!
         !! @param this table object
         !! @param ind the index whose coordinates are to be found
@@ -587,7 +635,7 @@ contains
 
   end function index_to_global_coord
 
-  !> Given an index, intra-partition dimensions part_dims, and inter-partition dimensions box_dims,
+!> Given an index, intra-partition dimensions part_dims, and inter-partition dimensions box_dims,
         !! return the coordinates of index under the partitioning scheme defined by
         !! part_dims and box_dims.
         !!
@@ -620,7 +668,7 @@ contains
 
   end subroutine index_to_local_coord
 
-  !> Converts entry (i_1, i_2, ..., i_N) in coordinate indexing to flat index n
+!> Converts entry (i_1, i_2, ..., i_N) in coordinate indexing to flat index n
         !! in global order, according to the given partition size part_dims.
         !!
         !! @param this table object
@@ -643,7 +691,7 @@ contains
 
   end function coord_to_index
 
-  !> Return the global flat index, given coordinates and control variable space dimensions.
+!> Return the global flat index, given coordinates and control variable space dimensions.
         !!
         !! @param this table object
         !! @param coord the coordinates
@@ -661,7 +709,7 @@ contains
 
   end function global_coord_to_index
 
-  !> Return partitioned flat index, given coordinates and an associated two-level partitioning scheme
+!> Return partitioned flat index, given coordinates and an associated two-level partitioning scheme
         !! described by the intra-partition dimensions part_dims and inter-partition dimensions box_dims.
         !!
         !! @param this table object
@@ -681,7 +729,7 @@ contains
 
   end function local_coord_to_index
 
-  !> Decompose global coordinate to local coordinate pair in given partition and box dimension
+!> Decompose global coordinate to local coordinate pair in given partition and box dimension
         !! scheme.
         !!
         !! @param this table object
@@ -705,7 +753,7 @@ contains
 
   end subroutine global_coord_to_local_coord
 
-  !>
+!>
         !!
         !! @param this table object
         !! @param coord_p intra-partition coordinate

@@ -216,67 +216,55 @@ contains
   subroutine get_perf_test(this, runs)
     class(access_test), intent(inout) :: this
     real :: real_coords_rand(size(this%lookup%part_dims))
-    real :: r, diff, a_diff, rate, t1, t2
+    real :: r, diff, a_diff, rate, t1, t2, time_total, time_total_opt
     integer :: i, c1, c2, cr, cm, runs, s, n
-    integer, dimension(size(this%lookup%part_dims)) :: coord
+    integer, dimension(size(this%lookup%part_dims)) :: coord, coord_opt, M
+    integer, dimension(:), allocatable :: buckets
 
-    ! Initialize clock
-    call system_clock(count_rate=cr)
-    call system_clock(count_max=cm)
     rate = real(cr)
-
     print *, "starting get_perf_test"
-    write (*, *) "system_clock rate ", rate
 
-    diff = 0.0
-    a_diff = 0.0
-    s = 0
+    time_total = 0.0
+
+    M = (/4, 4/)
+    allocate (buckets(sum(M)))
+    buckets = this%lookup%real_to_global_coord_opt_preprocessor(M)
 
     do n = 1, runs
       call random_number(real_coords_rand)
-      call cpu_time(t1)
-      call system_clock(c1)
 
+      call cpu_time(t1)
       coord = this%lookup%real_to_global_coord(real_coords_rand)
-      print *, real_coords_rand
-      print *, coord
-
       call cpu_time(t2)
-      call system_clock(c2)
-      print *, t2 - t1
-      if ((c2 - c1) / rate < (t2 - t1)) s = s + 1
-      diff = (c2 - c1) / rate - (t2 - t1) + diff
-      a_diff = abs((c2 - c1) / rate - (t2 - t1)) + a_diff
-    end do
 
-    write (*, *) "system_clock : ", (c2 - c1) / rate
-    write (*, *) "cpu_time     : ", (t2 - t1)
-    write (*, *) "sc < ct      : ", s, "of", runs
-    write (*, *) "mean diff    : ", diff / runs
-    write (*, *) "abs mean diff: ", a_diff / runs
+      time_total = time_total + t2 - t1
 
-    do n = 1, runs
-      call random_number(real_coords_rand)
       call cpu_time(t1)
-      call system_clock(c1)
-
-      coord = this%lookup%real_to_global_coord_opt(real_coords_rand, 1.0)
-      print *, real_coords_rand
-      print *, coord
-
+      coord_opt = this%lookup%real_to_global_coord_opt(real_coords_rand, M, buckets)
       call cpu_time(t2)
-      call system_clock(c2)
-      print *, t2 - t1
-      if ((c2 - c1) / rate < (t2 - t1)) s = s + 1
-      diff = (c2 - c1) / rate - (t2 - t1) + diff
-      a_diff = abs((c2 - c1) / rate - (t2 - t1)) + a_diff
+
+      time_total_opt = time_total_opt + t2 - t1
+
+      if (any(coord .ne. coord_opt)) then
+        print *, "<FAIL> optimized real_to_global_coord_opt"
+        print *, "requested value: ", real_coords_rand
+        print *, "coord: ", coord
+        print *, "coord_opt: ", coord_opt
+        print *, "coord vars", this%lookup%ctrl_vars(coord(1)), this%lookup%ctrl_vars(coord(2) +&
+          &this%lookup%table_dims(1)), "next: ",&
+          &this%lookup%ctrl_vars(coord(1) + 1), &
+          this%lookup%ctrl_vars(coord(2) + this%lookup%table_dims(1) + 1)
+        print *, this%lookup%ctrl_vars(coord_opt(1)), this%lookup%ctrl_vars(coord_opt(2) + this%lookup%table_dims(1)), "next: ", &
+          this%lookup%ctrl_vars(coord_opt(1) + 1), &
+          this%lookup%ctrl_vars(coord_opt(2) + this%lookup%table_dims(1) + 1)
+        print *, "table dims: ", this%lookup%table_dims
+      end if
+
     end do
 
-    write (*, *) "system_clock : ", (c2 - c1) / rate
-    write (*, *) "cpu_time     : ", (t2 - t1)
-    write (*, *) "sc < ct      : ", s, "of", runs
-    write (*, *) "mean diff    : ", diff / runs
-    write (*, *) "abs mean diff: ", a_diff / runs
+    write (*, *) "------------ TOTALS -----------"
+    write (*, *) "time_total = ", time_total
+    write (*, *) "time_total_opt = ", time_total_opt
   end subroutine get_perf_test
 
   !> Fill lookup's table with ascending integers.
