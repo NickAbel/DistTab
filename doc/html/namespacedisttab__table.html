@@ -90,6 +90,12 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a01cdec6dbc9c2661a059f314256dab4a"><td class="memItemLeft" align="right" valign="top">integer function, dimension(size(this%part_dims))&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a01cdec6dbc9c2661a059f314256dab4a">real_to_global_coord</a> (this, real_val)</td></tr>
 <tr class="memdesc:a01cdec6dbc9c2661a059f314256dab4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return corresponding global coordinates.  <a href="namespacedisttab__table.html#a01cdec6dbc9c2661a059f314256dab4a">More...</a><br /></td></tr>
 <tr class="separator:a01cdec6dbc9c2661a059f314256dab4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0606fd688ee6ef44f1bf32bdafa23e68"><td class="memItemLeft" align="right" valign="top">integer function, dimension(:), allocatable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a0606fd688ee6ef44f1bf32bdafa23e68">real_to_global_coord_opt_preprocessor</a> (this, M)</td></tr>
+<tr class="memdesc:a0606fd688ee6ef44f1bf32bdafa23e68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Preprocessor for bucketed real to global coord function. Populates the bucket array used. The argument M must be equal to the argument M passed to the real_to_global_coord_opt function.  <a href="namespacedisttab__table.html#a0606fd688ee6ef44f1bf32bdafa23e68">More...</a><br /></td></tr>
+<tr class="separator:a0606fd688ee6ef44f1bf32bdafa23e68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab940204deeed1e07bd7e9ab9d0f24071"><td class="memItemLeft" align="right" valign="top">integer function, dimension(size(this%part_dims))&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#ab940204deeed1e07bd7e9ab9d0f24071">real_to_global_coord_opt</a> (this, real_val, M, buckets)</td></tr>
+<tr class="memdesc:ab940204deeed1e07bd7e9ab9d0f24071"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return corresponding global coordinates. Uses optimized bucketed preprocessed technique.  <a href="namespacedisttab__table.html#ab940204deeed1e07bd7e9ab9d0f24071">More...</a><br /></td></tr>
+<tr class="separator:ab940204deeed1e07bd7e9ab9d0f24071"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9840b60ea5fad0d2d06f652213af633f"><td class="memItemLeft" align="right" valign="top">integer function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__table.html#a9840b60ea5fad0d2d06f652213af633f">real_to_index</a> (this, real_val)</td></tr>
 <tr class="memdesc:a9840b60ea5fad0d2d06f652213af633f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return corresponding linear index.  <a href="namespacedisttab__table.html#a9840b60ea5fad0d2d06f652213af633f">More...</a><br /></td></tr>
 <tr class="separator:a9840b60ea5fad0d2d06f652213af633f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1231,6 +1237,112 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>global_coord resultant global coordinates </dd></dl>
+
+</div>
+</div>
+<a id="ab940204deeed1e07bd7e9ab9d0f24071"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab940204deeed1e07bd7e9ab9d0f24071">&#9670;&nbsp;</a></span>real_to_global_coord_opt()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function, dimension(size(this%part_dims)) disttab_table::real_to_global_coord_opt </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real, dimension(size(this%part_dims)), intent(in)&#160;</td>
+          <td class="paramname"><em>real_val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%part_dims)), intent(in)&#160;</td>
+          <td class="paramname"><em>M</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(sum(m)), intent(in)&#160;</td>
+          <td class="paramname"><em>buckets</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return corresponding global coordinates. Uses optimized bucketed preprocessed technique. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>the table object </td></tr>
+    <tr><td class="paramname">real_val</td><td>Coordinates of length N [0, 1]x...x[0, 1] in normalized state space </td></tr>
+    <tr><td class="paramname">M</td><td>number of segments in the pre-processing array </td></tr>
+    <tr><td class="paramname">buckets</td><td>bucket array, corresponds to coarse linear table discretization </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>global_coord resultant global coordinates </dd></dl>
+
+</div>
+</div>
+<a id="a0606fd688ee6ef44f1bf32bdafa23e68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0606fd688ee6ef44f1bf32bdafa23e68">&#9670;&nbsp;</a></span>real_to_global_coord_opt_preprocessor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function, dimension(:), allocatable disttab_table::real_to_global_coord_opt_preprocessor </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__table_1_1table.html">table</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(size(this%part_dims)), intent(in)&#160;</td>
+          <td class="paramname"><em>M</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Preprocessor for bucketed real to global coord function. Populates the bucket array used. The argument M must be equal to the argument M passed to the real_to_global_coord_opt function. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>table object </td></tr>
+    <tr><td class="paramname">M</td><td>desired number of segments per dimension in the bucket array </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>buckets the bucket array </dd></dl>
 
 </div>
 </div>

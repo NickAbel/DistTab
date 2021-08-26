@@ -16,6 +16,10 @@ real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namesp
 \begin{DoxyCompactList}\small\item\em Given global coordinate, return corresponding value. \end{DoxyCompactList}\item 
 integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_a01cdec6dbc9c2661a059f314256dab4a}{real\+\_\+to\+\_\+global\+\_\+coord}} (this, real\+\_\+val)
 \begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding global coordinates. \end{DoxyCompactList}\item 
+integer function, dimension(\+:), allocatable \mbox{\hyperlink{namespacedisttab__table_a0606fd688ee6ef44f1bf32bdafa23e68}{real\+\_\+to\+\_\+global\+\_\+coord\+\_\+opt\+\_\+preprocessor}} (this, M)
+\begin{DoxyCompactList}\small\item\em Preprocessor for bucketed real to global coord function. Populates the bucket array used. The argument M must be equal to the argument M passed to the real\+\_\+to\+\_\+global\+\_\+coord\+\_\+opt function. \end{DoxyCompactList}\item 
+integer function, dimension(size(this\%part\+\_\+dims)) \mbox{\hyperlink{namespacedisttab__table_ab940204deeed1e07bd7e9ab9d0f24071}{real\+\_\+to\+\_\+global\+\_\+coord\+\_\+opt}} (this, real\+\_\+val, M, buckets)
+\begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding global coordinates. Uses optimized bucketed preprocessed technique. \end{DoxyCompactList}\item 
 integer function \mbox{\hyperlink{namespacedisttab__table_a9840b60ea5fad0d2d06f652213af633f}{real\+\_\+to\+\_\+index}} (this, real\+\_\+val)
 \begin{DoxyCompactList}\small\item\em Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding linear index. \end{DoxyCompactList}\item 
 real function, dimension(this\%table\+\_\+dim\+\_\+svar) \mbox{\hyperlink{namespacedisttab__table_aec3fafe9ac16efeef40851f6f9d67a7d}{real\+\_\+to\+\_\+value}} (this, real\+\_\+val)
@@ -489,6 +493,50 @@ Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbo
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 global\+\_\+coord resultant global coordinates 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__table_ab940204deeed1e07bd7e9ab9d0f24071}\label{namespacedisttab__table_ab940204deeed1e07bd7e9ab9d0f24071}} 
+\index{disttab\_table@{disttab\_table}!real\_to\_global\_coord\_opt@{real\_to\_global\_coord\_opt}}
+\index{real\_to\_global\_coord\_opt@{real\_to\_global\_coord\_opt}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{real\_to\_global\_coord\_opt()}{real\_to\_global\_coord\_opt()}}
+{\footnotesize\ttfamily integer function, dimension(size(this\%part\+\_\+dims)) disttab\+\_\+table\+::real\+\_\+to\+\_\+global\+\_\+coord\+\_\+opt (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{real, dimension(size(this\%part\+\_\+dims)), intent(in)}]{real\+\_\+val,  }\item[{integer, dimension(size(this\%part\+\_\+dims)), intent(in)}]{M,  }\item[{integer, dimension(sum(m)), intent(in)}]{buckets }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Given coordinates \mbox{[}0, 1\mbox{]}x\mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in the normalized state space, return corresponding global coordinates. Uses optimized bucketed preprocessed technique. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & the table object \\
+\hline
+{\em real\+\_\+val} & Coordinates of length N \mbox{[}0, 1\mbox{]}x...x\mbox{[}0, 1\mbox{]} in normalized state space \\
+\hline
+{\em M} & number of segments in the pre-\/processing array \\
+\hline
+{\em buckets} & bucket array, corresponds to coarse linear table discretization \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+global\+\_\+coord resultant global coordinates 
+\end{DoxyReturn}
+\mbox{\Hypertarget{namespacedisttab__table_a0606fd688ee6ef44f1bf32bdafa23e68}\label{namespacedisttab__table_a0606fd688ee6ef44f1bf32bdafa23e68}} 
+\index{disttab\_table@{disttab\_table}!real\_to\_global\_coord\_opt\_preprocessor@{real\_to\_global\_coord\_opt\_preprocessor}}
+\index{real\_to\_global\_coord\_opt\_preprocessor@{real\_to\_global\_coord\_opt\_preprocessor}!disttab\_table@{disttab\_table}}
+\doxysubsubsection{\texorpdfstring{real\_to\_global\_coord\_opt\_preprocessor()}{real\_to\_global\_coord\_opt\_preprocessor()}}
+{\footnotesize\ttfamily integer function, dimension(\+:), allocatable disttab\+\_\+table\+::real\+\_\+to\+\_\+global\+\_\+coord\+\_\+opt\+\_\+preprocessor (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structdisttab__table_1_1table}{table}}), intent(inout)}]{this,  }\item[{integer, dimension(size(this\%part\+\_\+dims)), intent(in)}]{M }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Preprocessor for bucketed real to global coord function. Populates the bucket array used. The argument M must be equal to the argument M passed to the real\+\_\+to\+\_\+global\+\_\+coord\+\_\+opt function. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em this} & table object \\
+\hline
+{\em M} & desired number of segments per dimension in the bucket array \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+buckets the bucket array 
 \end{DoxyReturn}
 \mbox{\Hypertarget{namespacedisttab__table_a9840b60ea5fad0d2d06f652213af633f}\label{namespacedisttab__table_a9840b60ea5fad0d2d06f652213af633f}} 
 \index{disttab\_table@{disttab\_table}!real\_to\_index@{real\_to\_index}}

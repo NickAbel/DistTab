@@ -207,6 +207,7 @@ contains
         !! @param this the table object
         !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
         !! @param M number of segments in the pre-processing array
+        !! @param buckets bucket array, corresponds to coarse linear table discretization
         !! @result global_coord resultant global coordinates
   function real_to_global_coord_opt(this, real_val, M, buckets) result(global_coord)
     class(table), intent(inout) :: this

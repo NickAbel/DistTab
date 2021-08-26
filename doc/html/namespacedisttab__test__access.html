@@ -90,6 +90,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a37f995543edba8827bc4e456a54d261d"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__access.html#a37f995543edba8827bc4e456a54d261d">get_map_get_test</a> (this, partition_dims)</td></tr>
 <tr class="memdesc:a37f995543edba8827bc4e456a54d261d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a table value from random global coordinates, stash the result, change the partitioning scheme, get a table value from the same global coordinates, and check that the two values remain the same.  <a href="namespacedisttab__test__access.html#a37f995543edba8827bc4e456a54d261d">More...</a><br /></td></tr>
 <tr class="separator:a37f995543edba8827bc4e456a54d261d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac568867670cd37ad0e02a10e62f7d3f6"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__access.html#ac568867670cd37ad0e02a10e62f7d3f6">get_perf_test</a> (this, runs)</td></tr>
+<tr class="memdesc:ac568867670cd37ad0e02a10e62f7d3f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a table value from random global coordinates, stash the result, change the partitioning scheme, get a table value from the same global coordinates, and check that the two values remain the same.  <a href="namespacedisttab__test__access.html#ac568867670cd37ad0e02a10e62f7d3f6">More...</a><br /></td></tr>
+<tr class="separator:ac568867670cd37ad0e02a10e62f7d3f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a225f81f00e1338a1d32fed81970a074f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__access.html#a225f81f00e1338a1d32fed81970a074f">fill_table_ascending_integers</a> (this)</td></tr>
 <tr class="memdesc:a225f81f00e1338a1d32fed81970a074f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill lookup's table with ascending integers.  <a href="namespacedisttab__test__access.html#a225f81f00e1338a1d32fed81970a074f">More...</a><br /></td></tr>
 <tr class="separator:a225f81f00e1338a1d32fed81970a074f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -105,6 +108,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:addbd62b2dc817e18d44710a367d5e6fb"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__access.html#addbd62b2dc817e18d44710a367d5e6fb">run_get_map_get_test</a> (this, partition_dims)</td></tr>
 <tr class="memdesc:addbd62b2dc817e18d44710a367d5e6fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the get value-remap-get value test.  <a href="namespacedisttab__test__access.html#addbd62b2dc817e18d44710a367d5e6fb">More...</a><br /></td></tr>
 <tr class="separator:addbd62b2dc817e18d44710a367d5e6fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9261724bd00adc821f6a67d4096a8e4"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedisttab__test__access.html#aa9261724bd00adc821f6a67d4096a8e4">run_get_perf_test</a> (this, runs)</td></tr>
+<tr class="memdesc:aa9261724bd00adc821f6a67d4096a8e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the performance test for get functionality.  <a href="namespacedisttab__test__access.html#aa9261724bd00adc821f6a67d4096a8e4">More...</a><br /></td></tr>
+<tr class="separator:aa9261724bd00adc821f6a67d4096a8e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="ad10f303edb32364d7e30a4c6962702fd"></a>
@@ -255,6 +261,51 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
+<a id="ac568867670cd37ad0e02a10e62f7d3f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac568867670cd37ad0e02a10e62f7d3f6">&#9670;&nbsp;</a></span>get_perf_test()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine disttab_test_access::get_perf_test </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__test__access_1_1access__test.html">access_test</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>runs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get a table value from random global coordinates, stash the result, change the partitioning scheme, get a table value from the same global coordinates, and check that the two values remain the same. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td><a class="el" href="structdisttab__test__access_1_1access__test.html">access_test</a> object </td></tr>
+    <tr><td class="paramname">runs</td><td>the number of times to fetch a random real coordinate </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a34326ceda4c639022fa764333e16cbdb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a34326ceda4c639022fa764333e16cbdb">&#9670;&nbsp;</a></span>get_value_cloud_test()</h2>
 
@@ -362,6 +413,51 @@ Functions/Subroutines</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">this</td><td><a class="el" href="structdisttab__test__access_1_1access__test.html">access_test</a> object </td></tr>
     <tr><td class="paramname">partition_dims</td><td>partition dimensions to remap to before re-obtaining values </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aa9261724bd00adc821f6a67d4096a8e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9261724bd00adc821f6a67d4096a8e4">&#9670;&nbsp;</a></span>run_get_perf_test()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine disttab_test_access::run_get_perf_test </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structdisttab__test__access_1_1access__test.html">access_test</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>runs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Runs the performance test for get functionality. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td><a class="el" href="structdisttab__test__access_1_1access__test.html">access_test</a> object </td></tr>
+    <tr><td class="paramname">runs</td><td>number of times to access a random real-valued coordinate </td></tr>
   </table>
   </dd>
 </dl>

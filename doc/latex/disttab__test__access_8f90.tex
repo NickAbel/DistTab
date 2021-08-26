@@ -21,6 +21,8 @@ subroutine \mbox{\hyperlink{namespacedisttab__test__access_a34326ceda4c639022fa7
 \begin{DoxyCompactList}\small\item\em Test the ability to get correct value clouds from the table from index, local coordinate, and global coordinates. Example in 3D case\+: In general, when the value at coordinate (i,j,k) is desired, return \{i,i+1\}x\{j,j+1\}x\{k,k+1\} (returning err if i+1,j+1,k+1, etc $>$ Z). \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_a37f995543edba8827bc4e456a54d261d}{disttab\+\_\+test\+\_\+access\+::get\+\_\+map\+\_\+get\+\_\+test}} (this, partition\+\_\+dims)
 \begin{DoxyCompactList}\small\item\em Get a table value from random global coordinates, stash the result, change the partitioning scheme, get a table value from the same global coordinates, and check that the two values remain the same. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__access_ac568867670cd37ad0e02a10e62f7d3f6}{disttab\+\_\+test\+\_\+access\+::get\+\_\+perf\+\_\+test}} (this, runs)
+\begin{DoxyCompactList}\small\item\em Get a table value from random global coordinates, stash the result, change the partitioning scheme, get a table value from the same global coordinates, and check that the two values remain the same. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_a225f81f00e1338a1d32fed81970a074f}{disttab\+\_\+test\+\_\+access\+::fill\+\_\+table\+\_\+ascending\+\_\+integers}} (this)
 \begin{DoxyCompactList}\small\item\em Fill lookup\textquotesingle{}s table with ascending integers. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_abed197424c45969ad7c7342da47a2d93}{disttab\+\_\+test\+\_\+access\+::fill\+\_\+cvars\+\_\+linspace}} (this)
@@ -30,4 +32,6 @@ subroutine \mbox{\hyperlink{namespacedisttab__test__access_af8dd95f9a456c6e53605
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_a08ff6be7542641dadb3def69fb530427}{disttab\+\_\+test\+\_\+access\+::run\+\_\+value\+\_\+cloud\+\_\+test}} (this)
 \begin{DoxyCompactList}\small\item\em Runs the get value cloud test. \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacedisttab__test__access_addbd62b2dc817e18d44710a367d5e6fb}{disttab\+\_\+test\+\_\+access\+::run\+\_\+get\+\_\+map\+\_\+get\+\_\+test}} (this, partition\+\_\+dims)
-\begin{DoxyCompactList}\small\item\em Runs the get value-\/remap-\/get value test. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Runs the get value-\/remap-\/get value test. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacedisttab__test__access_aa9261724bd00adc821f6a67d4096a8e4}{disttab\+\_\+test\+\_\+access\+::run\+\_\+get\+\_\+perf\+\_\+test}} (this, runs)
+\begin{DoxyCompactList}\small\item\em Runs the performance test for get functionality. \end{DoxyCompactList}\end{DoxyCompactItemize}
