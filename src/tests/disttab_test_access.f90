@@ -160,7 +160,7 @@ contains
     class(access_test), intent(inout) :: this
     real :: real_coords_rand(size(this%lookup%part_dims)), r
     integer :: ind, N
-    integer, dimension(size(this%lookup%part_dims)) :: coord, coord_p, coord_b, box_dims
+    integer, dimension(size(this%lookup%part_dims)) :: coord, box_dims
     integer, dimension(size(this%lookup%part_dims)), intent(in) :: partition_dims
     real, dimension(this%lookup%table_dim_svar) :: val_real, val_real_map
     real, dimension(this%lookup%table_dim_svar, 2**size(this%lookup%part_dims)) :: val_cloud_global_coord, &
@@ -216,8 +216,8 @@ contains
   subroutine get_perf_test(this, runs, M)
     class(access_test), intent(inout) :: this
     real :: real_coords_rand(size(this%lookup%part_dims))
-    real :: r, diff, a_diff, rate, t1, t2, time_total, time_total_opt
-    integer :: i, c1, c2, cr, cm, runs, s, n
+    real :: t1, t2, time_total, time_total_opt
+    integer :: i, runs
     integer, dimension(size(this%lookup%part_dims)) :: coord, coord_opt
     integer, dimension(size(this%lookup%part_dims)), intent(in) :: M
     integer, dimension(:), allocatable :: buckets
@@ -225,24 +225,25 @@ contains
     print *, "starting get_perf_test"
 
     time_total = 0.0
+    time_total_opt = 0.0
 
     allocate (buckets(sum(M)))
     buckets = this%lookup%real_to_global_coord_opt_preprocessor(M)
 
-    do n = 1, runs
+    do i = 1, runs
       call random_number(real_coords_rand)
 
       call cpu_time(t1)
       coord = this%lookup%real_to_global_coord(real_coords_rand)
       call cpu_time(t2)
 
-      time_total = time_total + t2 - t1
+      time_total = time_total + (t2 - t1)
 
       call cpu_time(t1)
       coord_opt = this%lookup%real_to_global_coord_opt(real_coords_rand, M, buckets)
       call cpu_time(t2)
 
-      time_total_opt = time_total_opt + t2 - t1
+      time_total_opt = time_total_opt + (t2 - t1)
 
       if (any(coord .ne. coord_opt)) then
         print *, "<FAIL> optimized real_to_global_coord_opt"

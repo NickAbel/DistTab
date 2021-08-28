@@ -219,11 +219,10 @@ contains
     integer, dimension(size(this%part_dims)) :: global_coord, coord_start_indices
     integer, dimension(sum(M)), intent(in) :: buckets
 
-    N = size(this%table_dims)
-
-    delta = 1.0 / (M(1))
+    N = size(this%part_dims)
 
     do i = 1, N
+      delta = 1.0 / (M(i))
       offset_cv = sum(this%table_dims(:i - 1))
       coord_start_indices(i) = buckets(ceiling(real_val(i) / delta) + sum(M(:i - 1)))
       j = coord_start_indices(i)
@@ -244,7 +243,7 @@ contains
         !! @result resultant index
   function real_to_index(this, real_val) result(ind)
     class(table), intent(inout) :: this
-    integer :: N, i, j
+    integer :: N
     real, dimension(size(this%part_dims)), intent(in) :: real_val
     integer, dimension(size(this%part_dims)) :: box_dims, global_coord
     integer :: ind
@@ -370,7 +369,7 @@ contains
         !! @result val_cloud resultant value cloud of 2**N [0, 1]x...x[0, 1]
   function real_to_value_cloud(this, real_val) result(val_cloud)
     class(table), intent(inout) :: this
-    integer :: N, i, j, l
+    integer :: N
     real, dimension(size(this%part_dims)), intent(in) :: real_val
     integer, dimension(size(this%part_dims)) :: coord_base, box_dims
     real, dimension(this%table_dim_svar, 2**size(this%part_dims)) :: val_cloud
@@ -380,8 +379,8 @@ contains
     coord_base = this%real_to_global_coord(real_val)
 
     box_dims = this%table_dims_padded(1:N) / this%part_dims
-    l = 1
-    call this%gather_value_cloud(N, coord_base, coord_base + 1, val_cloud, l, box_dims)
+
+    call this%gather_value_cloud(N, coord_base, coord_base + 1, val_cloud, 1, box_dims)
 
   end function real_to_value_cloud
 

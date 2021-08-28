@@ -7,7 +7,7 @@ program test
   real, allocatable, dimension(:) :: nr, qr
   integer, allocatable, dimension(:) :: n, q, M
   integer :: dims, i, j
-  integer, parameter :: runs = 10000
+  integer, parameter :: runs = 100000
   type(partitioning_test) :: test_partition
   type(access_test) :: test_access
   type(table) :: lookup
@@ -44,8 +44,8 @@ contains
   !! table and partition sizes on each dimension.
   subroutine rand_test_full()
     do dims = 2, 2
-      do i = 10, 10
-        do j = 0, 10
+      do i = 5, 5
+        do j = 0, 4
           allocate (nr(dims + 1))
           allocate (qr(dims))
           allocate (n(dims + 1))
