@@ -213,20 +213,19 @@ contains
   !! global coordinates, and check that the two values remain the same.
   !! @param this access_test object
   !! @param runs the number of times to fetch a random real coordinate
-  subroutine get_perf_test(this, runs)
+  subroutine get_perf_test(this, runs, M)
     class(access_test), intent(inout) :: this
     real :: real_coords_rand(size(this%lookup%part_dims))
     real :: r, diff, a_diff, rate, t1, t2, time_total, time_total_opt
     integer :: i, c1, c2, cr, cm, runs, s, n
-    integer, dimension(size(this%lookup%part_dims)) :: coord, coord_opt, M
+    integer, dimension(size(this%lookup%part_dims)) :: coord, coord_opt
+    integer, dimension(size(this%lookup%part_dims)), intent(in) :: M
     integer, dimension(:), allocatable :: buckets
 
-    rate = real(cr)
     print *, "starting get_perf_test"
 
     time_total = 0.0
 
-    M = (/4, 4/)
     allocate (buckets(sum(M)))
     buckets = this%lookup%real_to_global_coord_opt_preprocessor(M)
 
@@ -261,6 +260,8 @@ contains
       end if
 
     end do
+
+    deallocate (buckets)
 
     write (*, *) "------------ TOTALS -----------"
     write (*, *) "time_total = ", time_total
@@ -327,11 +328,12 @@ contains
   !> Runs the performance test for get functionality.
   !! @param this access_test object
   !! @param runs number of times to access a random real-valued coordinate
-  subroutine run_get_perf_test(this, runs)
+  subroutine run_get_perf_test(this, runs, M)
     class(access_test), intent(inout) :: this
     integer, intent(in) :: runs
+    integer, intent(in), dimension(size(this%lookup%part_dims)) :: M
 
-    call this%get_perf_test(runs)
+    call this%get_perf_test(runs, M)
 
   end subroutine run_get_perf_test
 

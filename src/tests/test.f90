@@ -5,9 +5,9 @@ program test
   use disttab_table
   implicit none
   real, allocatable, dimension(:) :: nr, qr
-  integer, allocatable, dimension(:) :: n, q
-  integer :: dims, i
-  integer, parameter :: runs = 1
+  integer, allocatable, dimension(:) :: n, q, M
+  integer :: dims, i, j
+  integer, parameter :: runs = 10000
   type(partitioning_test) :: test_partition
   type(access_test) :: test_access
   type(table) :: lookup
@@ -35,7 +35,7 @@ contains
     call test_access%run_value_test()
     call test_access%run_value_cloud_test()
     call test_access%run_get_map_get_test(q)
-    call test_access%run_get_perf_test(runs)
+    !call test_access%run_get_perf_test(runs)
     deallocate (q)
     deallocate (n)
   end subroutine square_test
@@ -44,32 +44,42 @@ contains
   !! table and partition sizes on each dimension.
   subroutine rand_test_full()
     do dims = 2, 2
-      do i = 1, 1
-        allocate (nr(dims + 1))
-        allocate (qr(dims))
-        allocate (n(dims + 1))
-        allocate (q(dims))
-        call random_number(qr)
-        qr = qr * 50.0
-        q = ceiling(qr)
-        call random_number(nr)
-        nr = nr * 120.0
-        n = ceiling(nr)
-        n(1:dims) = q + n(1:dims)
-        n(dims + 1) = 1
-        !test_partition = partitioning_test(n, q)
-        !call test_partition%run_map_test()
-        !test_partition = partitioning_test(n, q)
-        !call test_partition%run_map_unmap_test()
-        test_access = access_test(n)
-        !call test_access%run_value_test()
-        !call test_access%run_value_cloud_test()
-        !call test_access%run_get_map_get_test(q)
-        call test_access%run_get_perf_test(runs)
-        deallocate (nr)
-        deallocate (qr)
-        deallocate (n)
-        deallocate (q)
+      do i = 10, 10
+        do j = 0, 10
+          allocate (nr(dims + 1))
+          allocate (qr(dims))
+          allocate (n(dims + 1))
+          allocate (q(dims))
+          !call random_number(qr)
+          !qr = qr * 50.0
+          !q = ceiling(qr)
+          !call random_number(nr)
+          !nr = nr * 120.0
+          !n = ceiling(nr)
+          !n(1:dims) = q + n(1:dims)
+          !n(dims + 1) = 1
+          !test_partition = partitioning_test(n, q)
+          !call test_partition%run_map_test()
+          !test_partition = partitioning_test(n, q)
+          !call test_partition%run_map_unmap_test()
+          !call test_access%run_value_test()
+          !call test_access%run_value_cloud_test()
+          !call test_access%run_get_map_get_test(q)
+          allocate (M(dims))
+          n(1:dims) = 10 * (2**i)
+          n(dims + 1) = 1
+          M = 2**j
+          if (M(1) .gt. n(1)) exit
+          print *, "table dims = ", n(1:dims)
+          print *, "number of segments = ", M
+          test_access = access_test(n)
+          call test_access%run_get_perf_test(runs, M)
+          deallocate (M)
+          deallocate (nr)
+          deallocate (qr)
+          deallocate (n)
+          deallocate (q)
+        end do
       end do
     end do
   end subroutine rand_test_full

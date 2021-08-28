@@ -149,19 +149,20 @@ contains
         !! @result global_coord resultant global coordinates
   function real_to_global_coord(this, real_val) result(global_coord)
     class(table), intent(inout) :: this
-    integer :: N, i, j
+    integer :: N, i, j, offset_cv
     real, dimension(size(this%part_dims)), intent(in) :: real_val
     integer, dimension(size(this%part_dims)) :: global_coord
 
     N = size(this%part_dims)
 
     do i = 1, N
-      do j = 1, this%table_dims(i) - 1
-        if ((real_val(i) .ge. this%ctrl_vars(j + sum(this%table_dims(:i - 1)))) &
-                & .and. (real_val(i) .le. this%ctrl_vars(j + 1 + sum(this%table_dims(:i - 1))))) then
-          global_coord(i) = j
-        end if
+      offset_cv = sum(this%table_dims(:i - 1))
+      j = 1
+      do while ((real_val(i) .lt. this%ctrl_vars(j + offset_cv)) &
+                & .or. (real_val(i) .ge. this%ctrl_vars(j + 1 + offset_cv)))
+        j = j + 1
       end do
+      global_coord(i) = j
     end do
 
   end function real_to_global_coord
@@ -211,8 +212,8 @@ contains
         !! @result global_coord resultant global coordinates
   function real_to_global_coord_opt(this, real_val, M, buckets) result(global_coord)
     class(table), intent(inout) :: this
-    integer :: N, i, j, k, l, p
-    real :: delta, offset
+    integer :: N, i, j, offset_cv
+    real :: delta
     integer, dimension(size(this%part_dims)), intent(in) :: M
     real, dimension(size(this%part_dims)), intent(in) :: real_val
     integer, dimension(size(this%part_dims)) :: global_coord, coord_start_indices
@@ -220,23 +221,17 @@ contains
 
     N = size(this%table_dims)
 
-    ! Step 2: Find which bucket each of the CVs are in
-    do i = 1, N
-      delta = 1.0 / (M(i))
-      coord_start_indices(i) = buckets(ceiling(real_val(i) / delta) + sum(M(:i - 1)))
-    end do
+    delta = 1.0 / (M(1))
 
-    ! Step 3: Locate CVs within buckets
     do i = 1, N
-      do j = coord_start_indices(i), sum(this%table_dims(:i))
-        if (real_val(i) .eq. this%ctrl_vars(j)) then
-          global_coord(i) = j - sum(this%table_dims(:i - 1))
-        else if ((real_val(i) .gt. this%ctrl_vars(j)) &
-                & .and. (real_val(i) .lt. this%ctrl_vars(j + 1))) then
-          global_coord(i) = j - sum(this%table_dims(:i - 1))
-          exit
-        end if
+      offset_cv = sum(this%table_dims(:i - 1))
+      coord_start_indices(i) = buckets(ceiling(real_val(i) / delta) + sum(M(:i - 1)))
+      j = coord_start_indices(i)
+      do while ((real_val(i) .lt. this%ctrl_vars(j)) &
+        & .or. (real_val(i) .ge. this%ctrl_vars(j + 1)))
+        j = j + 1
       end do
+      global_coord(i) = j - offset_cv
     end do
 
   end function real_to_global_coord_opt
