@@ -67,7 +67,7 @@ $ ./disttab
 
 ## Documentation
 
-Documentation may be generated using Doxygen with the (`Doxyfile`) in the base directory.
+Documentation may be generated using Doxygen with `Doxyfile` in the base directory.
 
 One can generate the documentation by running the following in the base directory:
 
@@ -75,7 +75,7 @@ One can generate the documentation by running the following in the base director
 $ doxygen Doxyfile
 ```
 
-The documentation is output in the directory (`doc`).
+The documentation is output in the directory `doc`.
 
 ## Todo
 
