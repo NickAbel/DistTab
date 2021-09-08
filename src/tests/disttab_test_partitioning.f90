@@ -1,5 +1,6 @@
 module disttab_test_partitioning
   use :: disttab_table
+  use :: iso_fortran_env
 
   implicit none
   private
@@ -8,8 +9,8 @@ module disttab_test_partitioning
   type :: partitioning_test
     private
     type(table) :: lookup
-    integer, allocatable, dimension(:) :: table_dims
-    integer, allocatable, dimension(:) :: part_dims
+    integer (kind = int64), allocatable, dimension(:) :: table_dims
+    integer (kind = int64), allocatable, dimension(:) :: part_dims
 
   contains
 
@@ -37,8 +38,8 @@ contains
   !! @param partition_dimensions specifies the size of the partition blocks in each direction
   !! @return this the partitioning_test object which partitioning_test_constructor instantiates
   type(partitioning_test) function partitioning_test_constructor(table_dimensions, partition_dimensions) result(this)
-    integer, dimension(:), intent(in) :: table_dimensions
-    integer, dimension(:), intent(in) :: partition_dimensions
+    integer (kind = int64), dimension(:), intent(in) :: table_dimensions
+    integer (kind = int64), dimension(:), intent(in) :: partition_dimensions
 
     allocate (this%table_dims(size(table_dimensions)))
     allocate (this%part_dims(size(table_dimensions) - 1))
@@ -71,8 +72,8 @@ contains
   subroutine partition_map_test(this)
     class(partitioning_test), intent(inout) :: this
     double precision, allocatable, dimension(:, :) :: elems_gold_std
-    integer :: i, j, N
-    integer :: coord(size(this%part_dims))
+    integer (kind = int64) :: i, j, N
+    integer (kind = int64) :: coord(size(this%part_dims))
 
     print *, "partition_map_test begin"
 
@@ -98,7 +99,7 @@ contains
 
     ! Open, read, and close the file to the gold standard
     allocate (elems_gold_std(this%lookup%table_dim_svar, this%lookup%table_dims_padded_flat))
-    open (36, file='partition_test_table.pad.tmp.dat', action='read')
+    open (36, file='partition_test_table.pad.DistTab.tmp.dat', action='read')
     N = size(this%part_dims)
     do i = 1, this%lookup%table_dims_padded_flat
       read (36, *) (coord(j), j=1, N), elems_gold_std(:, i)
@@ -109,7 +110,7 @@ contains
     if (all(this%lookup%elems .eq. elems_gold_std)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
         this%part_dims, "]: ", "partition_map_test passed! Tables will be deleted."
-      !call execute_command_line('rm partition_test_table.tmp.dat partition_test_table_sorted.tmp.dat')
+        call execute_command_line('rm *.DistTab.tmp.dat')
     else if (all(abs(this%lookup%elems - elems_gold_std) .lt. 0.0005)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
         this%part_dims, "]: ", "trivially small diff in partition_map_test. most likely a pass. Tables not deleted."
@@ -127,8 +128,8 @@ contains
   subroutine partition_map_unmap_test(this)
     class(partitioning_test), intent(inout) :: this
     double precision, allocatable, dimension(:, :) :: elems_gold_std
-    integer :: i, j, N
-    integer :: coord(size(this%part_dims))
+    integer (kind = int64) :: i, j, N
+    integer (kind = int64) :: coord(size(this%part_dims))
 
     print *, "partition_map_unmap_test begin"
 
@@ -141,7 +142,7 @@ contains
 
     ! Open, read, and close the file to the gold standard
     allocate (elems_gold_std(this%lookup%table_dim_svar, this%lookup%table_dims_flat))
-    open (36, file='partition_test_table_sorted.nopad.tmp.dat', action='read')
+    open (36, file='partition_test_table_sorted.nopad.DistTab.tmp.dat', action='read')
     do i = 1, this%lookup%table_dims_flat
       read (36, *) (coord(j), j=1, N), elems_gold_std(:, i)
     end do
@@ -150,13 +151,14 @@ contains
     ! Check if the partition mapping of the elements is equal to the gold standard generated in create_test_tables
     if (all(this%lookup%elems .eq. elems_gold_std)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
-        this%part_dims, "]: ", "partition_map_unmap_test passed!"
+        this%part_dims, "]: ", "partition_map_unmap_test passed! Tables will be deleted."
+        call execute_command_line('rm *.DistTab.tmp.dat')
     else if (all(abs(this%lookup%elems - elems_gold_std) .lt. 0.0005)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
-        this%part_dims, "]: ", "trivially small diff in partition_map_unmap_test. most likely a pass."
+        this%part_dims, "]: ", "trivially small diff in partition_map_unmap_test. most likely a pass. Tables not deleted."
     else
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
-        this%part_dims, "]: ", "partition_map_unmap_test conditional not working right."
+        this%part_dims, "]: ", "partition_map_unmap_test conditional not working right. Tables not deleted."
     end if
 
     deallocate (elems_gold_std)
@@ -182,16 +184,16 @@ contains
   !! @param this the partition_test object to which create_test_tables belongs
   subroutine create_test_tables_padded(this)
     class(partitioning_test), intent(inout) :: this
-    integer, allocatable, dimension(:) :: box_dims
-    integer :: svar, N, i, j, k
-    integer, dimension(size(this%part_dims)) :: coord
+    integer (kind = int64), allocatable, dimension(:) :: box_dims
+    integer (kind = int64) :: svar, N, i, j, k
+    integer (kind = int64), dimension(size(this%part_dims)) :: coord
 
     N = size(this%part_dims)
     ! Find total partitions in each dimension
     allocate (box_dims(N))
     box_dims = this%lookup%table_dims_padded(1:N) / this%part_dims
 
-    open (34, file='partition_test_table.pad.tmp.dat', action='write')
+    open (34, file='partition_test_table.pad.DistTab.tmp.dat', action='write')
 
     do i = 1, this%lookup%table_dims_padded_flat
       coord = this%lookup%index_to_global_coord(i, this%part_dims, box_dims)
@@ -217,10 +219,10 @@ contains
                               &          }                                  &
                               &          print sorter[i][j]                 &
                               &      }                                      &
-                              &  }' partition_test_table.pad.tmp.dat >      &
-                              &  partition_test_table_sorted.pad.tmp.dat")
+                              &  }' partition_test_table.pad.DistTab.tmp.dat >      &
+                              &  partition_test_table_sorted.pad.DistTab.tmp.dat")
 
-    open (35, file='partition_test_table_sorted.pad.tmp.dat', action='read')
+    open (35, file='partition_test_table_sorted.pad.DistTab.tmp.dat', action='read')
 
     ! After sorting to the "Alya format," load the table back into the elements array.
     do i = 1, this%lookup%table_dims_padded_flat
@@ -250,16 +252,16 @@ contains
   !! @param this the partition_test object to which create_test_tables belongs
   subroutine create_test_tables_unpadded(this)
     class(partitioning_test), intent(inout) :: this
-    integer, allocatable, dimension(:) :: box_dims
-    integer :: svar, N, i, j, k
-    integer, dimension(size(this%part_dims)) :: coord
+    integer (kind = int64), allocatable, dimension(:) :: box_dims
+    integer (kind = int64) :: svar, N, i, j, k
+    integer (kind = int64), dimension(size(this%part_dims)) :: coord
 
     N = size(this%part_dims)
     ! Find total partitions in each dimension
     allocate (box_dims(N))
     box_dims = this%lookup%table_dims_padded(1:N) / this%part_dims
 
-    open (34, file='partition_test_table.nopad.tmp.dat', action='write')
+    open (34, file='partition_test_table.nopad.DistTab.tmp.dat', action='write')
 
     do i = 1, this%lookup%table_dims_flat
       coord = this%lookup%index_to_global_coord(i, this%part_dims, box_dims)
@@ -284,10 +286,10 @@ contains
                               &          }                                  &
                               &          print sorter[i][j]                 &
                               &      }                                      &
-                              &  }' partition_test_table.nopad.tmp.dat >    &
-                              &  partition_test_table_sorted.nopad.tmp.dat")
+                              &  }' partition_test_table.nopad.DistTab.tmp.dat >    &
+                              &  partition_test_table_sorted.nopad.DistTab.tmp.dat")
 
-    open (35, file='partition_test_table_sorted.nopad.tmp.dat', action='read')
+    open (35, file='partition_test_table_sorted.nopad.DistTab.tmp.dat', action='read')
 
     ! After sorting to the "Alya format," load the table back into the elements array.
     do i = 1, this%lookup%table_dims_flat
