@@ -92,7 +92,7 @@ contains
         !! @param this the table object
         !! @param ind linear index in lookup table
         !! @result val state variable values located at ind
-  function index_to_value(this, ind) result(val)
+  pure function index_to_value(this, ind) result(val)
     class(table), intent(inout) :: this
     integer (kind = int64), intent(in) :: ind
     real (kind = real64), dimension(this%table_dim_svar) :: val

@@ -79,15 +79,17 @@ contains
 
     ! Compute padded dimensions for test tables
     this%lookup%table_dims_padded = this%table_dims
+
     do i = lbound(this%lookup%table_dims_padded, dim=1), ubound(this%lookup%table_dims_padded, dim=1) - 1
       do while (mod(this%lookup%table_dims_padded(i), this%part_dims(i)) .ne. 0)
         this%lookup%table_dims_padded(i) = this%lookup%table_dims_padded(i) + 1
       end do
     end do
+
     this%lookup%table_dims_padded_flat = &
       product(this%lookup%table_dims_padded(1:ubound(this%lookup%table_dims_padded, dim=1) - 1))
-    this%lookup%table_dims_padded_flat = product(this%lookup%table_dims_padded)
-    ! Create a new padded table
+
+    ! Create a new, empty table according to the padded dimensions
     deallocate (this%lookup%elems)
     allocate (this%lookup%elems(this%lookup%table_dim_svar, this%lookup%table_dims_padded_flat))
     this%lookup%elems = 0.d0
