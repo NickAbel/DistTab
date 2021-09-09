@@ -92,7 +92,6 @@ contains
   subroutine read_test()
     character(len=120) :: file_id
     integer (kind = int64) :: part_dims_prev(3)
-    real (kind = real64) :: interp_random_cvars(2)
 
     allocate (table_dims_real(3))
     allocate (part_dims_real(2))

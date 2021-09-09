@@ -93,7 +93,7 @@ contains
         !! @param ind linear index in lookup table
         !! @result val state variable values located at ind
   pure function index_to_value(this, ind) result(val)
-    class(table), intent(inout) :: this
+    class(table), intent(in) :: this
     integer (kind = int64), intent(in) :: ind
     real (kind = real64), dimension(this%table_dim_svar) :: val
 
@@ -107,8 +107,8 @@ contains
         !! @param coord_p the intra-partition term of the coordinates
         !! @param coord_b the inter-partition term of the coordinates
         !! @result val state variable values located at coordinate given in (coord_p, coord_b)
-  function local_coord_to_value(this, coord_p, coord_b) result(val)
-    class(table), intent(inout) :: this
+  pure function local_coord_to_value(this, coord_p, coord_b) result(val)
+    class(table), intent(in) :: this
     integer (kind = int64), dimension(:), intent(in) :: coord_p, coord_b
     integer (kind = int64) :: ind, N
     integer (kind = int64), dimension(size(this%part_dims)) :: box_dims
@@ -127,8 +127,8 @@ contains
         !! @param this the table object
         !! @param coord global coordinate
         !! @result val state variable values located at coordinate coord
-  function global_coord_to_value(this, coord) result(val)
-    class(table), intent(inout) :: this
+  pure function global_coord_to_value(this, coord) result(val)
+    class(table), intent(in) :: this
     integer (kind = int64), dimension(:), intent(in) :: coord
     integer (kind = int64) :: ind, N
     integer (kind = int64), dimension(size(this%part_dims)) :: box_dims
@@ -137,9 +137,7 @@ contains
     N = size(this%part_dims)
 
     box_dims = this%table_dims_padded(1:N) / this%part_dims
-    !print *, "box dims = ", box_dims, " part dims = ", this%part_dims
     ind = this%global_coord_to_index(coord, this%part_dims, box_dims)
-    !print *, ind
     val = this%elems(:, ind)
 
   end function global_coord_to_value
@@ -150,10 +148,10 @@ contains
         !! @param this the table object
         !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
         !! @result global_coord resultant global coordinates
-  function real_to_global_coord(this, real_val) result(global_coord)
-    class(table), intent(inout) :: this
-    integer (kind = int64) :: N, i, j, offset_cv
+  pure function real_to_global_coord(this, real_val) result(global_coord)
+    class(table), intent(in) :: this
     real (kind = real64), dimension(size(this%part_dims)), intent(in) :: real_val
+    integer (kind = int64) :: N, i, j, offset_cv
     integer (kind = int64), dimension(size(this%part_dims)) :: global_coord
 
     N = size(this%part_dims)
@@ -178,15 +176,15 @@ contains
   !! @param this table object
   !! @param segments desired number of segments per dimension in the bucket array
   !! @result buckets the bucket array
-  function real_to_global_coord_opt_preprocessor(this, segments) result(buckets)
-    class(table), intent(inout) :: this
+  pure function real_to_global_coord_opt_preprocessor(this, segments) result(buckets)
+    class(table), intent(in) :: this
     integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: segments
     integer (kind = int64), dimension(:), allocatable :: buckets
     integer (kind = int64) :: i, j, k, l, N
     real (kind = real64) :: offset, delta
+    N = size(this%part_dims)
 
     allocate (buckets(sum(segments)))
-    N = size(this%part_dims)
 
     l = 1
     do i = 1, N
@@ -213,14 +211,14 @@ contains
         !! @param segments number of segments in the pre-processing array
         !! @param buckets bucket array, corresponds to coarse linear table discretization
         !! @result global_coord resultant global coordinates
-  function real_to_global_coord_opt(this, real_val, segments, buckets) result(global_coord)
-    class(table), intent(inout) :: this
+  pure function real_to_global_coord_opt(this, real_val, segments, buckets) result(global_coord)
+    class(table), intent(in) :: this
     integer (kind = int64) :: N, i, j, offset_cv
     real (kind = real64) :: delta
-    integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: segments
     real (kind = real64), dimension(size(this%part_dims)), intent(in) :: real_val
-    integer (kind = int64), dimension(size(this%part_dims)) :: global_coord, coord_start_indices
+    integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: segments
     integer (kind = int64), dimension(:), intent(in) :: buckets
+    integer (kind = int64), dimension(size(this%part_dims)) :: global_coord, coord_start_indices
 
     N = size(this%part_dims)
 
@@ -244,13 +242,11 @@ contains
         !! @param this the table object
         !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
         !! @result resultant index
-  function real_to_index(this, real_val) result(ind)
-    class(table), intent(inout) :: this
-    integer (kind = int64) :: N
+  pure function real_to_index(this, real_val) result(ind)
+    class(table), intent(in) :: this
     real (kind = real64), dimension(size(this%part_dims)), intent(in) :: real_val
     integer (kind = int64), dimension(size(this%part_dims)) :: box_dims, global_coord
-    integer (kind = int64) :: ind
-
+    integer (kind = int64) :: ind, N
     N = size(this%part_dims)
 
     global_coord = this%real_to_global_coord(real_val)
@@ -265,8 +261,8 @@ contains
         !! @param this the table object
         !! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
         !! @result val resultant SV values
-  function real_to_value(this, real_val) result(val)
-    class(table), intent(inout) :: this
+  pure function real_to_value(this, real_val) result(val)
+    class(table), intent(in) :: this
     real (kind = real64), dimension(size(this%part_dims)), intent(in) :: real_val
     real (kind = real64), dimension(this%table_dim_svar) :: val
     integer (kind = int64) :: ind
@@ -593,15 +589,15 @@ contains
         !! @param ind the flat index to be returned in coordinate index
         !! @param dims dimensions for coordinate indexing
         !! @result coord the coordinates of the entry at flat index flat
-  function index_to_coord(this, ind, dims) result(coord)
-    class(table), intent(inout) :: this
-    integer (kind = int64) :: ind, ind_cpy
-    integer (kind = int64), dimension(size(this%part_dims)) :: coord
+  pure function index_to_coord(this, ind, dims) result(coord)
+    class(table), intent(in) :: this
+    integer (kind = int64), intent(in) :: ind
     integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: dims
-    integer (kind = int64) :: k, div, N
-
-    N = size(dims)
+    integer (kind = int64), dimension(size(this%part_dims)) :: coord
+    integer (kind = int64) :: k, div, N, ind_cpy
+    N = size(this%part_dims)
     div = product(dims(2:N))
+
     ind_cpy = ind
 
     outer: do k = 1, N
@@ -625,13 +621,26 @@ contains
         !! @param part_dims the inter-partition dimensions of the partitioning scheme
         !! @param box_dims the intra-partition dimensions of the partitioning scheme
         !! @result coord global coordinates on the object padded table dimensions
-  function index_to_global_coord(this, ind, part_dims, box_dims) result(coord)
-    class(table), intent(inout) :: this
-    integer (kind = int64) :: ind
+  pure function index_to_global_coord(this, ind, part_dims, box_dims) result(coord)
+    class(table), intent(in) :: this
+    integer (kind = int64), intent(in) :: ind
+    integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: part_dims, box_dims
+    integer (kind = int64) ::  ind_p, ind_b
     integer (kind = int64), dimension(size(this%part_dims)) :: coord, coord_p, coord_b
-    integer (kind = int64), dimension(size(this%part_dims)) :: part_dims, box_dims
 
-    call this%index_to_local_coord(ind, part_dims, box_dims, coord_p, coord_b)
+    ind_p = ceiling(dfloat(ind) / product(box_dims))
+
+    ! Compute inter-partition contribution to index
+    coord_p = this%index_to_coord(ind_p, part_dims)
+
+    ! Localized intra-partition index
+    ind_b = mod(ind, product(box_dims))
+    if (ind_b .ne. 0) then
+      coord_b = this%index_to_coord(ind_b, box_dims)
+    else
+      coord_b = box_dims
+    end if
+
     coord = this%local_coord_to_global_coord(coord_p, coord_b, box_dims)
 
   end function index_to_global_coord
@@ -648,11 +657,9 @@ contains
         !! @param coord_b the array to return the intra-partition dimensions in
   subroutine index_to_local_coord(this, ind, part_dims, box_dims, coord_p, coord_b)
     class(table), intent(inout) :: this
-    integer (kind = int64) :: ind, ind_p, ind_b, N
+    integer (kind = int64) :: ind, ind_p, ind_b
     integer (kind = int64), dimension(size(this%part_dims)) :: coord_p, coord_b
     integer (kind = int64), dimension(size(this%part_dims)) :: part_dims, box_dims
-
-    N = size(part_dims)
 
     ind_p = ceiling(dfloat(ind) / product(box_dims))
 
@@ -676,10 +683,10 @@ contains
         !! @param coord the coordinates of the entry to be returned in flat index
         !! @param dims the dimensions on which to find the flat index.
         !! @result ind the flat index of entry located at coordinates coord
-  function coord_to_index(this, coord, dims) result(ind)
-    class(table), intent(inout) :: this
+  pure function coord_to_index(this, coord, dims) result(ind)
+    class(table), intent(in) :: this
+    integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: coord, dims
     integer (kind = int64) :: ind, k, N, div
-    integer (kind = int64), dimension(size(this%part_dims)) :: coord, dims
 
     N = size(dims)
     div = product(dims)
@@ -699,13 +706,18 @@ contains
         !! @param part_dims the intra-partition dimensions
         !! @param box_dims the inter-partition box dimensions
         !! @result ind global flat index
-  function global_coord_to_index(this, coord, part_dims, box_dims) result(ind)
-    class(table), intent(inout) :: this
-    integer (kind = int64) :: ind
-    integer (kind = int64), dimension(size(this%part_dims)) :: coord, coord_p, coord_b
-    integer (kind = int64), dimension(size(this%part_dims)) :: part_dims, box_dims
+  pure function global_coord_to_index(this, coord, part_dims, box_dims) result(ind)
+    class(table), intent(in) :: this
+    integer (kind = int64) :: ind, N, k
+    integer (kind = int64), dimension(size(this%part_dims)) :: coord_p, coord_b
+    integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: coord, part_dims, box_dims
+    N = size(this%part_dims)
 
-    call this%global_coord_to_local_coord(coord, part_dims, box_dims, coord_p, coord_b)
+    do k = 1, N
+      coord_p(k) = ceiling(dfloat(coord(k)) / box_dims(k))
+      coord_b(k) = mod(coord(k), box_dims(k))
+      if (coord_b(k) .eq. 0) coord_b(k) = box_dims(k)
+    end do
     ind = this%local_coord_to_index(coord_p, coord_b, part_dims, box_dims)
 
   end function global_coord_to_index
@@ -719,10 +731,10 @@ contains
         !! @param part_dims the intra-partition dimensions
         !! @param box_dims the inter-partition box dimensions
         !! @result ind the partitioned index
-  function local_coord_to_index(this, coord_p, coord_b, part_dims, box_dims) result(ind)
-    class(table), intent(inout) :: this
-    integer (kind = int64) :: ind
+  pure function local_coord_to_index(this, coord_p, coord_b, part_dims, box_dims) result(ind)
+    class(table), intent(in) :: this
     integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: coord_p, coord_b, part_dims, box_dims
+    integer (kind = int64) :: ind
 
     ind = (this%coord_to_index(coord_p, part_dims) - 1) * product(box_dims) + &
           this%coord_to_index(coord_b, box_dims)
@@ -739,7 +751,7 @@ contains
         !! @param coord_p output intra-partition coordinate term
         !! @param coord_b output inter-partition box coordinate term
   subroutine global_coord_to_local_coord(this, coord, part_dims, box_dims, coord_p, coord_b)
-    class(table), intent(inout) :: this
+    class(table), intent(in) :: this
     integer (kind = int64) :: N, k
     integer (kind = int64), dimension(size(this%part_dims)) :: part_dims, box_dims
     integer (kind = int64), dimension(size(this%part_dims)) :: coord_p, coord_b, coord
@@ -760,10 +772,10 @@ contains
         !! @param coord_b inter-partition box coordinate
         !! @param box_dims size of inter-partition box
         !! @result coord global coordinate
-  function local_coord_to_global_coord(this, coord_p, coord_b, box_dims) result(coord)
-    class(table), intent(inout) :: this
-    integer (kind = int64), dimension(size(this%part_dims)) :: box_dims
-    integer (kind = int64), dimension(size(this%part_dims)) :: coord_p, coord_b, coord
+  pure function local_coord_to_global_coord(this, coord_p, coord_b, box_dims) result(coord)
+    class(table), intent(in) :: this
+    integer (kind = int64), dimension(size(this%part_dims)), intent(in) :: box_dims, coord_p, coord_b
+    integer (kind = int64), dimension(size(this%part_dims)) :: coord
 
     coord = (coord_p - 1) * box_dims + coord_b
 
