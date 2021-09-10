@@ -35,13 +35,13 @@ module disttab_test_access
 
 contains
 
-  !> The constructor for the access_test type.
-  !! Initializes the table given table dimensions.
-  !!
-  !! @param table_dimensions specifies the size of the table
-  !! @return this the access_test object created
+!> The constructor for the access_test type.
+!! Initializes the table given table dimensions.
+!!
+!! @param table_dimensions specifies the size of the table
+!! @return this the access_test object created
   type(access_test) function access_test_constructor(table_dimensions) result(this)
-    integer (kind = int64), dimension(:), intent(in) :: table_dimensions
+    integer(kind=int64), dimension(:), intent(in) :: table_dimensions
 
     this%lookup = table(table_dimensions)
     call this%fill_table_ascending_integers()
@@ -49,15 +49,15 @@ contains
 
   end function access_test_constructor
 
-  !> Test the ability to get correct values from the table from index,
-  !! local coordinate, and global coordinates.
-  !! @param this access_test object
+!> Test the ability to get correct values from the table from index,
+!! local coordinate, and global coordinates.
+!! @param this access_test object
   subroutine get_value_test(this)
     class(access_test), intent(inout) :: this
-    real (kind = real64) :: r
-    integer (kind = int64) :: ind, N
-    integer (kind = int64), dimension(size(this%lookup%part_dims)) :: coord, coord_p, coord_b, box_dims
-    real (kind = real64), dimension(this%lookup%table_dim_svar) :: val_ind, val_local_coord, val_global_coord
+    real(kind=real64) :: r
+    integer(kind=int64) :: ind, N
+    integer(kind=int64), dimension(size(this%lookup%part_dims)) :: coord, coord_p, coord_b, box_dims
+    real(kind=real64), dimension(this%lookup%table_dim_svar) :: val_ind, val_local_coord, val_global_coord
 
     N = size(this%lookup%part_dims)
 
@@ -87,18 +87,18 @@ contains
 
   end subroutine get_value_test
 
-  !> Test the ability to get correct value clouds from the table from index,
-  !! local coordinate, and global coordinates.
-  !! Example in 3D case:
-  !! In general, when the value at coordinate (i,j,k) is desired, return
-  !! {i,i+1}x{j,j+1}x{k,k+1} (returning err if i+1,j+1,k+1, etc > Z).
-  !! @param this access_test object
+!> Test the ability to get correct value clouds from the table from index,
+!! local coordinate, and global coordinates.
+!! Example in 3D case:
+!! In general, when the value at coordinate (i,j,k) is desired, return
+!! {i,i+1}x{j,j+1}x{k,k+1} (returning err if i+1,j+1,k+1, etc > Z).
+!! @param this access_test object
   subroutine get_value_cloud_test(this)
     class(access_test), intent(inout) :: this
-    real (kind = real64) :: real_val(size(this%lookup%part_dims)), r
-    integer (kind = int64) :: ind, N
-    integer (kind = int64), dimension(size(this%lookup%part_dims)) :: coord, coord_p, coord_b, box_dims
-    real (kind = real64), dimension(this%lookup%table_dim_svar, 2**size(this%lookup%part_dims)) :: val_cloud_ind, &
+    real(kind=real64) :: real_val(size(this%lookup%part_dims)), r
+    integer(kind=int64) :: ind, N
+    integer(kind=int64), dimension(size(this%lookup%part_dims)) :: coord, coord_p, coord_b, box_dims
+    real(kind=real64), dimension(this%lookup%table_dim_svar, 2**size(this%lookup%part_dims)) :: val_cloud_ind, &
                                                      & val_cloud_local_coord, val_cloud_global_coord, &
                                                      & val_cloud_real
 
@@ -154,19 +154,19 @@ contains
 
   end subroutine get_value_cloud_test
 
-  !> Get a table value from random global coordinates, stash the result,
-  !! change the partitioning scheme, get a table value from the same
-  !! global coordinates, and check that the two values remain the same.
-  !! @param this access_test object
-  !! @param partition_dims partition dimensions to remap to before re-obtaining values
+!> Get a table value from random global coordinates, stash the result,
+!! change the partitioning scheme, get a table value from the same
+!! global coordinates, and check that the two values remain the same.
+!! @param this access_test object
+!! @param partition_dims partition dimensions to remap to before re-obtaining values
   subroutine get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
-    real (kind = real64) :: real_coords_rand(size(this%lookup%part_dims)), r
-    integer (kind = int64) :: ind, N
-    integer (kind = int64), dimension(size(this%lookup%part_dims)) :: coord, box_dims
-    integer (kind = int64), dimension(size(this%lookup%part_dims)), intent(in) :: partition_dims
-    real (kind = real64), dimension(this%lookup%table_dim_svar) :: val_real, val_real_map
-    real (kind = real64), dimension(this%lookup%table_dim_svar, 2**size(this%lookup%part_dims)) :: val_cloud_global_coord, &
+    real(kind=real64) :: real_coords_rand(size(this%lookup%part_dims)), r
+    integer(kind=int64) :: ind, N
+    integer(kind=int64), dimension(size(this%lookup%part_dims)) :: coord, box_dims
+    integer(kind=int64), dimension(size(this%lookup%part_dims)), intent(in) :: partition_dims
+    real(kind=real64), dimension(this%lookup%table_dim_svar) :: val_real, val_real_map
+    real(kind=real64), dimension(this%lookup%table_dim_svar, 2**size(this%lookup%part_dims)) :: val_cloud_global_coord, &
                                                                                   & val_cloud_global_coord_map
 
     N = size(this%lookup%part_dims)
@@ -202,7 +202,7 @@ contains
     ! Get value cloud from global coordinate index
     val_cloud_global_coord_map = this%lookup%global_coord_to_value_cloud(coord)
     val_real_map = this%lookup%real_to_value(real_coords_rand)
-    if (any(val_cloud_global_coord .ne. val_cloud_global_coord_map)) then 
+    if (any(val_cloud_global_coord .ne. val_cloud_global_coord_map)) then
       print *, "<FAIL> get_map_get_test not working correctly...", this%lookup%part_dims
     else
       print *, "get_map_get_test passed!", this%lookup%part_dims
@@ -210,19 +210,19 @@ contains
 
   end subroutine get_map_get_test
 
-  !> Get a table value from random global coordinates, stash the result,
-  !! change the partitioning scheme, get a table value from the same
-  !! global coordinates, and check that the two values remain the same.
-  !! @param this access_test object
-  !! @param runs the number of times to fetch a random real coordinate
+!> Get a table value from random global coordinates, stash the result,
+!! change the partitioning scheme, get a table value from the same
+!! global coordinates, and check that the two values remain the same.
+!! @param this access_test object
+!! @param runs the number of times to fetch a random real coordinate
   subroutine get_perf_test(this, runs, M)
     class(access_test), intent(inout) :: this
-    real (kind = real64) :: real_coords_rand(size(this%lookup%part_dims))
-    real (kind = real64) :: t1, t2, time_total, time_total_opt
-    integer (kind = int64) :: i, runs
-    integer (kind = int64), dimension(size(this%lookup%part_dims)) :: coord, coord_opt
-    integer (kind = int64), dimension(size(this%lookup%part_dims)), intent(in) :: M
-    integer (kind = int64), dimension(:), allocatable :: buckets
+    real(kind=real64) :: real_coords_rand(size(this%lookup%part_dims))
+    real(kind=real64) :: t1, t2, time_total, time_total_opt
+    integer(kind=int64) :: i, runs
+    integer(kind=int64), dimension(size(this%lookup%part_dims)) :: coord, coord_opt
+    integer(kind=int64), dimension(size(this%lookup%part_dims)), intent(in) :: M
+    integer(kind=int64), dimension(:), allocatable :: buckets
 
     !print *, "starting get_perf_test"
 
@@ -273,14 +273,14 @@ contains
 
   subroutine locality_test(this, runs)
     class(access_test), intent(inout) :: this
-    integer (kind = int64), intent(in) :: runs
-    integer (kind = int64), dimension(size(this%lookup%table_dims)) :: coord
-    integer (kind = int64), dimension(size(this%lookup%part_dims)) :: box_dims, coord_p, coord_b, part_dims
-    real (kind = real64), dimension(size(this%lookup%table_dims)) :: coord_r
-    real (kind = real64), dimension(this%lookup%table_dim_svar) :: s
-    real (kind = real64) :: t1, t2, time_total
-    integer (kind = int64) :: i, table_size, ind, N, k, ind_p, ind_b, div_p, div_b, box_size
-    integer (kind = int64), dimension(:), allocatable :: accesses
+    integer(kind=int64), intent(in) :: runs
+    integer(kind=int64), dimension(size(this%lookup%table_dims)) :: coord
+    integer(kind=int64), dimension(size(this%lookup%part_dims)) :: box_dims, coord_p, coord_b, part_dims
+    real(kind=real64), dimension(size(this%lookup%table_dims)) :: coord_r
+    real(kind=real64), dimension(this%lookup%table_dim_svar) :: s
+    real(kind=real64) :: t1, t2, time_total
+    integer(kind=int64) :: i, table_size, ind, N, k, ind_p, ind_b, div_p, div_b, box_size
+    integer(kind=int64), dimension(:), allocatable :: accesses
     N = size(this%lookup%part_dims)
 
     allocate (accesses(runs))
@@ -368,11 +368,11 @@ contains
 
   end subroutine locality_test
 
-  !> Fill lookup's table with ascending integers.
-  !! @param this access_test object
+!> Fill lookup's table with ascending integers.
+!! @param this access_test object
   subroutine fill_table_ascending_integers(this)
     class(access_test), intent(inout) :: this
-    integer (kind = int64) :: i
+    integer(kind=int64) :: i
 
     do i = 1, this%lookup%table_dims_flat
       this%lookup%elems(:, i) = i
@@ -380,11 +380,11 @@ contains
 
   end subroutine fill_table_ascending_integers
 
-  !> Fill lookup's control variables with linspace values in [0, 1].
-  !! @param this access_test object
+!> Fill lookup's control variables with linspace values in [0, 1].
+!! @param this access_test object
   subroutine fill_cvars_linspace(this)
     class(access_test), intent(inout) :: this
-    integer (kind = int64) :: i, N, j
+    integer(kind=int64) :: i, N, j
 
     N = size(this%lookup%part_dims)
 
@@ -397,8 +397,8 @@ contains
 
   end subroutine fill_cvars_linspace
 
-  !> Runs the get value test.
-  !! @param this access_test object
+!> Runs the get value test.
+!! @param this access_test object
   subroutine run_value_test(this)
     class(access_test), intent(inout) :: this
 
@@ -406,8 +406,8 @@ contains
 
   end subroutine run_value_test
 
-  !> Runs the get value cloud test.
-  !! @param this access_test object
+!> Runs the get value cloud test.
+!! @param this access_test object
   subroutine run_value_cloud_test(this)
     class(access_test), intent(inout) :: this
 
@@ -415,35 +415,35 @@ contains
 
   end subroutine run_value_cloud_test
 
-  !> Runs the get value-remap-get value test.
-  !! @param this access_test object
-  !! @param partition_dims partition dimensions to remap to before re-obtaining values
+!> Runs the get value-remap-get value test.
+!! @param this access_test object
+!! @param partition_dims partition dimensions to remap to before re-obtaining values
   subroutine run_get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
-    integer (kind = int64), dimension(size(this%lookup%part_dims)) :: partition_dims
+    integer(kind=int64), dimension(size(this%lookup%part_dims)) :: partition_dims
 
     call this%get_map_get_test(partition_dims)
 
   end subroutine run_get_map_get_test
 
-  !> Runs the performance test for get functionality.
-  !! @param this access_test object
-  !! @param runs number of times to access a random real-valued coordinate
+!> Runs the performance test for get functionality.
+!! @param this access_test object
+!! @param runs number of times to access a random real-valued coordinate
   subroutine run_get_perf_test(this, runs, M)
     class(access_test), intent(inout) :: this
-    integer (kind = int64), intent(in) :: runs
-    integer (kind = int64), intent(in), dimension(size(this%lookup%part_dims)) :: M
+    integer(kind=int64), intent(in) :: runs
+    integer(kind=int64), intent(in), dimension(size(this%lookup%part_dims)) :: M
 
     call this%get_perf_test(runs, M)
 
   end subroutine run_get_perf_test
 
-  !> Runs the performance test for get functionality.
-  !! @param this access_test object
-  !! @param runs number of times to access a random real-valued coordinate
+!> Runs the performance test for get functionality.
+!! @param this access_test object
+!! @param runs number of times to access a random real-valued coordinate
   subroutine run_locality_test(this, runs)
     class(access_test), intent(inout) :: this
-    integer (kind = int64), intent(in) :: runs
+    integer(kind=int64), intent(in) :: runs
 
     call this%locality_test(runs)
 

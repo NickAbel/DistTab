@@ -6,10 +6,10 @@ program test
   use :: iso_fortran_env
 
   implicit none
-  real (kind = real64), allocatable, dimension(:) :: table_dims_real, part_dims_real
-  integer (kind = int64), allocatable, dimension(:) :: table_dims, part_dims, segments
-  integer (kind = int64) :: dims, i, j
-  integer (kind = int64) :: total_runs
+  real(kind=real64), allocatable, dimension(:) :: table_dims_real, part_dims_real
+  integer(kind=int64), allocatable, dimension(:) :: table_dims, part_dims, segments
+  integer(kind=int64) :: dims, i, j
+  integer(kind=int64) :: total_runs
   type(partitioning_test) :: test_partition
   type(access_test) :: test_access
   type(table) :: lookup
@@ -25,8 +25,8 @@ program test
 
 contains
 
-  !> Simple test of 4x4 table with 2x2 partitions.
-  !! Good for quick verification of functionality.
+!> Simple test of 4x4 table with 2x2 partitions.
+!! Good for quick verification of functionality.
   subroutine square_test()
     allocate (table_dims(3))
     allocate (part_dims(2))
@@ -49,49 +49,49 @@ contains
     deallocate (table_dims)
   end subroutine square_test
 
-  !> Test of 2-dim to 5-dim partitioning with randomly generated
-  !! table and partition sizes on each dimension.
+!> Test of 2-dim to 5-dim partitioning with randomly generated
+!! table and partition sizes on each dimension.
   subroutine rand_test_full()
     do dims = 2, 5
-        allocate (table_dims_real(dims + 1))
-        allocate (part_dims_real(dims))
-        allocate (table_dims(dims + 1))
-        allocate (part_dims(dims))
+      allocate (table_dims_real(dims + 1))
+      allocate (part_dims_real(dims))
+      allocate (table_dims(dims + 1))
+      allocate (part_dims(dims))
 
-        call random_number(part_dims_real)
-        part_dims_real = part_dims_real * 12.0
-        part_dims = ceiling(part_dims_real)
+      call random_number(part_dims_real)
+      part_dims_real = part_dims_real * 12.0
+      part_dims = ceiling(part_dims_real)
 
-        call random_number(table_dims_real)
-        table_dims_real = table_dims_real * 20.0
-        table_dims = ceiling(table_dims_real)
-        table_dims(1:dims) = part_dims + table_dims(1:dims)
-        table_dims(dims + 1) = 1
+      call random_number(table_dims_real)
+      table_dims_real = table_dims_real * 20.0
+      table_dims = ceiling(table_dims_real)
+      table_dims(1:dims) = part_dims + table_dims(1:dims)
+      table_dims(dims + 1) = 1
 
-        test_partition = partitioning_test(table_dims, part_dims)
-        call test_partition%run_map_test()
+      test_partition = partitioning_test(table_dims, part_dims)
+      call test_partition%run_map_test()
 
-        test_partition = partitioning_test(table_dims, part_dims)
-        call test_partition%run_map_unmap_test()
+      test_partition = partitioning_test(table_dims, part_dims)
+      call test_partition%run_map_unmap_test()
 
-        test_access = access_test(table_dims)
-        call test_access%run_value_test()
-        call test_access%run_value_cloud_test()
-        call test_access%run_get_map_get_test(part_dims)
+      test_access = access_test(table_dims)
+      call test_access%run_value_test()
+      call test_access%run_value_cloud_test()
+      call test_access%run_get_map_get_test(part_dims)
 
-        deallocate (table_dims_real)
-        deallocate (part_dims_real)
-        deallocate (table_dims)
-        deallocate (part_dims)
+      deallocate (table_dims_real)
+      deallocate (part_dims_real)
+      deallocate (table_dims)
+      deallocate (part_dims)
     end do
   end subroutine rand_test_full
 
-  !> Read in a table of state variables (more than 1 per line) into table object
-  !! todo: Read table in Alya format properly that stores table size, control variables, etc.
-  !! todo: Line 495 error when reading in
+!> Read in a table of state variables (more than 1 per line) into table object
+!! todo: Read table in Alya format properly that stores table size, control variables, etc.
+!! todo: Line 495 error when reading in
   subroutine read_test()
     character(len=120) :: file_id
-    integer (kind = int64) :: part_dims_prev(3)
+    integer(kind=int64) :: part_dims_prev(3)
 
     allocate (table_dims_real(3))
     allocate (part_dims_real(2))
@@ -127,7 +127,7 @@ contains
     deallocate (table_dims)
   end subroutine locality_test
 
-  !> Run bucketed real -> coordinate search performance tests.
+!> Run bucketed real -> coordinate search performance tests.
   subroutine access_perf_test()
     do dims = 2, 2
       do j = 1, 2
@@ -158,6 +158,5 @@ contains
       end do
     end do
   end subroutine access_perf_test
-
 
 end program test

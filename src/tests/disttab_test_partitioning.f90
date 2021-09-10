@@ -9,8 +9,8 @@ module disttab_test_partitioning
   type :: partitioning_test
     private
     type(table) :: lookup
-    integer (kind = int64), allocatable, dimension(:) :: table_dims
-    integer (kind = int64), allocatable, dimension(:) :: part_dims
+    integer(kind=int64), allocatable, dimension(:) :: table_dims
+    integer(kind=int64), allocatable, dimension(:) :: part_dims
 
   contains
 
@@ -30,16 +30,16 @@ module disttab_test_partitioning
 
 contains
 
-  !> The constructor for the partitioning_test type.
-  !! Initializes the table and partition dimensions and creates a table
-  !! object lookup for testing.
-  !!
-  !! @param table_dimensions specifies the size of the table in the two control variable and one state variable dimension
-  !! @param partition_dimensions specifies the size of the partition blocks in each direction
-  !! @return this the partitioning_test object which partitioning_test_constructor instantiates
+!> The constructor for the partitioning_test type.
+!! Initializes the table and partition dimensions and creates a table
+!! object lookup for testing.
+!!
+!! @param table_dimensions specifies the size of the table in the two control variable and one state variable dimension
+!! @param partition_dimensions specifies the size of the partition blocks in each direction
+!! @return this the partitioning_test object which partitioning_test_constructor instantiates
   type(partitioning_test) function partitioning_test_constructor(table_dimensions, partition_dimensions) result(this)
-    integer (kind = int64), dimension(:), intent(in) :: table_dimensions
-    integer (kind = int64), dimension(:), intent(in) :: partition_dimensions
+    integer(kind=int64), dimension(:), intent(in) :: table_dimensions
+    integer(kind=int64), dimension(:), intent(in) :: partition_dimensions
 
     allocate (this%table_dims(size(table_dimensions)))
     allocate (this%part_dims(size(table_dimensions) - 1))
@@ -50,30 +50,30 @@ contains
 
   end function partitioning_test_constructor
 
-  !> A verification test for the table object's partition mapping algorithm.
-  !! First, calls create_test_tables to fill the elements of this%lookup
-  !! with pre-partitioned entries.
-  !! Then, calls this%lookup%partition_remap to get the result of the
-  !! partition mapping algorithm.
-  !! Next creates the array elems_gold_std, which is a reference
-  !! solution to the partition mapping problem with table size of
-  !! this%lookup and the partition dimensions of this%part_dims.
-  !!
-  !! The entries of elems_gold_std are ascending integers.
-  !!
-  !! elems_gold_std is then compared to this%lookup%elems. If all
-  !! entries are equal, a pass is reported. If there is no difference in
-  !! absolute value greater than 0.0005 between all elements of the two tables,
-  !! a different message is given (as this could be due to precision issues
-  !! that I am not sure don't exist.) Else, the test is failed.
-  !!
-  !! @param this the partition_test object to which partition_map_test belongs
-  !! @todo be sure there is no precision issue
+!> A verification test for the table object's partition mapping algorithm.
+!! First, calls create_test_tables to fill the elements of this%lookup
+!! with pre-partitioned entries.
+!! Then, calls this%lookup%partition_remap to get the result of the
+!! partition mapping algorithm.
+!! Next creates the array elems_gold_std, which is a reference
+!! solution to the partition mapping problem with table size of
+!! this%lookup and the partition dimensions of this%part_dims.
+!!
+!! The entries of elems_gold_std are ascending integers.
+!!
+!! elems_gold_std is then compared to this%lookup%elems. If all
+!! entries are equal, a pass is reported. If there is no difference in
+!! absolute value greater than 0.0005 between all elements of the two tables,
+!! a different message is given (as this could be due to precision issues
+!! that I am not sure don't exist.) Else, the test is failed.
+!!
+!! @param this the partition_test object to which partition_map_test belongs
+!! @todo be sure there is no precision issue
   subroutine partition_map_test(this)
     class(partitioning_test), intent(inout) :: this
     double precision, allocatable, dimension(:, :) :: elems_gold_std
-    integer (kind = int64) :: i, j, N
-    integer (kind = int64) :: coord(size(this%part_dims))
+    integer(kind=int64) :: i, j, N
+    integer(kind=int64) :: coord(size(this%part_dims))
 
     print *, "partition_map_test begin"
 
@@ -112,7 +112,7 @@ contains
     if (all(this%lookup%elems .eq. elems_gold_std)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
         this%part_dims, "]: ", "partition_map_test passed! Tables will be deleted."
-        call execute_command_line('rm *.DistTab.tmp.dat')
+      call execute_command_line('rm *.DistTab.tmp.dat')
     else if (all(abs(this%lookup%elems - elems_gold_std) .lt. 0.0005)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
         this%part_dims, "]: ", "trivially small diff in partition_map_test. most likely a pass. Tables not deleted."
@@ -125,13 +125,13 @@ contains
 
   end subroutine partition_map_test
 
-  !> Test to map and unmap a flamelet table to a partitioning scheme.
-  !! @param this the partition_test object
+!> Test to map and unmap a flamelet table to a partitioning scheme.
+!! @param this the partition_test object
   subroutine partition_map_unmap_test(this)
     class(partitioning_test), intent(inout) :: this
     double precision, allocatable, dimension(:, :) :: elems_gold_std
-    integer (kind = int64) :: i, j, N
-    integer (kind = int64) :: coord(size(this%part_dims))
+    integer(kind=int64) :: i, j, N
+    integer(kind=int64) :: coord(size(this%part_dims))
 
     print *, "partition_map_unmap_test begin"
 
@@ -154,7 +154,7 @@ contains
     if (all(this%lookup%elems .eq. elems_gold_std)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
         this%part_dims, "]: ", "partition_map_unmap_test passed! Tables will be deleted."
-        call execute_command_line('rm *.DistTab.tmp.dat')
+      call execute_command_line('rm *.DistTab.tmp.dat')
     else if (all(abs(this%lookup%elems - elems_gold_std) .lt. 0.0005)) then
       write (*, *) "n = [", this%lookup%table_dims, "], q = [", &
         this%part_dims, "]: ", "trivially small diff in partition_map_unmap_test. most likely a pass. Tables not deleted."
@@ -167,28 +167,28 @@ contains
 
   end subroutine partition_map_unmap_test
 
-  !> Writes to file the gold-standard table for the partitioning test,
-  !! which is in the correct partition-major ordering, with easy-to-
-  !! understand values for the control and state variables:
-  !!
-  !! phi_i1 phi_i2 ... phi_iN Eta_j
-  !!
-  !! where:
-  !!
-  !! phi_i1 is the coordinate in direction 1
-  !! phi_i2 is the coordinate in direction 2
-  !! ... ... ...
-  !! phi_iN is the coordinate in direction N
-  !! Eta_j is an ascending integer.
-  !!
-  !! The file that has been written is sorted with a GNU awk command,
-  !! which yields the order in which Alya-formatted flamelet tables are stored.
-  !! @param this the partition_test object to which create_test_tables belongs
+!> Writes to file the gold-standard table for the partitioning test,
+!! which is in the correct partition-major ordering, with easy-to-
+!! understand values for the control and state variables:
+!!
+!! phi_i1 phi_i2 ... phi_iN Eta_j
+!!
+!! where:
+!!
+!! phi_i1 is the coordinate in direction 1
+!! phi_i2 is the coordinate in direction 2
+!! ... ... ...
+!! phi_iN is the coordinate in direction N
+!! Eta_j is an ascending integer.
+!!
+!! The file that has been written is sorted with a GNU awk command,
+!! which yields the order in which Alya-formatted flamelet tables are stored.
+!! @param this the partition_test object to which create_test_tables belongs
   subroutine create_test_tables_padded(this)
     class(partitioning_test), intent(inout) :: this
-    integer (kind = int64), allocatable, dimension(:) :: box_dims
-    integer (kind = int64) :: svar, N, i, j, k
-    integer (kind = int64), dimension(size(this%part_dims)) :: coord
+    integer(kind=int64), allocatable, dimension(:) :: box_dims
+    integer(kind=int64) :: svar, N, i, j, k
+    integer(kind=int64), dimension(size(this%part_dims)) :: coord
 
     N = size(this%part_dims)
     ! Find total partitions in each dimension
@@ -235,28 +235,28 @@ contains
 
   end subroutine create_test_tables_padded
 
-  !> Writes to file the gold-standard table for the partitioning test,
-  !! which is in the correct partition-major ordering, with easy-to-
-  !! understand values for the control and state variables:
-  !!
-  !! phi_i1 phi_i2 ... phi_iN Eta_j
-  !!
-  !! where:
-  !!
-  !! phi_i1 is the coordinate in direction 1
-  !! phi_i2 is the coordinate in direction 2
-  !! ... ... ...
-  !! phi_iN is the coordinate in direction N
-  !! Eta_j is an ascending integer.
-  !!
-  !! The file that has been written is sorted with a GNU awk command,
-  !! which yields the order in which Alya-formatted flamelet tables are stored.
-  !! @param this the partition_test object to which create_test_tables belongs
+!> Writes to file the gold-standard table for the partitioning test,
+!! which is in the correct partition-major ordering, with easy-to-
+!! understand values for the control and state variables:
+!!
+!! phi_i1 phi_i2 ... phi_iN Eta_j
+!!
+!! where:
+!!
+!! phi_i1 is the coordinate in direction 1
+!! phi_i2 is the coordinate in direction 2
+!! ... ... ...
+!! phi_iN is the coordinate in direction N
+!! Eta_j is an ascending integer.
+!!
+!! The file that has been written is sorted with a GNU awk command,
+!! which yields the order in which Alya-formatted flamelet tables are stored.
+!! @param this the partition_test object to which create_test_tables belongs
   subroutine create_test_tables_unpadded(this)
     class(partitioning_test), intent(inout) :: this
-    integer (kind = int64), allocatable, dimension(:) :: box_dims
-    integer (kind = int64) :: svar, N, i, j, k
-    integer (kind = int64), dimension(size(this%part_dims)) :: coord
+    integer(kind=int64), allocatable, dimension(:) :: box_dims
+    integer(kind=int64) :: svar, N, i, j, k
+    integer(kind=int64), dimension(size(this%part_dims)) :: coord
 
     N = size(this%part_dims)
     ! Find total partitions in each dimension
@@ -302,8 +302,8 @@ contains
 
   end subroutine create_test_tables_unpadded
 
-  !> Runs the partition mapping test.
-  !! @param this the partitioning_test object to which run_test belongs
+!> Runs the partition mapping test.
+!! @param this the partitioning_test object to which run_test belongs
   subroutine run_map_test(this)
     class(partitioning_test), intent(inout) :: this
 
@@ -311,8 +311,8 @@ contains
 
   end subroutine run_map_test
 
-  !> Runs the partition mapping-unmapping test.
-  !! @param this the partitioning_test object to which run_test belongs
+!> Runs the partition mapping-unmapping test.
+!! @param this the partitioning_test object to which run_test belongs
   subroutine run_map_unmap_test(this)
     class(partitioning_test), intent(inout) :: this
 
