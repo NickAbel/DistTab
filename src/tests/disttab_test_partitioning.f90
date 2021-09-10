@@ -1,3 +1,5 @@
+!> This module contains tests which pertain to the partitioning and
+!> tiling functionalities of DistTab.
 module disttab_test_partitioning
   use :: disttab_table
   use :: iso_fortran_env

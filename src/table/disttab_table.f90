@@ -1,3 +1,6 @@
+!> This module contains the table object, which contains member functions
+!! and variables pertaining to the creation, storing, spatial tiling, and
+!! access to entries of the lookup table itself.
 module disttab_table
   use :: iso_fortran_env
 

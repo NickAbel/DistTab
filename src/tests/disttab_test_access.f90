@@ -1,3 +1,5 @@
+!> This module contains functions pertaining to testing the functionalities
+!! in DistTab which access a lookup table and return lookup table elements.
 module disttab_test_access
   use :: disttab_table
   use :: iso_fortran_env
@@ -215,13 +217,15 @@ contains
 !! global coordinates, and check that the two values remain the same.
 !! @param this access_test object
 !! @param runs the number of times to fetch a random real coordinate
-  subroutine get_perf_test(this, runs, M)
+!! @param segments number of segments per dimension in the coarse bucket array
+!! todo: test this in higher dimensions than 2 for correctness
+  subroutine get_perf_test(this, runs, segments)
     class(access_test), intent(inout) :: this
     real(kind=real64) :: real_coords_rand(size(this%lookup%part_dims))
     real(kind=real64) :: t1, t2, time_total, time_total_opt
     integer(kind=int64) :: i, runs
     integer(kind=int64), dimension(size(this%lookup%part_dims)) :: coord, coord_opt
-    integer(kind=int64), dimension(size(this%lookup%part_dims)), intent(in) :: M
+    integer(kind=int64), dimension(size(this%lookup%part_dims)), intent(in) ::segments 
     integer(kind=int64), dimension(:), allocatable :: buckets
 
     !print *, "starting get_perf_test"
@@ -229,8 +233,8 @@ contains
     time_total = 0.0
     time_total_opt = 0.0
 
-    allocate (buckets(sum(M)))
-    buckets = this%lookup%real_to_global_coord_opt_preprocessor(M)
+    allocate (buckets(sum(segments)))
+    buckets = this%lookup%real_to_global_coord_opt_preprocessor(segments)
 
     do i = 1, runs
       call random_number(real_coords_rand)
@@ -242,7 +246,7 @@ contains
       time_total = time_total + (t2 - t1)
 
       call cpu_time(t1)
-      coord_opt = this%lookup%real_to_global_coord_opt(real_coords_rand, M, buckets)
+      coord_opt = this%lookup%real_to_global_coord_opt(real_coords_rand, segments, buckets)
       call cpu_time(t2)
 
       time_total_opt = time_total_opt + (t2 - t1)
@@ -429,12 +433,13 @@ contains
 !> Runs the performance test for get functionality.
 !! @param this access_test object
 !! @param runs number of times to access a random real-valued coordinate
-  subroutine run_get_perf_test(this, runs, M)
+!! @param segments number of segments per dimension in the coarse bucket array
+  subroutine run_get_perf_test(this, runs, segments)
     class(access_test), intent(inout) :: this
     integer(kind=int64), intent(in) :: runs
-    integer(kind=int64), intent(in), dimension(size(this%lookup%part_dims)) :: M
+    integer(kind=int64), intent(in), dimension(size(this%lookup%part_dims)) ::segments 
 
-    call this%get_perf_test(runs, M)
+    call this%get_perf_test(runs, segments)
 
   end subroutine run_get_perf_test
 
