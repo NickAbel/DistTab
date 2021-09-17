@@ -2,7 +2,7 @@
 !! in DistTab which access a lookup table and return lookup table elements.
 module disttab_test_access
   use :: disttab_table
-  use :: iso_fortran_env
+  use :: kind_params
 
   implicit none
   private
@@ -29,6 +29,8 @@ module disttab_test_access
     procedure, pass(this), private :: fill_table_ascending_integers
     procedure, pass(this), private :: fill_cvars_linspace
 
+    final :: access_test_destructor
+
   end type access_test
 
   interface access_test
@@ -43,7 +45,7 @@ contains
 !! @param table_dimensions specifies the size of the table
 !! @return this the access_test object created
   type(access_test) function access_test_constructor(table_dimensions) result(this)
-    integer(kind=int32), dimension(:), intent(in) :: table_dimensions
+    integer(i4), dimension(:), intent(in) :: table_dimensions
 
     this % lookup = table(table_dimensions)
     call this % fill_table_ascending_integers()
@@ -51,15 +53,26 @@ contains
 
   end function access_test_constructor
 
+!> destructor for the access test type
+!!
+!! @param this the access test object to destruct
+  subroutine access_test_destructor(this)
+    type(access_test) :: this
+
+    call this % lookup % deallocate_table()
+    !call mpi_finalize(this%ierror)
+
+  end subroutine access_test_destructor
+
 !> Test the ability to get correct values from the table from index,
 !! local coordinate, and global coordinates.
 !! @param this access_test object
   subroutine get_value_test(this)
     class(access_test), intent(inout) :: this
-    real(kind=real32) :: r
-    integer(kind=int32) :: ind, N
-    integer(kind=int32), dimension(size(this % lookup % part_dims)) :: coord, coord_p, coord_b, box_dims
-    real(kind=real32), dimension(this % lookup % table_dim_svar) :: val_ind, val_local_coord, val_global_coord
+    real(sp) :: r
+    integer(i4) :: ind, N
+    integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_p, coord_b, box_dims
+    real(sp), dimension(this % lookup % table_dim_svar) :: val_ind, val_local_coord, val_global_coord
 
     N = size(this % lookup % part_dims)
 
@@ -97,10 +110,10 @@ contains
 !! @param this access_test object
   subroutine get_value_cloud_test(this)
     class(access_test), intent(inout) :: this
-    real(kind=real32) :: real_val(size(this % lookup % part_dims)), r
-    integer(kind=int32) :: ind, N
-    integer(kind=int32), dimension(size(this % lookup % part_dims)) :: coord, coord_p, coord_b, box_dims
-    real(kind=real32), dimension(this % lookup % table_dim_svar, 2**size(this % lookup % part_dims)) :: val_cloud_ind, &
+    real(sp) :: real_val(size(this % lookup % part_dims)), r
+    integer(i4) :: ind, N
+    integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_p, coord_b, box_dims
+    real(sp), dimension(this % lookup % table_dim_svar, 2**size(this % lookup % part_dims)) :: val_cloud_ind, &
                                                      & val_cloud_local_coord, val_cloud_global_coord, &
                                                      & val_cloud_real
 
@@ -163,12 +176,12 @@ contains
 !! @param partition_dims partition dimensions to remap to before re-obtaining values
   subroutine get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
-    real(kind=real32) :: real_coords_rand(size(this % lookup % part_dims)), r
-    integer(kind=int32) :: ind, N
-    integer(kind=int32), dimension(size(this % lookup % part_dims)) :: coord, box_dims
-    integer(kind=int32), dimension(size(this % lookup % part_dims)), intent(in) :: partition_dims
-    real(kind=real32), dimension(this % lookup % table_dim_svar) :: val_real, val_real_map
-    real(kind=real32), dimension(this % lookup % table_dim_svar, 2**size(this % lookup % part_dims)) :: &
+    real(sp) :: real_coords_rand(size(this % lookup % part_dims)), r
+    integer(i4) :: ind, N
+    integer(i4), dimension(size(this % lookup % part_dims)) :: coord, box_dims
+    integer(i4), dimension(size(this % lookup % part_dims)), intent(in) :: partition_dims
+    real(sp), dimension(this % lookup % table_dim_svar) :: val_real, val_real_map
+    real(sp), dimension(this % lookup % table_dim_svar, 2**size(this % lookup % part_dims)) :: &
                                                      & val_cloud_global_coord, val_cloud_global_coord_map
 
     N = size(this % lookup % part_dims)
@@ -221,12 +234,12 @@ contains
 !! todo: test this in higher dimensions than 2 for correctness
   subroutine get_perf_test(this, runs, segments)
     class(access_test), intent(inout) :: this
-    real(kind=real32) :: real_coords_rand(size(this % lookup % part_dims))
-    real(kind=real32) :: t1, t2, time_total, time_total_opt
-    integer(kind=int32) :: i, runs
-    integer(kind=int32), dimension(size(this % lookup % part_dims)) :: coord, coord_opt
-    integer(kind=int32), dimension(size(this % lookup % part_dims)), intent(in) :: segments
-    integer(kind=int32), dimension(:), allocatable :: buckets
+    real(sp) :: real_coords_rand(size(this % lookup % part_dims))
+    real(sp) :: t1, t2, time_total, time_total_opt
+    integer(i4) :: i, runs
+    integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_opt
+    integer(i4), dimension(size(this % lookup % part_dims)), intent(in) :: segments
+    integer(i4), dimension(:), allocatable :: buckets
 
     !print *, "starting get_perf_test"
 
@@ -278,14 +291,14 @@ contains
 
   subroutine locality_test(this, runs)
     class(access_test), intent(inout) :: this
-    integer(kind=int32), intent(in) :: runs
-    integer(kind=int32), dimension(size(this % lookup % table_dims)) :: coord
-    integer(kind=int32), dimension(size(this % lookup % part_dims)) :: box_dims, coord_p, coord_b, part_dims
-    real(kind=real32), dimension(size(this % lookup % part_dims)) :: coord_r
-    real(kind=real32), dimension(this % lookup % table_dim_svar) :: s
-    real(kind=real32) :: t1, t2, time_total
-    integer(kind=int32) :: i, table_size, ind, N, k, ind_p, ind_b, div_p, div_b, box_size
-    integer(kind=int32), dimension(:), allocatable :: accesses
+    integer(i4), intent(in) :: runs
+    integer(i4), dimension(size(this % lookup % table_dims)) :: coord
+    integer(i4), dimension(size(this % lookup % part_dims)) :: box_dims, coord_p, coord_b, part_dims
+    real(sp), dimension(size(this % lookup % part_dims)) :: coord_r
+    real(sp), dimension(this % lookup % table_dim_svar) :: s
+    real(sp) :: t1, t2, time_total
+    integer(i4) :: i, table_size, ind, N, k, ind_p, ind_b, div_p, div_b, box_size
+    integer(i4), dimension(:), allocatable :: accesses
     N = size(this % lookup % part_dims)
 
     allocate (accesses(runs))
@@ -337,7 +350,7 @@ contains
       ! For test: Generate all the coordinates outside this timed loop
       ! store in search-coord array, loop through that array see how that goes
       do k = 1, N
-        coord_p(k) = ceiling(real(coord(k), real32) / box_dims(k))
+        coord_p(k) = ceiling(real(coord(k), sp) / box_dims(k))
         coord_b(k) = mod(coord(k), box_dims(k))
         if (coord_b(k) .eq. 0) coord_b(k) = box_dims(k)
       end do
@@ -394,7 +407,7 @@ contains
 !! @param this access_test object
   subroutine fill_table_ascending_integers(this)
     class(access_test), intent(inout) :: this
-    integer(kind=int32) :: i
+    integer(i4) :: i
 
     do i = 1, this % lookup % table_dims_flat
       this % lookup % elems(:, i) = i
@@ -406,7 +419,7 @@ contains
 !! @param this access_test object
   subroutine fill_cvars_linspace(this)
     class(access_test), intent(inout) :: this
-    integer(kind=int32) :: i, N, j
+    integer(i4) :: i, N, j
 
     N = size(this % lookup % part_dims)
 
@@ -442,7 +455,7 @@ contains
 !! @param partition_dims partition dimensions to remap to before re-obtaining values
   subroutine run_get_map_get_test(this, partition_dims)
     class(access_test), intent(inout) :: this
-    integer(kind=int32), dimension(size(this % lookup % part_dims)) :: partition_dims
+    integer(i4), dimension(size(this % lookup % part_dims)) :: partition_dims
 
     call this % get_map_get_test(partition_dims)
 
@@ -454,8 +467,8 @@ contains
 !! @param segments number of segments per dimension in the coarse bucket array
   subroutine run_get_perf_test(this, runs, segments)
     class(access_test), intent(inout) :: this
-    integer(kind=int32), intent(in) :: runs
-    integer(kind=int32), intent(in), dimension(size(this % lookup % part_dims)) :: segments
+    integer(i4), intent(in) :: runs
+    integer(i4), intent(in), dimension(size(this % lookup % part_dims)) :: segments
 
     call this % get_perf_test(runs, segments)
 
@@ -466,7 +479,7 @@ contains
 !! @param runs number of times to access a random real-valued coordinate
   subroutine run_locality_test(this, runs)
     class(access_test), intent(inout) :: this
-    integer(kind=int32), intent(in) :: runs
+    integer(i4), intent(in) :: runs
 
     call this % locality_test(runs)
 

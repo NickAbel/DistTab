@@ -2,7 +2,7 @@
 !> tiling functionalities of DistTab.
 module disttab_test_partitioning
   use :: disttab_table
-  use :: iso_fortran_env
+  use :: kind_params
 
   implicit none
   private
@@ -11,8 +11,8 @@ module disttab_test_partitioning
   type :: partitioning_test
     private
     type(table) :: lookup
-    integer(kind=int32), allocatable, dimension(:) :: table_dims
-    integer(kind=int32), allocatable, dimension(:) :: part_dims
+    integer(i4), allocatable, dimension(:) :: table_dims
+    integer(i4), allocatable, dimension(:) :: part_dims
 
   contains
 
@@ -23,6 +23,11 @@ module disttab_test_partitioning
     procedure, pass(this), private :: partition_map_unmap_test
     procedure, pass(this), private :: create_test_tables_padded
     procedure, pass(this), private :: create_test_tables_unpadded
+
+    ! Deallocate member variables (this is not the dtor!)
+    procedure, public, pass(this) :: deallocate_partitioning_test
+
+    final :: partitioning_test_destructor
 
   end type partitioning_test
 
@@ -40,8 +45,8 @@ contains
 !! @param partition_dimensions specifies the size of the partition blocks in each direction
 !! @return this the partitioning_test object which partitioning_test_constructor instantiates
   type(partitioning_test) function partitioning_test_constructor(table_dimensions, partition_dimensions) result(this)
-    integer(kind=int32), dimension(:), intent(in) :: table_dimensions
-    integer(kind=int32), dimension(:), intent(in) :: partition_dimensions
+    integer(i4), dimension(:), intent(in) :: table_dimensions
+    integer(i4), dimension(:), intent(in) :: partition_dimensions
 
     allocate (this % table_dims(size(table_dimensions)))
     allocate (this % part_dims(size(table_dimensions) - 1))
@@ -51,6 +56,31 @@ contains
     this % lookup = table(this % table_dims)
 
   end function partitioning_test_constructor
+
+!> destructor for the partitioning test type
+!!
+!! @param this the table object to destruct
+!! @todo what is this exactly doing? is deallocate_table call necessary?
+  subroutine partitioning_test_destructor(this)
+    type(partitioning_test) :: this
+
+    call deallocate_partitioning_test(this)
+    !call mpi_finalize(this%ierror)
+
+  end subroutine partitioning_test_destructor
+
+!> Deallocates the allocated (allocatable) member variables of the partitioning test object
+!!
+!! @param this the partitioning test object whose allocatable member variables are to be deallocated
+!! @todo This is called by the destructor, but is it necessary?
+  subroutine deallocate_partitioning_test(this)
+    class(partitioning_test), intent(inout) :: this
+
+    if (allocated(this % table_dims)) deallocate (this % table_dims)
+    if (allocated(this % part_dims)) deallocate (this % part_dims)
+    call this % lookup % deallocate_table()
+
+  end subroutine deallocate_partitioning_test
 
 !> A verification test for the table object's partition mapping algorithm.
 !! First, calls create_test_tables to fill the elements of this%lookup
@@ -74,8 +104,8 @@ contains
   subroutine partition_map_test(this)
     class(partitioning_test), intent(inout) :: this
     double precision, allocatable, dimension(:, :) :: elems_gold_std
-    integer(kind=int32) :: i, j, N
-    integer(kind=int32) :: coord(size(this % part_dims))
+    integer(i4) :: i, j, N
+    integer(i4) :: coord(size(this % part_dims))
 
     print *, "partition_map_test begin"
 
@@ -132,8 +162,8 @@ contains
   subroutine partition_map_unmap_test(this)
     class(partitioning_test), intent(inout) :: this
     double precision, allocatable, dimension(:, :) :: elems_gold_std
-    integer(kind=int32) :: i, j, N
-    integer(kind=int32) :: coord(size(this % part_dims))
+    integer(i4) :: i, j, N
+    integer(i4) :: coord(size(this % part_dims))
 
     print *, "partition_map_unmap_test begin"
 
@@ -188,9 +218,9 @@ contains
 !! @param this the partition_test object to which create_test_tables belongs
   subroutine create_test_tables_padded(this)
     class(partitioning_test), intent(inout) :: this
-    integer(kind=int32), allocatable, dimension(:) :: box_dims
-    integer(kind=int32) :: svar, N, i, j, k
-    integer(kind=int32), dimension(size(this % part_dims)) :: coord
+    integer(i4), allocatable, dimension(:) :: box_dims
+    integer(i4) :: svar, N, i, j, k
+    integer(i4), dimension(size(this % part_dims)) :: coord
 
     N = size(this % part_dims)
     ! Find total partitions in each dimension
@@ -256,9 +286,9 @@ contains
 !! @param this the partition_test object to which create_test_tables belongs
   subroutine create_test_tables_unpadded(this)
     class(partitioning_test), intent(inout) :: this
-    integer(kind=int32), allocatable, dimension(:) :: box_dims
-    integer(kind=int32) :: svar, N, i, j, k
-    integer(kind=int32), dimension(size(this % part_dims)) :: coord
+    integer(i4), allocatable, dimension(:) :: box_dims
+    integer(i4) :: svar, N, i, j, k
+    integer(i4), dimension(size(this % part_dims)) :: coord
 
     N = size(this % part_dims)
     ! Find total partitions in each dimension

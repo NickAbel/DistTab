@@ -3,24 +3,24 @@ program test
   use :: disttab_test_access
   use :: disttab_test_partitioning
   use :: disttab_table
-  use :: iso_fortran_env
+  use :: kind_params
 
   implicit none
-  real(kind=real32), allocatable, dimension(:) :: table_dims_real, part_dims_real
-  integer(kind=int32), allocatable, dimension(:) :: table_dims, part_dims, segments
-  integer(kind=int32) :: dims, i, j
-  integer(kind=int32) :: total_runs
+  real(sp), allocatable, dimension(:) :: table_dims_real, part_dims_real
+  integer(i4), allocatable, dimension(:) :: table_dims, part_dims, segments
+  integer(i4) :: dims, i, j
+  integer(i4) :: total_runs
   type(partitioning_test) :: test_partition
   type(access_test) :: test_access
   type(table) :: lookup
 
   ! Built-in tests that verify mapping and padding
-  !call square_test()
-  !call rand_test_full()
+  call square_test()
+  call rand_test_full()
 
   ! Other tests
   !call read_test()
-  call locality_test()
+  !call locality_test()
   !call access_perf_test()
 
 contains
@@ -28,25 +28,30 @@ contains
 !> Simple test of 4x4 table with 2x2 partitions.
 !! Good for quick verification of functionality.
   subroutine square_test()
-    allocate (table_dims(3))
-    allocate (part_dims(2))
+    block
+      type(partitioning_test) :: test_part
+      type(access_test) :: test_acc
 
-    table_dims = (/4, 4, 1/)
-    part_dims = (/2, 2/)
+      allocate (table_dims(3))
+      allocate (part_dims(2))
 
-    test_partition = partitioning_test(table_dims, part_dims)
-    call test_partition % run_map_test()
+      table_dims = (/19, 18, 1/)
+      part_dims = (/4, 4/)
 
-    test_partition = partitioning_test(table_dims, part_dims)
-    call test_partition % run_map_unmap_test()
+      test_part = partitioning_test(table_dims, part_dims)
+      call test_part % run_map_test()
 
-    test_access = access_test(table_dims)
-    call test_access % run_value_test()
-    call test_access % run_value_cloud_test()
-    call test_access % run_get_map_get_test(part_dims)
+      test_part = partitioning_test(table_dims, part_dims)
+      call test_part % run_map_unmap_test()
 
-    deallocate (part_dims)
-    deallocate (table_dims)
+      test_acc = access_test(table_dims)
+      call test_acc % run_value_test()
+      call test_acc % run_value_cloud_test()
+      call test_acc % run_get_map_get_test(part_dims)
+
+      deallocate (part_dims)
+      deallocate (table_dims)
+    end block
   end subroutine square_test
 
 !> Test of 2-dim to 5-dim partitioning with randomly generated
@@ -91,7 +96,7 @@ contains
 !! todo: Line 495 error when reading in
   subroutine read_test()
     character(len=120) :: file_id
-    integer(kind=int32) :: part_dims_prev(3)
+    integer(i4) :: part_dims_prev(3)
 
     allocate (table_dims_real(3))
     allocate (part_dims_real(2))

@@ -12,10 +12,9 @@ SET(VERSION 0.0.1)
 # Add local modules to the module path
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-# Uncomment if it is required that Fortran 90 is supported
-#IF(NOT CMAKE_Fortran_COMPILER_SUPPORTS_F90)
-#    MESSAGE(FATAL_ERROR "Fortran compiler does not support F90")
-#ENDIF(NOT CMAKE_Fortran_COMPILER_SUPPORTS_F90)
+IF(NOT CMAKE_Fortran_COMPILER_SUPPORTS_F90)
+    MESSAGE(FATAL_ERROR "Fortran compiler does not support F90")
+ENDIF(NOT CMAKE_Fortran_COMPILER_SUPPORTS_F90)
 
 # Set some options the user may choose
 # Uncomment the below if you want the user to choose a parallelization library
@@ -45,13 +44,13 @@ find_package(MPI REQUIRED)
 add_definitions(${MPI_Fortran_COMPILE_FLAGS})
 include_directories(${MPI_Fortran_INCLUDE_PATH})
 link_directories(${MPI_Fortran_LIBRARIES})
-#target_link_libraries(${exe_name} otherlibs ${MPI_Fortran_LIBRARIES})
 
 # Define the executable name
 SET(DISTTABEXE disttab)
 
 # Define the library name
 SET(TABLELIB table)
+SET(TYPELIB type)
 
 # Define some directories
 SET(SRC ${CMAKE_SOURCE_DIR}/src)
@@ -59,12 +58,16 @@ SET(LIB ${CMAKE_SOURCE_DIR}/lib)
 SET(BIN ${CMAKE_SOURCE_DIR}/bin)
 SET(SRCTESTS ${SRC}/tests)
 SET(SRCTABLE ${SRC}/table)
+#SET(SRCPARALLEL ${SRC}/parallel)
+SET(SRCTYPE ${SRC}/type)
 
 # Have the .mod files placed in the lib folder
 SET(CMAKE_Fortran_MODULE_DIRECTORY ${LIB})
 
 # The source for the table library and have it placed in the lib folder
-ADD_SUBDIRECTORY(${SRCTABLE} ${LIB})
+ADD_SUBDIRECTORY(${SRCTABLE} ${LIB}/table)
+#ADD_SUBDIRECTORY(${SRCPARALLEL} ${LIB}/parallel)
+ADD_SUBDIRECTORY(${SRCTYPE} ${LIB}/type)
 
 # The source for the test binary and have it placed in the bin folder
 ADD_SUBDIRECTORY(${SRCTESTS} ${BIN})

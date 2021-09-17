@@ -15,8 +15,8 @@ ADD_EXECUTABLE(${DISTTABEXE} ${DISTTAB_src})
 # Add the needed libraries and special compiler flags
 #####################################################
 
-# This links foo to the bar library
-TARGET_LINK_LIBRARIES(${DISTTABEXE} ${TABLELIB})
+TARGET_LINK_LIBRARIES(${DISTTABEXE} ${TABLELIB} 
+			            ${TYPELIB})
 
 # Uncomment if you have parallelization
 IF(USE_OPENMP)
