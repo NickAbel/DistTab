@@ -6,17 +6,17 @@ program test
   use :: iso_fortran_env
 
   implicit none
-  real(kind=real64), allocatable, dimension(:) :: table_dims_real, part_dims_real
-  integer(kind=int64), allocatable, dimension(:) :: table_dims, part_dims, segments
-  integer(kind=int64) :: dims, i, j
-  integer(kind=int64) :: total_runs
+  real(kind=real32), allocatable, dimension(:) :: table_dims_real, part_dims_real
+  integer(kind=int32), allocatable, dimension(:) :: table_dims, part_dims, segments
+  integer(kind=int32) :: dims, i, j
+  integer(kind=int32) :: total_runs
   type(partitioning_test) :: test_partition
   type(access_test) :: test_access
   type(table) :: lookup
 
   ! Built-in tests that verify mapping and padding
-  call square_test()
-  call rand_test_full()
+  !call square_test()
+  !call rand_test_full()
 
   ! Other tests
   !call read_test()
@@ -35,15 +35,15 @@ contains
     part_dims = (/2, 2/)
 
     test_partition = partitioning_test(table_dims, part_dims)
-    call test_partition%run_map_test()
+    call test_partition % run_map_test()
 
     test_partition = partitioning_test(table_dims, part_dims)
-    call test_partition%run_map_unmap_test()
+    call test_partition % run_map_unmap_test()
 
     test_access = access_test(table_dims)
-    call test_access%run_value_test()
-    call test_access%run_value_cloud_test()
-    call test_access%run_get_map_get_test(part_dims)
+    call test_access % run_value_test()
+    call test_access % run_value_cloud_test()
+    call test_access % run_get_map_get_test(part_dims)
 
     deallocate (part_dims)
     deallocate (table_dims)
@@ -69,15 +69,15 @@ contains
       table_dims(dims + 1) = 1
 
       test_partition = partitioning_test(table_dims, part_dims)
-      call test_partition%run_map_test()
+      call test_partition % run_map_test()
 
       test_partition = partitioning_test(table_dims, part_dims)
-      call test_partition%run_map_unmap_test()
+      call test_partition % run_map_unmap_test()
 
       test_access = access_test(table_dims)
-      call test_access%run_value_test()
-      call test_access%run_value_cloud_test()
-      call test_access%run_get_map_get_test(part_dims)
+      call test_access % run_value_test()
+      call test_access % run_value_cloud_test()
+      call test_access % run_get_map_get_test(part_dims)
 
       deallocate (table_dims_real)
       deallocate (part_dims_real)
@@ -91,7 +91,7 @@ contains
 !! todo: Line 495 error when reading in
   subroutine read_test()
     character(len=120) :: file_id
-    integer(kind=int64) :: part_dims_prev(3)
+    integer(kind=int32) :: part_dims_prev(3)
 
     allocate (table_dims_real(3))
     allocate (part_dims_real(2))
@@ -106,8 +106,8 @@ contains
     part_dims_prev = 1
     part_dims = (/60, 60, 1/)
     lookup = table(table_dims)
-    call lookup%read_in(file_id)
-    call lookup%partition_remap(part_dims, part_dims_prev)
+    call lookup % read_in(file_id)
+    call lookup % partition_remap(part_dims, part_dims_prev)
     !call lookup%partition_remap(part_dims_prev, part_dims)
 
     deallocate (table_dims_real)
@@ -122,7 +122,7 @@ contains
     table_dims = (/1000, 1000, 1000, 1/)
     test_access = access_test(table_dims)
     total_runs = 100000000
-    call test_access%run_locality_test(total_runs)
+    call test_access % run_locality_test(total_runs)
 
     deallocate (table_dims)
   end subroutine locality_test
@@ -148,7 +148,7 @@ contains
         print *, "number of segments = ", segments(1)
 
         test_access = access_test(table_dims)
-        call test_access%run_get_perf_test(total_runs, segments)
+        call test_access % run_get_perf_test(total_runs, segments)
 
         deallocate (segments)
         deallocate (table_dims_real)

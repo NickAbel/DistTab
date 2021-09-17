@@ -17,9 +17,9 @@ program disttab
 
   !call lookup % fill_example()
   !call lookup % read_in(file_id)
-  call lookup%partition_mapping_test()
+  call lookup % partition_mapping_test()
   !call lookup % partition_mapping()
-  call lookup%table_deallocate()
+  call lookup % table_deallocate()
 
   call mpi_finalize(ierror)
 

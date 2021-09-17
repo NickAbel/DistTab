@@ -4,7 +4,7 @@
 # Define the project and the depencies that it has
 ##################################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.5)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 PROJECT(DistTab)
 ENABLE_LANGUAGE(Fortran)
 SET(VERSION 0.0.1)
@@ -29,7 +29,7 @@ INCLUDE(${CMAKE_MODULE_PATH}/SetFortranFlags.cmake)
 # Locate and set parallelization libraries.  There are some CMake peculiarities
 # taken care of here, such as the fact that the FindOpenMP routine doesn't know
 # about Fortran.
-#INCLUDE(${CMAKE_MODULE_PATH}/SetParallelizationLibrary.cmake)
+INCLUDE(${CMAKE_MODULE_PATH}/SetParallelizationLibrary.cmake)
 
 # There is an error in CMAKE with this flag for pgf90.  Unset it
 GET_FILENAME_COMPONENT(FCNAME ${CMAKE_Fortran_COMPILER} NAME)
@@ -40,6 +40,12 @@ ENDIF(FCNAME STREQUAL "pgf90")
 ############################################################
 # Define the actual files and folders that make up the build
 ############################################################
+
+find_package(MPI REQUIRED)
+add_definitions(${MPI_Fortran_COMPILE_FLAGS})
+include_directories(${MPI_Fortran_INCLUDE_PATH})
+link_directories(${MPI_Fortran_LIBRARIES})
+#target_link_libraries(${exe_name} otherlibs ${MPI_Fortran_LIBRARIES})
 
 # Define the executable name
 SET(DISTTABEXE disttab)
