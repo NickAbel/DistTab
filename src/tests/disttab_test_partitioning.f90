@@ -65,7 +65,6 @@ contains
     type(partitioning_test) :: this
 
     call deallocate_partitioning_test(this)
-    !call mpi_finalize(this%ierror)
 
   end subroutine partitioning_test_destructor
 

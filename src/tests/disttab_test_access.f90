@@ -60,7 +60,6 @@ contains
     type(access_test) :: this
 
     call this % lookup % deallocate_table()
-    !call mpi_finalize(this%ierror)
 
   end subroutine access_test_destructor
 

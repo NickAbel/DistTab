@@ -2,7 +2,7 @@
 !! and variables pertaining to the creation, storing, spatial tiling, and
 !! access to entries of the lookup table itself.
 module disttab_table
-  use :: mpi
+  !use :: mpi
   use :: kind_params
 
   implicit none
@@ -23,17 +23,10 @@ module disttab_table
     integer(i4) :: part_dims_flat
     integer(i4) :: table_dim_svar
 
-    ! MPI
-    integer(i4) :: ierror, rank, nprocs, window
-    integer(i4) :: int_size_mpi, dbl_size_mpi
-    integer(kind=mpi_address_kind) :: target_displacement
-
   contains
 
 ! Read in a lookup table from file
     procedure, public, pass(this) :: read_in
-! Pad out table for new partitioning scheme
-!procedure, public, pass(this)  :: reshape_table
 ! Map table to partition-major order
     procedure, public, pass(this) :: partition_remap
 ! Print the table elements
@@ -91,7 +84,7 @@ module disttab_table
   end interface table
 
 !   interface get_value
-!     module procedure:: index_to_value, local_coord_to_value, global_coord_to_value
+!     module procedure :: index_to_value, local_coord_to_value, global_coord_to_value
 !   end interface get_value
 
 contains
@@ -452,11 +445,11 @@ contains
   type(table) function table_constructor(table_dims) result(this)
     integer(i4), dimension(:), intent(in) :: table_dims
 
-    !call mpi_init(this%ierror)
-    !call mpi_type_size(mpi_integer, this%int_size_mpi, this%ierror)
-    !call mpi_type_size(mpi_double, this%dbl_size_mpi, this%ierror)
-    !call mpi_comm_rank(mpi_comm_world, this%rank, this%ierror)
-    !call mpi_comm_size(mpi_comm_world, this%nprocs, this%ierror)
+    !call mpi_init(this % ierror)
+    !call mpi_type_size(mpi_integer, this % int_size_mpi, this % ierror)
+    !call mpi_type_size(mpi_double, this % dbl_size_mpi, this % ierror)
+    !call mpi_comm_rank(mpi_comm_world, this % rank, this % ierror)
+    !call mpi_comm_size(mpi_comm_world, this % nprocs, this % ierror)
 
     allocate (this % table_dims(size(table_dims)))
     allocate (this % table_dims_padded(size(table_dims)))
@@ -486,7 +479,7 @@ contains
     type(table) :: this
 
     call deallocate_table(this)
-    !call mpi_finalize(this%ierror)
+    !call mpi_finalize(this % ierror)
 
   end subroutine table_destructor
 

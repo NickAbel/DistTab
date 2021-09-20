@@ -1,9 +1,10 @@
-!> A driver program for the DistTab partitioning test.
+!> A driver program for DistTab testing.
 program test
-  use :: disttab_test_access
-  use :: disttab_test_partitioning
-  use :: disttab_table
   use :: kind_params
+  use :: disttab_table
+  use :: disttab_test_access
+  use :: disttab_test_parallel
+  use :: disttab_test_partitioning
 
   implicit none
   real(sp), allocatable, dimension(:) :: table_dims_real, part_dims_real
@@ -17,6 +18,8 @@ program test
   ! Built-in tests that verify mapping and padding
   call square_test()
   call rand_test_full()
+
+  ! Tests related to parallelism
 
   ! Other tests
   !call read_test()
