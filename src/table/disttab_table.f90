@@ -12,25 +12,27 @@ module disttab_table
 
   type :: table
 
-    real(sp), allocatable, dimension(:, :) :: elems
     real(sp), allocatable, dimension(:) :: ctrl_vars
+    real(sp), allocatable, dimension(:, :) :: elems
+    integer(i4), allocatable, dimension(:) :: part_dims
     integer(i4), allocatable, dimension(:) :: table_dims
     integer(i4), allocatable, dimension(:) :: table_dims_padded
-    integer(i4), allocatable, dimension(:) :: part_dims
 
+    integer(i4) :: nvar
     integer(i4) :: table_dims_flat
     integer(i4) :: table_dims_padded_flat
-    integer(i4) :: part_dims_flat
-    integer(i4) :: table_dim_svar
 
   contains
 
 ! Read in a lookup table from file
     procedure, public, pass(this) :: read_in
+
 ! Map table to partition-major order
     procedure, public, pass(this) :: partition_remap
+
 ! Print the table elements
     procedure, public, pass(this) :: print_elems
+
 ! Deallocate table member variables (this is not the dtor!)
     procedure, public, pass(this) :: deallocate_table
 
@@ -97,7 +99,7 @@ contains
   pure function index_to_value(this, ind) result(val)
     class(table), intent(in) :: this
     integer(i4), intent(in) :: ind
-    real(sp), dimension(this % table_dim_svar) :: val
+    real(sp), dimension(this % nvar) :: val
 
     val = this % elems(:, ind)
 
@@ -114,7 +116,7 @@ contains
     integer(i4), dimension(:), intent(in) :: coord_p, coord_b
     integer(i4) :: ind, N
     integer(i4), dimension(size(this % part_dims)) :: box_dims
-    real(sp), dimension(this % table_dim_svar) :: val
+    real(sp), dimension(this % nvar) :: val
 
     N = size(this % part_dims)
 
@@ -134,7 +136,7 @@ contains
     integer(i4), dimension(:), intent(in) :: coord
     integer(i4) :: ind, N
     integer(i4), dimension(size(this % part_dims)) :: box_dims
-    real(sp), dimension(this % table_dim_svar) :: val
+    real(sp), dimension(this % nvar) :: val
 
     N = size(this % part_dims)
 
@@ -181,10 +183,10 @@ contains
   pure function real_to_global_coord_opt_preprocessor(this, segments) result(buckets)
     class(table), intent(in) :: this
     integer(i4), dimension(size(this % part_dims)), intent(in) :: segments
-!    integer(i4), dimension(:), allocatable :: buckets
     integer(i4), dimension(sum(segments)) :: buckets
     integer(i4) :: i, j, k, l, N
     real(sp) :: offset, delta
+
     N = size(this % part_dims)
 
     l = 1
@@ -248,6 +250,7 @@ contains
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
     integer(i4), dimension(size(this % part_dims)) :: box_dims, global_coord
     integer(i4) :: ind, N
+
     N = size(this % part_dims)
 
     global_coord = this % real_to_global_coord(real_val)
@@ -265,7 +268,7 @@ contains
   pure function real_to_value(this, real_val) result(val)
     class(table), intent(in) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
-    real(sp), dimension(this % table_dim_svar) :: val
+    real(sp), dimension(this % nvar) :: val
     integer(i4) :: ind
 
     ind = this % real_to_index(real_val)
@@ -285,7 +288,7 @@ contains
     integer(i4), intent(in) :: ind
     integer(i4) :: N, j
     integer(i4), dimension(size(this % part_dims)) :: box_dims, coord
-    real(sp), dimension(this % table_dim_svar, 2**size(this % part_dims)) :: val_cloud
+    real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
@@ -315,7 +318,7 @@ contains
     integer(i4), dimension(:), intent(in) :: coord_p, coord_b
     integer(i4) :: ind, N, j
     integer(i4), dimension(size(this % part_dims)) :: box_dims, coord
-    real(sp), dimension(this % table_dim_svar, 2**size(this % part_dims)) :: val_cloud
+    real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
@@ -344,7 +347,7 @@ contains
     integer(i4), dimension(:), intent(in) :: coord
     integer(i4) :: ind, N, j
     integer(i4), dimension(size(this % part_dims)) :: box_dims, coord_cpy
-    real(sp), dimension(this % table_dim_svar, 2**size(this % part_dims)) :: val_cloud
+    real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
@@ -372,7 +375,7 @@ contains
     integer(i4) :: N, j
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
     integer(i4), dimension(size(this % part_dims)) :: coord_base, box_dims
-    real(sp), dimension(this % table_dim_svar, 2**size(this % part_dims)) :: val_cloud
+    real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
@@ -401,7 +404,7 @@ contains
     integer(i4) :: j, ind, N
     integer(i4), dimension(size(this % part_dims)) :: ctrs, uppers, box_dims
     integer(i4), dimension(size(this % part_dims)) :: ctrs_copy
-    real(sp), dimension(this % table_dim_svar, 2**size(this % part_dims)) :: val_cloud
+    real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
@@ -429,7 +432,7 @@ contains
 !! Allocates the elements array according to the table dimensions.
 !! Initializes the member variables table_dims, table_dims_padded.
 !! Computes the parameters table_dims_flat,
-!! table_dims_padded_flat, table_dim_svar,
+!! table_dims_padded_flat, nvar,
 !! which are all a property of the table_dims argument, necessary
 !! for partition mapping functionality.
 !!
@@ -459,14 +462,13 @@ contains
     this % table_dims_padded = table_dims
     this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
     this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
-    this % table_dim_svar = this % table_dims(ubound(this % table_dims, dim=1))
+    this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
 
 ! Table initially considered to have one table-sized partition, i.e. 'unpartitioned'
 ! Note there are other partitioning schemes which are identical to this scheme.
     this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
-    this % part_dims_flat = product(this % part_dims)
 
-    allocate (this % elems(this % table_dim_svar, this % table_dims_padded_flat))
+    allocate (this % elems(this % nvar, this % table_dims_padded_flat))
     allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
 
   end function table_constructor
@@ -525,7 +527,8 @@ contains
     real(sp), allocatable, dimension(:, :) :: elems_old
 
     N = size(this % table_dims) - 1
-    allocate (elems_old(this % table_dim_svar, this % table_dims_padded_flat))
+
+    allocate (elems_old(this % nvar, this % table_dims_padded_flat))
     elems_old = this % elems
 
     box_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
@@ -542,7 +545,7 @@ contains
 
 ! Create a new padded table
     deallocate (this % elems)
-    allocate (this % elems(this % table_dim_svar, this % table_dims_padded_flat))
+    allocate (this % elems(this % nvar, this % table_dims_padded_flat))
     this % elems = 0.d0
 
     this % part_dims = part_dims
@@ -604,7 +607,9 @@ contains
     integer(i4), dimension(size(this % part_dims)), intent(in) :: dims
     integer(i4), dimension(size(this % part_dims)) :: coord
     integer(i4) :: k, div, N, ind_cpy
+
     N = size(this % part_dims)
+
     div = product(dims(2:N))
 
     ind_cpy = ind
@@ -698,6 +703,7 @@ contains
     integer(i4) :: ind, k, N, div
 
     N = size(dims)
+
     div = product(dims)
     ind = coord(N)
 
@@ -720,6 +726,7 @@ contains
     integer(i4) :: ind, N, k
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b
     integer(i4), dimension(size(this % part_dims)), intent(in) :: coord, part_dims, box_dims
+
     N = size(this % part_dims)
 
     do k = 1, N
@@ -764,6 +771,7 @@ contains
     integer(i4) :: N, k
     integer(i4), dimension(size(this % part_dims)) :: part_dims, box_dims
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b, coord
+
     N = size(part_dims)
 
     do k = 1, N

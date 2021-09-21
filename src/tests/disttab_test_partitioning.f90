@@ -122,7 +122,7 @@ contains
 
     ! Create a new, empty table according to the padded dimensions
     deallocate (this % lookup % elems)
-    allocate (this % lookup % elems(this % lookup % table_dim_svar, this % lookup % table_dims_padded_flat))
+    allocate (this % lookup % elems(this % lookup % nvar, this % lookup % table_dims_padded_flat))
     this % lookup % elems = 0.d0
 
     ! Create gold standard and fill table with Alya-format sorted version of table
@@ -131,7 +131,7 @@ contains
     call this % lookup % partition_remap(this % part_dims, this % lookup % table_dims_padded)
 
     ! Open, read, and close the file to the gold standard
-    allocate (elems_gold_std(this % lookup % table_dim_svar, this % lookup % table_dims_padded_flat))
+    allocate (elems_gold_std(this % lookup % nvar, this % lookup % table_dims_padded_flat))
     open (36, file='partition_test_table.pad.DistTab.tmp.dat', action='read')
     N = size(this % part_dims)
     do i = 1, this % lookup % table_dims_padded_flat
@@ -174,7 +174,7 @@ contains
     call this % lookup % partition_remap(this % lookup % table_dims, this % part_dims)
 
     ! Open, read, and close the file to the gold standard
-    allocate (elems_gold_std(this % lookup % table_dim_svar, this % lookup % table_dims_flat))
+    allocate (elems_gold_std(this % lookup % nvar, this % lookup % table_dims_flat))
     open (36, file='partition_test_table_sorted.nopad.DistTab.tmp.dat', action='read')
     do i = 1, this % lookup % table_dims_flat
       read (36, *) (coord(j), j=1, N), elems_gold_std(:, i)
@@ -232,7 +232,7 @@ contains
       coord = this % lookup % index_to_global_coord(i, this % part_dims, box_dims)
       svar = i
       if (any(coord .gt. this % lookup % table_dims(1:N))) svar = 0
-      write (34, *) (coord(j), j=1, N), (svar, k=1, this % lookup % table_dim_svar)
+      write (34, *) (coord(j), j=1, N), (svar, k=1, this % lookup % nvar)
     end do
 
     close (34)
@@ -299,7 +299,7 @@ contains
     do i = 1, this % lookup % table_dims_flat
       coord = this % lookup % index_to_global_coord(i, this % part_dims, box_dims)
       svar = i
-      write (34, *) (coord(j), j=1, N), (svar, k=1, this % lookup % table_dim_svar)
+      write (34, *) (coord(j), j=1, N), (svar, k=1, this % lookup % nvar)
     end do
 
     close (34)

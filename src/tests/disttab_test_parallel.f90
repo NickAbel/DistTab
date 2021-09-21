@@ -12,7 +12,7 @@ module disttab_test_parallel
   type :: parallel_test
     private
     type(table) :: lookup
-    type(comm)  :: disttab_comm
+    type(comm) :: disttab_comm
 
   contains
 

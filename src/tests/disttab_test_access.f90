@@ -71,7 +71,7 @@ contains
     real(sp) :: r
     integer(i4) :: ind, N
     integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_p, coord_b, box_dims
-    real(sp), dimension(this % lookup % table_dim_svar) :: val_ind, val_local_coord, val_global_coord
+    real(sp), dimension(this % lookup % nvar) :: val_ind, val_local_coord, val_global_coord
 
     N = size(this % lookup % part_dims)
 
@@ -112,7 +112,7 @@ contains
     real(sp) :: real_val(size(this % lookup % part_dims)), r
     integer(i4) :: ind, N
     integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_p, coord_b, box_dims
-    real(sp), dimension(this % lookup % table_dim_svar, 2**size(this % lookup % part_dims)) :: val_cloud_ind, &
+    real(sp), dimension(this % lookup % nvar, 2**size(this % lookup % part_dims)) :: val_cloud_ind, &
                                                      & val_cloud_local_coord, val_cloud_global_coord, &
                                                      & val_cloud_real
 
@@ -179,8 +179,8 @@ contains
     integer(i4) :: ind, N
     integer(i4), dimension(size(this % lookup % part_dims)) :: coord, box_dims
     integer(i4), dimension(size(this % lookup % part_dims)), intent(in) :: partition_dims
-    real(sp), dimension(this % lookup % table_dim_svar) :: val_real, val_real_map
-    real(sp), dimension(this % lookup % table_dim_svar, 2**size(this % lookup % part_dims)) :: &
+    real(sp), dimension(this % lookup % nvar) :: val_real, val_real_map
+    real(sp), dimension(this % lookup % nvar, 2**size(this % lookup % part_dims)) :: &
                                                      & val_cloud_global_coord, val_cloud_global_coord_map
 
     N = size(this % lookup % part_dims)
@@ -294,7 +294,7 @@ contains
     integer(i4), dimension(size(this % lookup % table_dims)) :: coord
     integer(i4), dimension(size(this % lookup % part_dims)) :: box_dims, coord_p, coord_b, part_dims
     real(sp), dimension(size(this % lookup % part_dims)) :: coord_r
-    real(sp), dimension(this % lookup % table_dim_svar) :: s
+    real(sp), dimension(this % lookup % nvar) :: s
     real(sp) :: t1, t2, time_total
     integer(i4) :: i, table_size, ind, N, k, ind_p, ind_b, div_p, div_b, box_size
     integer(i4), dimension(:), allocatable :: accesses
