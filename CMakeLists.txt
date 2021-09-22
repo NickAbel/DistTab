@@ -58,7 +58,6 @@ SET(LIB ${CMAKE_SOURCE_DIR}/lib)
 SET(BIN ${CMAKE_SOURCE_DIR}/bin)
 SET(SRCTESTS ${SRC}/tests)
 SET(SRCTABLE ${SRC}/table)
-SET(SRCPARALLEL ${SRC}/parallel)
 SET(SRCTYPE ${SRC}/type)
 
 # Have the .mod files placed in the lib folder
@@ -66,7 +65,6 @@ SET(CMAKE_Fortran_MODULE_DIRECTORY ${LIB})
 
 # The source for the table library and have it placed in the lib folder
 ADD_SUBDIRECTORY(${SRCTABLE} ${LIB}/table)
-ADD_SUBDIRECTORY(${SRCPARALLEL} ${LIB}/parallel)
 ADD_SUBDIRECTORY(${SRCTYPE} ${LIB}/type)
 
 # The source for the test binary and have it placed in the bin folder

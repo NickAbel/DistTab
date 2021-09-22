@@ -4,7 +4,6 @@
 
 # Add the source files
 SET(DISTTAB_src ${SRCTESTS}/disttab_test_access.f90
-                ${SRCTESTS}/disttab_test_parallel.f90
 		${SRCTESTS}/disttab_test_partitioning.f90
                 ${SRCTESTS}/test.f90 
 )
@@ -16,8 +15,7 @@ ADD_EXECUTABLE(${DISTTABEXE} ${DISTTAB_src})
 # Add the needed libraries and special compiler flags
 #####################################################
 
-TARGET_LINK_LIBRARIES(${DISTTABEXE} ${PARALLELLIB}
-				    ${TABLELIB}
+TARGET_LINK_LIBRARIES(${DISTTABEXE} ${TABLELIB}
 			            ${TYPELIB})
 				    
 

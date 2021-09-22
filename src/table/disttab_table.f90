@@ -2,7 +2,7 @@
 !! and variables pertaining to the creation, storing, spatial tiling, and
 !! access to entries of the lookup table itself.
 module disttab_table
-  !use :: mpi
+  use :: mpi
   use :: kind_params
 
   implicit none
@@ -448,12 +448,6 @@ contains
   type(table) function table_constructor(table_dims) result(this)
     integer(i4), dimension(:), intent(in) :: table_dims
 
-    !call mpi_init(this % ierror)
-    !call mpi_type_size(mpi_integer, this % int_size_mpi, this % ierror)
-    !call mpi_type_size(mpi_double, this % dbl_size_mpi, this % ierror)
-    !call mpi_comm_rank(mpi_comm_world, this % rank, this % ierror)
-    !call mpi_comm_size(mpi_comm_world, this % nprocs, this % ierror)
-
     allocate (this % table_dims(size(table_dims)))
     allocate (this % table_dims_padded(size(table_dims)))
     allocate (this % part_dims(size(table_dims) - 1))
@@ -481,7 +475,6 @@ contains
     type(table) :: this
 
     call deallocate_table(this)
-    !call mpi_finalize(this % ierror)
 
   end subroutine table_destructor
 
@@ -494,20 +487,26 @@ contains
   subroutine read_in(this, file_id)
     class(table), intent(inout) :: this
     character(len=*), intent(in) :: file_id
-    integer(i4) :: i
+    integer(i4) :: access_mode, rank
 
-    open (1, file=file_id, action='read')
+    ! Sequential
+    !integer(i4) :: i
+    !open (1, file=file_id, action='read')
+    !read (unit=1, fmt=*) this % ctrl_vars
+    !print *, size(this % ctrl_vars)
+    !print *, this % table_dims_flat
+    !do i = 1, this % table_dims_flat
+    !  read (unit=1, fmt=*) this % elems(:, i)
+    !end do
+    !close (1)
 
-    read (unit=1, fmt=*) this % ctrl_vars
-    print *, size(this % ctrl_vars)
-
-    print *, this % table_dims_flat
-
-    do i = 1, this % table_dims_flat
-      read (unit=1, fmt=*) this % elems(:, i)
-    end do
-
-    close (1)
+    access_mode = mpi_mode_rdonly
+    call mpi_file_open(mpi_comm_world, file_id, access_mode, mpi_info_null, handle, ierror)
+    if (ierror .ne. mpi_success) then
+      call mpi_comm_rank(mpi_comm_world, rank, ierror)
+      write (*, '(A,I0,A)') '[MPI process ', my_rank, '] Failure in opening the file.'
+      call mpi_abort(mpi_comm_world, -1)
+    end if
 
   end subroutine read_in
 
