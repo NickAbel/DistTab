@@ -71,25 +71,33 @@ contains
     integer(i4) :: rank, nprocs, real_size, i, ierror, ind
     real(sp) :: r
 
+    ! MPI variables we'll need
     call mpi_comm_size(mpi_comm_world, nprocs, ierror)
     call mpi_type_size(mpi_real, real_size, ierror)
     call mpi_comm_rank(mpi_comm_world, rank, ierror)
 
-    if (rank .eq. 0) write (*, *) "table size ", this % table_dims, "with ", nprocs, " ranks"
+    ! confirm table size, comm size
+    if (rank .eq. 0) then
+      write (*, *) "table size ", this % table_dims(1:size(this % table_dims) - 1) &
+      & , "with ", nprocs, " ranks"
 
-    write (*, *) "on rank ", rank, " we have a table of dimensions ", &
-      & this % table_dims(1:size(this % table_dims) - 1)
+      ! check if padding will be necessary due to table not folding cleanly over the comm size
+      if (mod(product(this % table_dims(1:size(this % table_dims) - 1)), nprocs) .ne. 0) then
+        write (*, '(A,I0,A,I0,A)') "however the table size ", &
+        & product(this % table_dims(1:size(this % table_dims) - 1)), " won't divide evenly over ", &
+        & nprocs, " ranks"
+      end if
 
-    if (mod(product(this % table_dims(1:size(this % table_dims) - 1)), nprocs) .ne. 0) then
-      write (*, '(A,I0,A,I0,A)') "however the table size ", &
-      & product(this % table_dims(1:size(this % table_dims) - 1)), " won't divide evenly over ", nprocs, " ranks"
-    end if
-
-    if (rank .eq. 0) print *, "sub-table dimensions supplied (", this % subtable_dims, &
+      ! print the subtable dimensions, total subtables
+      print *, "sub-table dimensions supplied (", this % subtable_dims, &
       & ") give total ", product(ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) &
       & / this % subtable_dims)), " sub-tables on table size ", &
       & this % table_dims(1:size(this % table_dims) - 1)
 
+      ! todo check if the subtable dimensions * no. of ranks does not fit the table dimensions
+    end if
+
+    ! print subtable bounds on each rank
     print *, "rank ", rank, " subtable bounds: ", lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
 
     do i = lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
@@ -99,7 +107,9 @@ contains
     call random_number(r)
     r = r * product(this % table_dims)
     ind = ceiling(r)
+
     write (*, '(A, I0, A, I0)') "Rank ", rank, ": Request index ", ind
+
     if (ind .ge. lbound(this % lookup % elems, dim=2) .and. ind .le. ubound(this % lookup % elems, dim=2)) then
       write (*, *) "Obtaining index ", ind, " which is local on rank ", rank, " --> ", this % lookup % index_to_value(ind)
     else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then

@@ -135,21 +135,17 @@ contains
 
 !> Test MPI capabilities somehow.
   subroutine test_mpi()
-    integer(i4) :: ierror, rank, nprocs, integer_size, dbl_size
+    integer(i4) :: ierror
     character(len=120) :: file_id
 
     call mpi_init(ierror)
-    call mpi_type_size(mpi_integer, integer_size, ierror)
-    call mpi_type_size(mpi_double, dbl_size, ierror)
-    call mpi_comm_rank(mpi_comm_world, rank, ierror)
-    call mpi_comm_size(mpi_comm_world, nprocs, ierror)
 
     allocate (table_dims(3))
     allocate (subtable_dims(3))
     allocate (part_dims(2))
 
     table_dims = (/8, 8, 1/)
-    subtable_dims = (/4, 4/)
+    subtable_dims = (/4, 8/)
     part_dims = (/2, 2/)
 
     test_parallel = parallel_test(table_dims, subtable_dims, part_dims)

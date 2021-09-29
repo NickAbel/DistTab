@@ -466,11 +466,10 @@ contains
   type(table) function table_constructor(table_dims, subtable_dims) result(this)
     integer(i4), dimension(:), intent(in) :: table_dims
     integer(i4), dimension(:), intent(in), optional :: subtable_dims
-    integer(i4) :: nprocs, ierror, rank, i, ind, dbl_size, real_size
+    integer(i4) :: nprocs, ierror, rank, real_size
     integer(kind=mpi_address_kind) :: subtable_size
-    real(sp) :: r
 
-    ! TESTING PARALLELISM
+    ! Parallel
     if (present(subtable_dims)) then
       call mpi_comm_size(mpi_comm_world, nprocs, ierror)
       call mpi_type_size(mpi_real, real_size, ierror)
@@ -495,7 +494,7 @@ contains
         & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
 
       ! Create the MPI window
-      subtable_size = product(this % subtable_dims) * dbl_size
+      subtable_size = product(this % subtable_dims) * real_size
       call mpi_win_create(this % elems, subtable_size, &
         & real_size, mpi_info_null, mpi_comm_world, this % window, ierror)
       call mpi_win_fence(0, this % window, ierror)
@@ -503,6 +502,7 @@ contains
       ! TODO control vars in parallel
       !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
 
+      ! Serial
     else
 
       allocate (this % table_dims(size(table_dims)))
@@ -548,7 +548,7 @@ contains
     class(table), intent(inout) :: this
     character(len=*), intent(in) :: file_id
     integer(i4) :: access_mode, rank, ierror, handle, N, &
-    & cnt, datatype
+    & cnt
     integer :: statu(mpi_status_size)
     integer(kind=mpi_offset_kind) :: offset
 
