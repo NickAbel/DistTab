@@ -17,10 +17,15 @@ module disttab_table
     integer(i4), allocatable, dimension(:) :: part_dims
     integer(i4), allocatable, dimension(:) :: table_dims
     integer(i4), allocatable, dimension(:) :: table_dims_padded
+    integer(i4), allocatable, dimension(:) :: subtable_dims
+    integer(i4), allocatable, dimension(:) :: subtable_dims_padded
 
     integer(i4) :: nvar
     integer(i4) :: table_dims_flat
     integer(i4) :: table_dims_padded_flat
+
+    ! MPI RMA memory view window
+    integer(i4) :: window
 
   contains
 
@@ -96,12 +101,25 @@ contains
 !! @param this the table object
 !! @param ind linear index in lookup table
 !! @result val state variable values located at ind
-  pure function index_to_value(this, ind) result(val)
+  function index_to_value(this, ind) result(val)
     class(table), intent(in) :: this
     integer(i4), intent(in) :: ind
+    integer(i4) :: target_rank, ierror
+    integer(kind=mpi_address_kind) :: target_displacement
     real(sp), dimension(this % nvar) :: val
 
-    val = this % elems(:, ind)
+    if (ind .ge. lbound(this % elems, dim=2) .and. ind .le. ubound(this % elems, dim=2)) then
+      val = this % elems(1, ind)
+    else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
+      write (*, '(A, I0, A)') "ERROR in index_to_value call: Requested index (", ind, ") is not within lookup table bounds."
+    else
+      target_rank = (ind - 1) / product(this % subtable_dims)
+      target_displacement = merge(mod(ind, product(this % subtable_dims)), &
+                              & product(this % subtable_dims), &
+                              & mod(ind, product(this % subtable_dims)) .ne. 0) - 1
+      call mpi_get(val, this % nvar, mpi_real, target_rank, target_displacement, this % nvar, &
+                 & mpi_real, this % window, ierror)
+    end if
 
   end function index_to_value
 
@@ -115,13 +133,13 @@ contains
     class(table), intent(in) :: this
     integer(i4), dimension(:), intent(in) :: coord_p, coord_b
     integer(i4) :: ind, N
-    integer(i4), dimension(size(this % part_dims)) :: box_dims
+    integer(i4), dimension(size(this % part_dims)) :: tile_dims
     real(sp), dimension(this % nvar) :: val
 
     N = size(this % part_dims)
 
-    box_dims = this % table_dims_padded(1:N) / this % part_dims
-    ind = this % local_coord_to_index(coord_p, coord_b, this % part_dims, box_dims)
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    ind = this % local_coord_to_index(coord_p, coord_b, this % part_dims, tile_dims)
     val = this % elems(:, ind)
 
   end function local_coord_to_value
@@ -135,13 +153,13 @@ contains
     class(table), intent(in) :: this
     integer(i4), dimension(:), intent(in) :: coord
     integer(i4) :: ind, N
-    integer(i4), dimension(size(this % part_dims)) :: box_dims
+    integer(i4), dimension(size(this % part_dims)) :: tile_dims
     real(sp), dimension(this % nvar) :: val
 
     N = size(this % part_dims)
 
-    box_dims = this % table_dims_padded(1:N) / this % part_dims
-    ind = this % global_coord_to_index(coord, this % part_dims, box_dims)
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    ind = this % global_coord_to_index(coord, this % part_dims, tile_dims)
     val = this % elems(:, ind)
 
   end function global_coord_to_value
@@ -248,14 +266,14 @@ contains
   pure function real_to_index(this, real_val) result(ind)
     class(table), intent(in) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
-    integer(i4), dimension(size(this % part_dims)) :: box_dims, global_coord
+    integer(i4), dimension(size(this % part_dims)) :: tile_dims, global_coord
     integer(i4) :: ind, N
 
     N = size(this % part_dims)
 
     global_coord = this % real_to_global_coord(real_val)
-    box_dims = this % table_dims_padded(1:N) / this % part_dims
-    ind = this % global_coord_to_index(global_coord, this % part_dims, box_dims)
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    ind = this % global_coord_to_index(global_coord, this % part_dims, tile_dims)
 
   end function real_to_index
 
@@ -287,13 +305,13 @@ contains
     class(table), intent(inout) :: this
     integer(i4), intent(in) :: ind
     integer(i4) :: N, j
-    integer(i4), dimension(size(this % part_dims)) :: box_dims, coord
+    integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
-    box_dims = this % table_dims_padded(1:N) / this % part_dims
-    coord = this % index_to_global_coord(ind, this % part_dims, box_dims)
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    coord = this % index_to_global_coord(ind, this % part_dims, tile_dims)
 
     if (any(coord + 1 .gt. this % table_dims_padded(1:N))) then
       print *, "ERROR: value cloud off table"
@@ -301,7 +319,7 @@ contains
     end if
 
     j = 1
-    call this % gather_value_cloud(N, coord, coord + 1, val_cloud, j, box_dims)
+    call this % gather_value_cloud(N, coord, coord + 1, val_cloud, j, tile_dims)
 
   end function index_to_value_cloud
 
@@ -317,14 +335,14 @@ contains
     class(table), intent(inout) :: this
     integer(i4), dimension(:), intent(in) :: coord_p, coord_b
     integer(i4) :: ind, N, j
-    integer(i4), dimension(size(this % part_dims)) :: box_dims, coord
+    integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
-    box_dims = this % table_dims_padded(1:N) / this % part_dims
-    ind = this % local_coord_to_index(coord_p, coord_b, this % part_dims, box_dims)
-    coord = this % local_coord_to_global_coord(coord_p, coord_b, box_dims)
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    ind = this % local_coord_to_index(coord_p, coord_b, this % part_dims, tile_dims)
+    coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
 
     if (any(coord + 1 .gt. this % table_dims_padded(1:N))) then
       print *, "ERROR: value cloud off table"
@@ -332,7 +350,7 @@ contains
     end if
 
     j = 1
-    call this % gather_value_cloud(N, coord, coord + 1, val_cloud, j, box_dims)
+    call this % gather_value_cloud(N, coord, coord + 1, val_cloud, j, tile_dims)
 
   end function local_coord_to_value_cloud
 
@@ -346,7 +364,7 @@ contains
     class(table), intent(inout) :: this
     integer(i4), dimension(:), intent(in) :: coord
     integer(i4) :: ind, N, j
-    integer(i4), dimension(size(this % part_dims)) :: box_dims, coord_cpy
+    integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord_cpy
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
@@ -356,11 +374,11 @@ contains
       print *, "coord = ", coord, "table_dims_padded = ", this % table_dims_padded(1:N)
     end if
 
-    box_dims = this % table_dims_padded(1:N) / this % part_dims
-    ind = this % global_coord_to_index(coord, this % part_dims, box_dims)
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    ind = this % global_coord_to_index(coord, this % part_dims, tile_dims)
     coord_cpy = coord
     j = 1
-    call this % gather_value_cloud(N, coord_cpy, coord_cpy + 1, val_cloud, j, box_dims)
+    call this % gather_value_cloud(N, coord_cpy, coord_cpy + 1, val_cloud, j, tile_dims)
 
   end function global_coord_to_value_cloud
 
@@ -374,17 +392,17 @@ contains
     class(table), intent(inout) :: this
     integer(i4) :: N, j
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
-    integer(i4), dimension(size(this % part_dims)) :: coord_base, box_dims
+    integer(i4), dimension(size(this % part_dims)) :: coord_base, tile_dims
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
     coord_base = this % real_to_global_coord(real_val)
 
-    box_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
 
     j = 1
-    call this % gather_value_cloud(N, coord_base, coord_base + 1, val_cloud, j, box_dims)
+    call this % gather_value_cloud(N, coord_base, coord_base + 1, val_cloud, j, tile_dims)
 
   end function real_to_value_cloud
 
@@ -397,31 +415,31 @@ contains
 !! @param uppers when the counter array reaches this value, stop incrementing
 !! @param val_cloud output 2**N value cloud
 !! @param j incrementer for value cloud array
-!! @param box_dims intra-partition box dimension size in partitioning scheme
-  recursive subroutine gather_value_cloud(this, idx, ctrs, uppers, val_cloud, j, box_dims)
+!! @param tile_dims intra-partition box dimension size in partitioning scheme
+  recursive subroutine gather_value_cloud(this, idx, ctrs, uppers, val_cloud, j, tile_dims)
     class(table), intent(inout) :: this
     integer(i4), intent(in) :: idx
     integer(i4) :: j, ind, N
-    integer(i4), dimension(size(this % part_dims)) :: ctrs, uppers, box_dims
+    integer(i4), dimension(size(this % part_dims)) :: ctrs, uppers, tile_dims
     integer(i4), dimension(size(this % part_dims)) :: ctrs_copy
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
     N = size(this % part_dims)
 
     if (idx .eq. 1) then
-      ind = this % global_coord_to_index(ctrs, this % part_dims, box_dims)
+      ind = this % global_coord_to_index(ctrs, this % part_dims, tile_dims)
       val_cloud(:, j) = this % elems(:, ind)
       j = j + 1
       do while (ctrs(N - idx + 1) .lt. uppers(N - idx + 1))
         ctrs(N - idx + 1) = ctrs(N - idx + 1) + 1
-        ind = this % global_coord_to_index(ctrs, this % part_dims, box_dims)
+        ind = this % global_coord_to_index(ctrs, this % part_dims, tile_dims)
         val_cloud(:, j) = this % elems(:, ind)
         j = j + 1
       end do
     else if (idx .gt. 1) then
       do while (ctrs(N - idx + 1) .le. uppers(N - idx + 1))
         ctrs_copy = ctrs
-        call this % gather_value_cloud(idx - 1, ctrs_copy, uppers, val_cloud, j, box_dims)
+        call this % gather_value_cloud(idx - 1, ctrs_copy, uppers, val_cloud, j, tile_dims)
         ctrs(N - idx + 1) = ctrs(N - idx + 1) + 1
       end do
     end if
@@ -445,25 +463,67 @@ contains
 !! variables which generally will change as the part_dims change.
 !! Organize the code as such. Perhaps use an optional argument for part_dims
 !! here instead.
-  type(table) function table_constructor(table_dims) result(this)
+  type(table) function table_constructor(table_dims, subtable_dims) result(this)
     integer(i4), dimension(:), intent(in) :: table_dims
+    integer(i4), dimension(:), intent(in), optional :: subtable_dims
+    integer(i4) :: nprocs, ierror, rank, i, ind, dbl_size, real_size
+    integer(kind=mpi_address_kind) :: subtable_size
+    real(sp) :: r
 
-    allocate (this % table_dims(size(table_dims)))
-    allocate (this % table_dims_padded(size(table_dims)))
-    allocate (this % part_dims(size(table_dims) - 1))
+    ! TESTING PARALLELISM
+    if (present(subtable_dims)) then
+      call mpi_comm_size(mpi_comm_world, nprocs, ierror)
+      call mpi_type_size(mpi_real, real_size, ierror)
+      call mpi_comm_rank(mpi_comm_world, rank, ierror)
 
-    this % table_dims = table_dims
-    this % table_dims_padded = table_dims
-    this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
-    this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
-    this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
+      allocate (this % table_dims(size(table_dims)))
+      allocate (this % table_dims_padded(size(table_dims)))
+      allocate (this % part_dims(size(table_dims) - 1))
+      allocate (this % subtable_dims(size(table_dims) - 1))
+
+      this % table_dims = table_dims
+      this % table_dims_padded = table_dims
+      this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+      this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+      this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
+      this % subtable_dims = subtable_dims
+      this % subtable_dims_padded = subtable_dims
+      this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
+
+      ! Create subtable elems with universal integer bounds
+      allocate (this % elems(this % nvar, &
+        & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
+
+      ! Create the MPI window
+      subtable_size = product(this % subtable_dims) * dbl_size
+      call mpi_win_create(this % elems, subtable_size, &
+        & real_size, mpi_info_null, mpi_comm_world, this % window, ierror)
+      call mpi_win_fence(0, this % window, ierror)
+
+      ! TODO control vars in parallel
+      !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
+
+    else
+
+      allocate (this % table_dims(size(table_dims)))
+      allocate (this % table_dims_padded(size(table_dims)))
+      allocate (this % part_dims(size(table_dims) - 1))
+
+      this % table_dims = table_dims
+      this % table_dims_padded = table_dims
+      this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+      this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+      this % subtable_dims = table_dims
+      this % subtable_dims_padded = table_dims
+      this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
 
 ! Table initially considered to have one table-sized partition, i.e. 'unpartitioned'
 ! Note there are other partitioning schemes which are identical to this scheme.
-    this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
+      this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
 
-    allocate (this % elems(this % nvar, this % table_dims_padded_flat))
-    allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
+      allocate (this % elems(this % nvar, this % table_dims_padded_flat))
+      allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
+    end if
 
   end function table_constructor
 
@@ -487,7 +547,15 @@ contains
   subroutine read_in(this, file_id)
     class(table), intent(inout) :: this
     character(len=*), intent(in) :: file_id
-    integer(i4) :: access_mode, rank
+    integer(i4) :: access_mode, rank, ierror, handle, N, &
+    & cnt, datatype
+    integer :: statu(mpi_status_size)
+    integer(kind=mpi_offset_kind) :: offset
+
+    N = size(this % part_dims)
+
+    offset = 0
+    cnt = product(this % table_dims(1:N))
 
     ! Sequential
     !integer(i4) :: i
@@ -500,14 +568,29 @@ contains
     !end do
     !close (1)
 
+    call mpi_comm_rank(mpi_comm_world, rank, ierror)
+    write (*, '(A,I0,A)') '[MPI process ', rank, '] read_in'
+
     access_mode = mpi_mode_rdonly
     call mpi_file_open(mpi_comm_world, file_id, access_mode, mpi_info_null, handle, ierror)
     if (ierror .ne. mpi_success) then
-      call mpi_comm_rank(mpi_comm_world, rank, ierror)
-      write (*, '(A,I0,A)') '[MPI process ', my_rank, '] Failure in opening the file.'
-      call mpi_abort(mpi_comm_world, -1)
+      write (*, '(A,I0,A)') '[MPI process ', rank, '] Failure in opening the file.'
+      call mpi_abort(mpi_comm_world, -1, ierror)
     end if
 
+    call mpi_file_sync(handle, ierror)
+    call mpi_barrier(mpi_comm_world, ierror)
+
+    call mpi_file_read(handle, this % elems, cnt, &
+       & mpi_float, statu, ierror)
+
+    print *, this % elems
+
+    call mpi_file_close(handle, ierror)
+    if (ierror .ne. mpi_success) then
+      write (*, '(A,I0,A)') '[MPI process ', rank, '] Failure in closing the file.'
+      call mpi_abort(mpi_comm_world, -1, ierror)
+    end if
   end subroutine read_in
 
 !> Remaps the partition from a given previous partition ordering to given new partition
@@ -521,7 +604,7 @@ contains
     class(table), intent(inout) :: this
     integer(i4), dimension(size(this % table_dims) - 1), intent(in) :: part_dims, part_dims_prev
     integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_b, coord_p
-    integer(i4), dimension(size(this % table_dims) - 1) :: box_dims, box_dims_prev
+    integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev
     integer(i4) :: i, i_old, N
     real(sp), allocatable, dimension(:, :) :: elems_old
 
@@ -530,7 +613,7 @@ contains
     allocate (elems_old(this % nvar, this % table_dims_padded_flat))
     elems_old = this % elems
 
-    box_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
+    tile_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
 ! Pad out table to maintain shape
 ! Find padded table dims
     this % table_dims_padded = this % table_dims
@@ -548,15 +631,15 @@ contains
     this % elems = 0.d0
 
     this % part_dims = part_dims
-    box_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
 
     do i = 1, this % table_dims_padded_flat
-      call this % index_to_local_coord(i, this % part_dims, box_dims, coord_p, coord_b)
-      coord = this % local_coord_to_global_coord(coord_p, coord_b, box_dims)
+      call this % index_to_local_coord(i, this % part_dims, tile_dims, coord_p, coord_b)
+      coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
       if (any(coord .gt. this % table_dims(1:N))) then
         this % elems(:, i) = 0
       else
-        i_old = this % global_coord_to_index(coord, part_dims_prev, box_dims_prev)
+        i_old = this % global_coord_to_index(coord, part_dims_prev, tile_dims_prev)
         this % elems(:, i) = elems_old(:, i_old)
       end if
     end do
@@ -632,59 +715,59 @@ contains
 !! @param this table object
 !! @param ind the index whose coordinates are to be found
 !! @param part_dims the inter-partition dimensions of the partitioning scheme
-!! @param box_dims the intra-partition dimensions of the partitioning scheme
+!! @param tile_dims the intra-partition dimensions of the partitioning scheme
 !! @result coord global coordinates on the object padded table dimensions
-  pure function index_to_global_coord(this, ind, part_dims, box_dims) result(coord)
+  pure function index_to_global_coord(this, ind, part_dims, tile_dims) result(coord)
     class(table), intent(in) :: this
     integer(i4), intent(in) :: ind
-    integer(i4), dimension(size(this % part_dims)), intent(in) :: part_dims, box_dims
+    integer(i4), dimension(size(this % part_dims)), intent(in) :: part_dims, tile_dims
     integer(i4) :: ind_p, ind_b
     integer(i4), dimension(size(this % part_dims)) :: coord, coord_p, coord_b
 
-    ind_p = ceiling(real(ind, sp) / product(box_dims))
+    ind_p = ceiling(real(ind, sp) / product(tile_dims))
 
 ! Compute inter-partition contribution to index
     coord_p = this % index_to_coord(ind_p, part_dims)
 
 ! Localized intra-partition index
-    ind_b = mod(ind, product(box_dims))
+    ind_b = mod(ind, product(tile_dims))
     if (ind_b .ne. 0) then
-      coord_b = this % index_to_coord(ind_b, box_dims)
+      coord_b = this % index_to_coord(ind_b, tile_dims)
     else
-      coord_b = box_dims
+      coord_b = tile_dims
     end if
 
-    coord = this % local_coord_to_global_coord(coord_p, coord_b, box_dims)
+    coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
 
   end function index_to_global_coord
 
-!> Given an index, intra-partition dimensions part_dims, and inter-partition dimensions box_dims,
+!> Given an index, intra-partition dimensions part_dims, and inter-partition dimensions tile_dims,
 !! return the coordinates of index under the partitioning scheme defined by
-!! part_dims and box_dims.
+!! part_dims and tile_dims.
 !!
 !! @param this table object
 !! @param ind the partitioned index
 !! @param part_dims the inter-partition dimensions of the partitioning scheme
-!! @param box_dims the intra-partition dimensions of the partitioning scheme
+!! @param tile_dims the intra-partition dimensions of the partitioning scheme
 !! @param coord_p the array to return the inter-partition dimensions in
 !! @param coord_b the array to return the intra-partition dimensions in
-  subroutine index_to_local_coord(this, ind, part_dims, box_dims, coord_p, coord_b)
+  subroutine index_to_local_coord(this, ind, part_dims, tile_dims, coord_p, coord_b)
     class(table), intent(inout) :: this
     integer(i4) :: ind, ind_p, ind_b
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b
-    integer(i4), dimension(size(this % part_dims)) :: part_dims, box_dims
+    integer(i4), dimension(size(this % part_dims)) :: part_dims, tile_dims
 
-    ind_p = ceiling(real(ind, sp) / product(box_dims))
+    ind_p = ceiling(real(ind, sp) / product(tile_dims))
 
 ! Compute inter-partition contribution to index
     coord_p = this % index_to_coord(ind_p, part_dims)
 
 ! Localized intra-partition index
-    ind_b = mod(ind, product(box_dims))
+    ind_b = mod(ind, product(tile_dims))
     if (ind_b .ne. 0) then
-      coord_b = this % index_to_coord(ind_b, box_dims)
+      coord_b = this % index_to_coord(ind_b, tile_dims)
     else
-      coord_b = box_dims
+      coord_b = tile_dims
     end if
 
   end subroutine index_to_local_coord
@@ -718,41 +801,41 @@ contains
 !! @param this table object
 !! @param coord the coordinates
 !! @param part_dims the intra-partition dimensions
-!! @param box_dims the inter-partition box dimensions
+!! @param tile_dims the inter-partition box dimensions
 !! @result ind global flat index
-  pure function global_coord_to_index(this, coord, part_dims, box_dims) result(ind)
+  pure function global_coord_to_index(this, coord, part_dims, tile_dims) result(ind)
     class(table), intent(in) :: this
     integer(i4) :: ind, N, k
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b
-    integer(i4), dimension(size(this % part_dims)), intent(in) :: coord, part_dims, box_dims
+    integer(i4), dimension(size(this % part_dims)), intent(in) :: coord, part_dims, tile_dims
 
     N = size(this % part_dims)
 
     do k = 1, N
-      coord_p(k) = ceiling(real(coord(k), sp) / box_dims(k))
-      coord_b(k) = mod(coord(k), box_dims(k))
-      if (coord_b(k) .eq. 0) coord_b(k) = box_dims(k)
+      coord_p(k) = ceiling(real(coord(k), sp) / tile_dims(k))
+      coord_b(k) = mod(coord(k), tile_dims(k))
+      if (coord_b(k) .eq. 0) coord_b(k) = tile_dims(k)
     end do
-    ind = this % local_coord_to_index(coord_p, coord_b, part_dims, box_dims)
+    ind = this % local_coord_to_index(coord_p, coord_b, part_dims, tile_dims)
 
   end function global_coord_to_index
 
 !> Return partitioned flat index, given coordinates and an associated two-level partitioning scheme
-!! described by the intra-partition dimensions part_dims and inter-partition dimensions box_dims.
+!! described by the intra-partition dimensions part_dims and inter-partition dimensions tile_dims.
 !!
 !! @param this table object
 !! @param coord_p the intra-partition term of the coordinates
 !! @param coord_b the inter-partition term of the coordinates
 !! @param part_dims the intra-partition dimensions
-!! @param box_dims the inter-partition box dimensions
+!! @param tile_dims the inter-partition box dimensions
 !! @result ind the partitioned index
-  pure function local_coord_to_index(this, coord_p, coord_b, part_dims, box_dims) result(ind)
+  pure function local_coord_to_index(this, coord_p, coord_b, part_dims, tile_dims) result(ind)
     class(table), intent(in) :: this
-    integer(i4), dimension(size(this % part_dims)), intent(in) :: coord_p, coord_b, part_dims, box_dims
+    integer(i4), dimension(size(this % part_dims)), intent(in) :: coord_p, coord_b, part_dims, tile_dims
     integer(i4) :: ind
 
-    ind = (this % coord_to_index(coord_p, part_dims) - 1) * product(box_dims) + &
-          this % coord_to_index(coord_b, box_dims)
+    ind = (this % coord_to_index(coord_p, part_dims) - 1) * product(tile_dims) + &
+          this % coord_to_index(coord_b, tile_dims)
 
   end function local_coord_to_index
 
@@ -762,21 +845,21 @@ contains
 !! @param this table object
 !! @param coord input global coordinate
 !! @param part_dims intra-partition dimension size
-!! @param box_dims inter-partition box dimension size
+!! @param tile_dims inter-partition box dimension size
 !! @param coord_p output intra-partition coordinate term
 !! @param coord_b output inter-partition box coordinate term
-  subroutine global_coord_to_local_coord(this, coord, part_dims, box_dims, coord_p, coord_b)
+  subroutine global_coord_to_local_coord(this, coord, part_dims, tile_dims, coord_p, coord_b)
     class(table), intent(in) :: this
     integer(i4) :: N, k
-    integer(i4), dimension(size(this % part_dims)) :: part_dims, box_dims
+    integer(i4), dimension(size(this % part_dims)) :: part_dims, tile_dims
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b, coord
 
     N = size(part_dims)
 
     do k = 1, N
-      coord_p(k) = ceiling(real(coord(k), sp) / box_dims(k))
-      coord_b(k) = mod(coord(k), box_dims(k))
-      if (coord_b(k) .eq. 0) coord_b(k) = box_dims(k)
+      coord_p(k) = ceiling(real(coord(k), sp) / tile_dims(k))
+      coord_b(k) = mod(coord(k), tile_dims(k))
+      if (coord_b(k) .eq. 0) coord_b(k) = tile_dims(k)
     end do
 
   end subroutine global_coord_to_local_coord
@@ -786,14 +869,14 @@ contains
 !! @param this table object
 !! @param coord_p intra-partition coordinate
 !! @param coord_b inter-partition box coordinate
-!! @param box_dims size of inter-partition box
+!! @param tile_dims size of inter-partition box
 !! @result coord global coordinate
-  pure function local_coord_to_global_coord(this, coord_p, coord_b, box_dims) result(coord)
+  pure function local_coord_to_global_coord(this, coord_p, coord_b, tile_dims) result(coord)
     class(table), intent(in) :: this
-    integer(i4), dimension(size(this % part_dims)), intent(in) :: box_dims, coord_p, coord_b
+    integer(i4), dimension(size(this % part_dims)), intent(in) :: tile_dims, coord_p, coord_b
     integer(i4), dimension(size(this % part_dims)) :: coord
 
-    coord = (coord_p - 1) * box_dims + coord_b
+    coord = (coord_p - 1) * tile_dims + coord_b
 
   end function local_coord_to_global_coord
 

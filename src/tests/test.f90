@@ -2,18 +2,20 @@
 program test
   use :: disttab_table
   use :: disttab_test_access
+  use :: disttab_test_parallel
   use :: disttab_test_partitioning
   use :: kind_params
   use :: mpi
 
   implicit none
   real(sp), allocatable, dimension(:) :: table_dims_real, part_dims_real
-  integer(i4), allocatable, dimension(:) :: table_dims, part_dims, segments
+  integer(i4), allocatable, dimension(:) :: table_dims, part_dims, subtable_dims, segments
   integer(i4) :: dims, i, j
   integer(i4) :: total_runs
-  type(partitioning_test) :: test_partition
-  type(access_test) :: test_access
   type(table) :: lookup
+  type(access_test) :: test_access
+  type(parallel_test) :: test_parallel
+  type(partitioning_test) :: test_partition
 
   ! Built-in tests that verify mapping and padding
   !call square_test()
@@ -22,7 +24,7 @@ program test
   call test_mpi()
 
   ! Other tests
-  !call read_test()
+  !call read_test() ! This won't work for the time being as MPI is introduced in table % read_in()
   !call locality_test()
   !call access_perf_test()
 
@@ -134,6 +136,7 @@ contains
 !> Test MPI capabilities somehow.
   subroutine test_mpi()
     integer(i4) :: ierror, rank, nprocs, integer_size, dbl_size
+    character(len=120) :: file_id
 
     call mpi_init(ierror)
     call mpi_type_size(mpi_integer, integer_size, ierror)
@@ -142,12 +145,23 @@ contains
     call mpi_comm_size(mpi_comm_world, nprocs, ierror)
 
     allocate (table_dims(3))
+    allocate (subtable_dims(3))
     allocate (part_dims(2))
 
-    table_dims = (/4, 4, 1/)
+    table_dims = (/8, 8, 1/)
+    subtable_dims = (/4, 4/)
     part_dims = (/2, 2/)
 
-    lookup = table(table_dims)
+    test_parallel = parallel_test(table_dims, subtable_dims, part_dims)
+    call test_parallel % run_parallel_get_test()
+
+    ! WIP todo parallel file I/O with MPI in lookup % read_in()
+    !file_id = "../tables/4x4_1var.dat"
+    !call lookup % read_in(file_id)
+
+    deallocate (table_dims)
+    deallocate (subtable_dims)
+    deallocate (part_dims)
 
     call mpi_finalize(ierror)
 
