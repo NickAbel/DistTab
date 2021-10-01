@@ -20,8 +20,10 @@ module disttab_test_parallel
   contains
 
     procedure, pass(this) :: run_parallel_get_test
+    procedure, pass(this) :: run_local_pile_test
 
     procedure, pass(this), private :: parallel_get_test
+    procedure, pass(this), private :: local_pile_test
 
     final :: parallel_test_destructor
 
@@ -100,6 +102,19 @@ contains
 
   end subroutine parallel_get_test
 
+  subroutine local_pile_test(this)
+    class(parallel_test), intent(inout) :: this
+    integer(i4) :: rank, nprocs, real_size, ierror
+
+    ! MPI variables we'll need
+    call mpi_comm_size(mpi_comm_world, nprocs, ierror)
+    call mpi_type_size(mpi_real, real_size, ierror)
+    call mpi_comm_rank(mpi_comm_world, rank, ierror)
+
+    print *, "local_pile_test, rank ", rank
+
+  end subroutine local_pile_test
+
 !> Runs the partition mapping test.
 !! @param this the parallel_test object
   subroutine run_parallel_get_test(this)
@@ -114,7 +129,7 @@ contains
   subroutine run_local_pile_test(this)
     class(parallel_test), intent(inout) :: this
 
-    call this % parallel_get_test()
+    call this % local_pile_test()
 
   end subroutine run_local_pile_test
 

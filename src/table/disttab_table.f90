@@ -2,6 +2,7 @@
 !! and variables pertaining to the creation, storing, spatial tiling, and
 !! access to entries of the lookup table itself.
 module disttab_table
+  use :: disttab_local_pile
   use :: mpi
   use :: kind_params
 
