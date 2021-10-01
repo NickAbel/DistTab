@@ -104,16 +104,18 @@ contains
   function index_to_value(this, ind) result(val)
     class(table), intent(in) :: this
     integer(i4), intent(in) :: ind
-    integer(i4) :: target_rank, ierror
+    integer(i4) :: target_rank, ierror, rank
     integer(kind=mpi_address_kind) :: target_displacement
     real(sp), dimension(this % nvar) :: val
 
+    call mpi_comm_rank(mpi_comm_world, rank, ierror)
     if (ind .ge. lbound(this % elems, dim=2) .and. ind .le. ubound(this % elems, dim=2)) then
       val = this % elems(1, ind)
     else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
       write (*, '(A, I0, A)') "ERROR in index_to_value call: Requested index (", ind, ") is not within lookup table bounds."
     else
       target_rank = (ind - 1) / product(this % subtable_dims)
+      !print *, "index request: ", ind, ", from ", rank, " to ", target_rank
       target_displacement = merge(mod(ind, product(this % subtable_dims)), &
                               & product(this % subtable_dims), &
                               & mod(ind, product(this % subtable_dims)) .ne. 0) - 1
@@ -466,7 +468,8 @@ contains
   type(table) function table_constructor(table_dims, subtable_dims) result(this)
     integer(i4), dimension(:), intent(in) :: table_dims
     integer(i4), dimension(:), intent(in), optional :: subtable_dims
-    integer(i4) :: nprocs, ierror, rank, real_size
+    integer(i4) :: nprocs, ierror, rank, real_size, i
+    integer(i4), dimension(:), allocatable :: subtable_topology, subtable_coordinate
     integer(kind=mpi_address_kind) :: subtable_size
 
     ! Parallel
@@ -478,7 +481,8 @@ contains
       allocate (this % table_dims(size(table_dims)))
       allocate (this % table_dims_padded(size(table_dims)))
       allocate (this % part_dims(size(table_dims) - 1))
-      allocate (this % subtable_dims(size(table_dims) - 1))
+      allocate (subtable_topology(size(table_dims) - 1))
+      allocate (subtable_coordinate(size(table_dims) - 1))
 
       this % table_dims = table_dims
       this % table_dims_padded = table_dims
@@ -488,6 +492,44 @@ contains
       this % subtable_dims = subtable_dims
       this % subtable_dims_padded = subtable_dims
       this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
+
+      ! confirm table size, comm size
+      print *, "trouble? ", ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)
+
+      subtable_topology = ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)
+      subtable_coordinate = this % index_to_coord(rank + 1, subtable_topology)
+
+      if (rank .eq. 0) then
+        write (*, *) "table size ", this % table_dims(1:size(this % table_dims) - 1) &
+        & , "with ", nprocs, " ranks"
+
+        ! check if padding will be necessary due to table not folding cleanly over the comm size
+        if (mod(product(this % table_dims(1:size(this % table_dims) - 1)), nprocs) .ne. 0) then
+          write (*, '(A,I0,A,I0,A)') "however the table size ", &
+          & product(this % table_dims(1:size(this % table_dims) - 1)), " won't divide evenly over ", &
+          & nprocs, " ranks"
+        end if
+
+        ! print the subtable dimensions, total subtables
+        print *, "sub-table dimensions supplied (", this % subtable_dims, &
+        & ") give total ", product(subtable_topology), " sub-tables on table size ", &
+        & this % table_dims(1:size(this % table_dims) - 1)
+
+        ! todo check if the subtable dimensions * no. of ranks does not fit the table dimensions
+        if (product(ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)) &
+          & .ne. nprocs) print *, "WARNING: Subtable dims do not fit table with given comm size."
+      end if
+      print *, "rank ", rank, " topologically: ", subtable_coordinate
+
+      ! "exact" subtable dimensions
+      !do i = 1, size(subtable_dims)
+      !  if (subtable_coordinate(i) .eq. subtable_topology(i)) then
+      !    this % subtable_dims(i) = merge(mod(this % table_dims(i), this % subtable_dims(i)), &
+      !            & this % subtable_dims(i), &
+      !            & mod(this % table_dims(i), this % subtable_dims(i)) .ne. 0)
+      !  end if
+      !end do
+      print *, "subtable dims are ", this % subtable_dims, " on rank ", rank
 
       ! Create subtable elems with universal integer bounds
       allocate (this % elems(this % nvar, &
@@ -501,6 +543,9 @@ contains
 
       ! TODO control vars in parallel
       !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
+
+      deallocate (subtable_topology)
+      deallocate (subtable_coordinate)
 
       ! Serial
     else

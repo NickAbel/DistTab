@@ -144,8 +144,8 @@ contains
     allocate (subtable_dims(3))
     allocate (part_dims(2))
 
-    table_dims = (/8, 8, 1/)
-    subtable_dims = (/4, 8/)
+    table_dims = (/6, 6, 1/)
+    subtable_dims = (/3, 3/)
     part_dims = (/2, 2/)
 
     test_parallel = parallel_test(table_dims, subtable_dims, part_dims)

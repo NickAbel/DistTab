@@ -76,27 +76,6 @@ contains
     call mpi_type_size(mpi_real, real_size, ierror)
     call mpi_comm_rank(mpi_comm_world, rank, ierror)
 
-    ! confirm table size, comm size
-    if (rank .eq. 0) then
-      write (*, *) "table size ", this % table_dims(1:size(this % table_dims) - 1) &
-      & , "with ", nprocs, " ranks"
-
-      ! check if padding will be necessary due to table not folding cleanly over the comm size
-      if (mod(product(this % table_dims(1:size(this % table_dims) - 1)), nprocs) .ne. 0) then
-        write (*, '(A,I0,A,I0,A)') "however the table size ", &
-        & product(this % table_dims(1:size(this % table_dims) - 1)), " won't divide evenly over ", &
-        & nprocs, " ranks"
-      end if
-
-      ! print the subtable dimensions, total subtables
-      print *, "sub-table dimensions supplied (", this % subtable_dims, &
-      & ") give total ", product(ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) &
-      & / this % subtable_dims)), " sub-tables on table size ", &
-      & this % table_dims(1:size(this % table_dims) - 1)
-
-      ! todo check if the subtable dimensions * no. of ranks does not fit the table dimensions
-    end if
-
     ! print subtable bounds on each rank
     print *, "rank ", rank, " subtable bounds: ", lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
 
@@ -116,18 +95,27 @@ contains
       write (*, '(A, I0, A)') "ERROR in index_to_value call: Requested index (", ind, ") is not within lookup table bounds."
     else
       write (*, '(A, I0, A, I0, A, F8.2)') "Rank ", rank, ": Requested index (", ind, &
-        & ") is on another sub-table. --> ", this % lookup % index_to_value(ind)
+        & ") is on another sub-table.", this % lookup % index_to_value(ind)
     end if
 
   end subroutine parallel_get_test
 
 !> Runs the partition mapping test.
-!! @param this the parallel_test object to which run_test belongs
+!! @param this the parallel_test object
   subroutine run_parallel_get_test(this)
     class(parallel_test), intent(inout) :: this
 
     call this % parallel_get_test()
 
   end subroutine run_parallel_get_test
+
+!> Runs the local pile test.
+!! @param this the parallel_test object
+  subroutine run_local_pile_test(this)
+    class(parallel_test), intent(inout) :: this
+
+    call this % parallel_get_test()
+
+  end subroutine run_local_pile_test
 
 end module disttab_test_parallel
