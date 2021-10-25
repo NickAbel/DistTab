@@ -28,6 +28,9 @@ module disttab_table
     ! MPI RMA memory view window
     integer(i4) :: window
 
+    ! Local cache pile for MPI
+    type(local_pile) :: pile
+
   contains
 
 ! Read in a lookup table from file
@@ -113,10 +116,8 @@ contains
     if (ind .ge. lbound(this % elems, dim=2) .and. ind .le. ubound(this % elems, dim=2)) then
       val = this % elems(1, ind)
     else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
-      write (*, '(A, I0, A)') "ERROR in index_to_value call: Requested index (", ind, ") is not within lookup table bounds."
     else
       target_rank = (ind - 1) / product(this % subtable_dims)
-      !print *, "index request: ", ind, ", from ", rank, " to ", target_rank
       target_displacement = merge(mod(ind, product(this % subtable_dims)), &
                               & product(this % subtable_dims), &
                               & mod(ind, product(this % subtable_dims)) .ne. 0) - 1
@@ -469,7 +470,7 @@ contains
   type(table) function table_constructor(table_dims, subtable_dims) result(this)
     integer(i4), dimension(:), intent(in) :: table_dims
     integer(i4), dimension(:), intent(in), optional :: subtable_dims
-    integer(i4) :: nprocs, ierror, rank, real_size, i
+    integer(i4) :: nprocs, ierror, rank, real_size, i, total_blocks_buffer
     integer(i4), dimension(:), allocatable :: subtable_topology, subtable_coordinate
     integer(kind=mpi_address_kind) :: subtable_size
 
@@ -541,6 +542,15 @@ contains
       call mpi_win_create(this % elems, subtable_size, &
         & real_size, mpi_info_null, mpi_comm_world, this % window, ierror)
       call mpi_win_fence(0, this % window, ierror)
+
+      ! Have all ranks report their number of total tiles and add them up into total_block_buffer
+      !call mpi_allreduce(product(this % part_dims), total_blocks_buffer, 1, mpi_integer, &
+      !  & mpi_sum, mpi_comm_world, ierror)
+
+      !print *, "total blocks ", total_blocks_buffer
+
+      ! Create the local pile object with blocks of size 1
+      this % pile = local_pile(10, product(this % part_dims), this % table_dims, this % nvar)
 
       ! TODO control vars in parallel
       !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))

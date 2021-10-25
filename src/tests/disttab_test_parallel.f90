@@ -82,7 +82,7 @@ contains
     print *, "rank ", rank, " subtable bounds: ", lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
 
     do i = lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
-      this % lookup % elems(:, i) = i * 1.0
+      this % lookup % elems(:, i) = i
     end do
 
     call random_number(r)
@@ -104,7 +104,9 @@ contains
 
   subroutine local_pile_test(this)
     class(parallel_test), intent(inout) :: this
-    integer(i4) :: rank, nprocs, real_size, ierror
+    integer(i4) :: rank, nprocs, real_size, ierror, ind, i
+    real(sp), dimension(:), allocatable :: gold_tile
+    real(sp) :: r
 
     ! MPI variables we'll need
     call mpi_comm_size(mpi_comm_world, nprocs, ierror)
@@ -112,6 +114,63 @@ contains
     call mpi_comm_rank(mpi_comm_world, rank, ierror)
 
     print *, "local_pile_test, rank ", rank
+
+    ! print subtable bounds on each rank
+    print *, "rank ", rank, " subtable bounds: ", lbound(this % lookup % elems, dim=2), &
+      & ubound(this % lookup % elems, dim=2)
+
+    do i = lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
+      this % lookup % elems(:, i) = i
+    end do
+
+    print *, "part dims: ", this % lookup % part_dims
+
+    do i = 1, 1000
+
+      call random_number(r)
+      r = r * product(this % table_dims)
+      ind = ceiling(r)
+
+      !write (*, '(A, I0, A, I0)') "Rank ", rank, ": Request index ", ind
+
+      if (ind .ge. lbound(this % lookup % elems, dim=2) .and. ind .le. &
+        & ubound(this % lookup % elems, dim=2)) then
+        !write (*, *) "Obtaining index ", ind, " which is local on rank ", rank, &
+        !  & " --> ", this % lookup % index_to_value(ind)
+      else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
+        !write (*, '(A, I0, A)') "ERROR in index_to_value call: Requested index (", ind, &
+        !  & ") is not within lookup table bounds."
+      else
+        !write (*, '(A, I0, A, I0, A, F8.2)') "Rank ", rank, ": Requested index (", ind, &
+        !  & ") is on another sub-table.", this % lookup % index_to_value(ind)
+
+        if (this % lookup % pile % block_locator(ind) .gt. 0) then
+          !write (*, *) "Rank ", rank, ": Requested index (", ind, &
+          !& " is on another sub-table ", this % lookup % index_to_value(ind), &
+          !& " but is found on the local pile slot ", this % lookup % pile % block_locator(ind), &
+          !& this % lookup % pile % pile(:, this % lookup % pile % block_locator(ind))
+
+        else
+          call this % lookup % pile % push(this % lookup % index_to_value(ind), ind)
+        end if
+      end if
+    end do
+
+    !print *, this % lookup % pile % block_locator
+    !print *, this % lookup % pile % pile
+
+    allocate (gold_tile(this % lookup % pile % nvar)) !product(this % lookup % pile % block_dims)))
+
+    do i = 1, this % lookup % pile % total_blocks
+      gold_tile = i
+      if (this % lookup % pile % block_locator(i) .gt. 0) then
+        if (any(gold_tile .ne. this % lookup % pile % pile(:, this % lookup % pile % block_locator(i)))) then
+          print *, "!!!!!!FAIL in local pile test"
+        end if
+      end if
+    end do
+
+    deallocate (gold_tile)
 
   end subroutine local_pile_test
 

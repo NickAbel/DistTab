@@ -10,12 +10,14 @@ program test
   implicit none
   real(sp), allocatable, dimension(:) :: table_dims_real, part_dims_real
   integer(i4), allocatable, dimension(:) :: table_dims, part_dims, subtable_dims, segments
-  integer(i4) :: dims, i, j
+  integer(i4) :: dims, i, j, ierror
   integer(i4) :: total_runs
   type(table) :: lookup
   type(access_test) :: test_access
   type(parallel_test) :: test_parallel
   type(partitioning_test) :: test_partition
+
+  call mpi_init(ierror)
 
   ! Built-in tests that verify mapping and padding
   !call square_test()
@@ -135,21 +137,19 @@ contains
 
 !> Test MPI capabilities somehow.
   subroutine test_mpi()
-    integer(i4) :: ierror
     character(len=120) :: file_id
-
-    call mpi_init(ierror)
 
     allocate (table_dims(3))
     allocate (subtable_dims(3))
     allocate (part_dims(2))
 
-    table_dims = (/6, 6, 1/)
-    subtable_dims = (/3, 3/)
-    part_dims = (/2, 2/)
+    table_dims = (/6, 4, 1/)
+    subtable_dims = (/3, 2/)
+    part_dims = (/1, 1/)
 
     test_parallel = parallel_test(table_dims, subtable_dims, part_dims)
-    call test_parallel % run_parallel_get_test()
+    !call test_parallel % run_parallel_get_test()
+    call test_parallel % run_local_pile_test()
 
     ! WIP todo parallel file I/O with MPI in lookup % read_in()
     !file_id = "../tables/4x4_1var.dat"
