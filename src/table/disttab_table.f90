@@ -38,6 +38,7 @@ module disttab_table
 
 ! Map table to partition-major order
     procedure, public, pass(this) :: partition_remap
+    procedure, public, pass(this) :: partition_remap_subtable
 
 ! Print the table elements
     procedure, public, pass(this) :: print_elems
@@ -108,21 +109,32 @@ contains
   function index_to_value(this, ind) result(val)
     class(table), intent(in) :: this
     integer(i4), intent(in) :: ind
+
     integer(i4) :: target_rank, ierror, rank
     integer(kind=mpi_address_kind) :: target_displacement
     real(sp), dimension(this % nvar) :: val
 
     call mpi_comm_rank(mpi_comm_world, rank, ierror)
+
     if (ind .ge. lbound(this % elems, dim=2) .and. ind .le. ubound(this % elems, dim=2)) then
       val = this % elems(1, ind)
+
     else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
+
     else
+
       target_rank = (ind - 1) / product(this % subtable_dims)
-      target_displacement = merge(mod(ind, product(this % subtable_dims)), &
-                              & product(this % subtable_dims), &
+      target_displacement = merge(mod(ind, product(this % subtable_dims)), product(this % subtable_dims), &
                               & mod(ind, product(this % subtable_dims)) .ne. 0) - 1
-      call mpi_get(val, this % nvar, mpi_real, target_rank, target_displacement, this % nvar, &
-                 & mpi_real, this % window, ierror)
+      call mpi_get(val, &
+                   this % nvar, &
+                   mpi_real, &
+                   target_rank, &
+                   target_displacement, &
+                   this % nvar, &
+                   mpi_real, &
+                   this % window, &
+                   ierror)
     end if
 
   end function index_to_value
@@ -136,6 +148,7 @@ contains
   pure function local_coord_to_value(this, coord_p, coord_b) result(val)
     class(table), intent(in) :: this
     integer(i4), dimension(:), intent(in) :: coord_p, coord_b
+
     integer(i4) :: ind, N
     integer(i4), dimension(size(this % part_dims)) :: tile_dims
     real(sp), dimension(this % nvar) :: val
@@ -156,6 +169,7 @@ contains
   pure function global_coord_to_value(this, coord) result(val)
     class(table), intent(in) :: this
     integer(i4), dimension(:), intent(in) :: coord
+
     integer(i4) :: ind, N
     integer(i4), dimension(size(this % part_dims)) :: tile_dims
     real(sp), dimension(this % nvar) :: val
@@ -177,6 +191,7 @@ contains
   pure function real_to_global_coord(this, real_val) result(global_coord)
     class(table), intent(in) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
+
     integer(i4) :: N, i, j, offset_cv
     integer(i4), dimension(size(this % part_dims)) :: global_coord
 
@@ -205,6 +220,7 @@ contains
   pure function real_to_global_coord_opt_preprocessor(this, segments) result(buckets)
     class(table), intent(in) :: this
     integer(i4), dimension(size(this % part_dims)), intent(in) :: segments
+
     integer(i4), dimension(sum(segments)) :: buckets
     integer(i4) :: i, j, k, l, N
     real(sp) :: offset, delta
@@ -238,11 +254,12 @@ contains
 !! @result global_coord resultant global coordinates
   pure function real_to_global_coord_opt(this, real_val, segments, buckets) result(global_coord)
     class(table), intent(in) :: this
-    integer(i4) :: N, i, j, offset_cv
-    real(sp) :: delta
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
     integer(i4), dimension(size(this % part_dims)), intent(in) :: segments
     integer(i4), dimension(:), intent(in) :: buckets
+
+    integer(i4) :: N, i, j, offset_cv
+    real(sp) :: delta
     integer(i4), dimension(size(this % part_dims)) :: global_coord, coord_start_indices
 
     N = size(this % part_dims)
@@ -252,8 +269,7 @@ contains
       offset_cv = sum(this % table_dims(:i - 1))
       coord_start_indices(i) = buckets(ceiling(real_val(i) / delta) + sum(segments(:i - 1)))
       j = coord_start_indices(i)
-      do while ((real_val(i) .lt. this % ctrl_vars(j)) &
-        & .or. (real_val(i) .ge. this % ctrl_vars(j + 1)))
+      do while ((real_val(i) .lt. this % ctrl_vars(j)) .or. (real_val(i) .ge. this % ctrl_vars(j + 1)))
         j = j + 1
       end do
       global_coord(i) = j - offset_cv
@@ -270,6 +286,7 @@ contains
   pure function real_to_index(this, real_val) result(ind)
     class(table), intent(in) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
+
     integer(i4), dimension(size(this % part_dims)) :: tile_dims, global_coord
     integer(i4) :: ind, N
 
@@ -290,6 +307,7 @@ contains
   pure function real_to_value(this, real_val) result(val)
     class(table), intent(in) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
+
     real(sp), dimension(this % nvar) :: val
     integer(i4) :: ind
 
@@ -308,6 +326,7 @@ contains
   function index_to_value_cloud(this, ind) result(val_cloud)
     class(table), intent(inout) :: this
     integer(i4), intent(in) :: ind
+
     integer(i4) :: N, j
     integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
@@ -317,10 +336,11 @@ contains
     tile_dims = this % table_dims_padded(1:N) / this % part_dims
     coord = this % index_to_global_coord(ind, this % part_dims, tile_dims)
 
-    if (any(coord + 1 .gt. this % table_dims_padded(1:N))) then
-      print *, "ERROR: value cloud off table"
-      print *, "coord = ", coord, "table_dims_padded = ", this % table_dims_padded(1:N)
-    end if
+    ! This doesn't detect going off the subtable in parallel. todo
+    !if (any(coord + 1 .gt. this % subtable_dims(1:N))) then
+    !  print *, "ERROR: value cloud off subtable"
+    !  print *, "coord = ", coord, "subtable_dims = ", this % subtable_dims(1:N)
+    !end if
 
     j = 1
     call this % gather_value_cloud(N, coord, coord + 1, val_cloud, j, tile_dims)
@@ -338,6 +358,7 @@ contains
   function local_coord_to_value_cloud(this, coord_p, coord_b) result(val_cloud)
     class(table), intent(inout) :: this
     integer(i4), dimension(:), intent(in) :: coord_p, coord_b
+
     integer(i4) :: ind, N, j
     integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
@@ -367,6 +388,7 @@ contains
   function global_coord_to_value_cloud(this, coord) result(val_cloud)
     class(table), intent(inout) :: this
     integer(i4), dimension(:), intent(in) :: coord
+
     integer(i4) :: ind, N, j
     integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord_cpy
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
@@ -394,8 +416,9 @@ contains
 !! @result val_cloud resultant value cloud of 2**N [0, 1]x...x[0, 1]
   function real_to_value_cloud(this, real_val) result(val_cloud)
     class(table), intent(inout) :: this
-    integer(i4) :: N, j
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
+
+    integer(i4) :: N, j
     integer(i4), dimension(size(this % part_dims)) :: coord_base, tile_dims
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
@@ -406,6 +429,7 @@ contains
     tile_dims = this % table_dims_padded(1:N) / this % part_dims
 
     j = 1
+
     call this % gather_value_cloud(N, coord_base, coord_base + 1, val_cloud, j, tile_dims)
 
   end function real_to_value_cloud
@@ -423,6 +447,7 @@ contains
   recursive subroutine gather_value_cloud(this, idx, ctrs, uppers, val_cloud, j, tile_dims)
     class(table), intent(inout) :: this
     integer(i4), intent(in) :: idx
+
     integer(i4) :: j, ind, N
     integer(i4), dimension(size(this % part_dims)) :: ctrs, uppers, tile_dims
     integer(i4), dimension(size(this % part_dims)) :: ctrs_copy
@@ -431,21 +456,32 @@ contains
     N = size(this % part_dims)
 
     if (idx .eq. 1) then
+
       ind = this % global_coord_to_index(ctrs, this % part_dims, tile_dims)
       val_cloud(:, j) = this % elems(:, ind)
+
       j = j + 1
+
       do while (ctrs(N - idx + 1) .lt. uppers(N - idx + 1))
+
         ctrs(N - idx + 1) = ctrs(N - idx + 1) + 1
         ind = this % global_coord_to_index(ctrs, this % part_dims, tile_dims)
         val_cloud(:, j) = this % elems(:, ind)
+
         j = j + 1
+
       end do
+
     else if (idx .gt. 1) then
+
       do while (ctrs(N - idx + 1) .le. uppers(N - idx + 1))
+
         ctrs_copy = ctrs
         call this % gather_value_cloud(idx - 1, ctrs_copy, uppers, val_cloud, j, tile_dims)
         ctrs(N - idx + 1) = ctrs(N - idx + 1) + 1
+
       end do
+
     end if
 
   end subroutine gather_value_cloud
@@ -470,8 +506,9 @@ contains
   type(table) function table_constructor(table_dims, subtable_dims) result(this)
     integer(i4), dimension(:), intent(in) :: table_dims
     integer(i4), dimension(:), intent(in), optional :: subtable_dims
+
     integer(i4) :: nprocs, ierror, rank, real_size, i, total_blocks_buffer
-    integer(i4), dimension(:), allocatable :: subtable_topology, subtable_coordinate
+    integer(i4), dimension(:), allocatable :: subtable_topology, subtable_coordinate, tile_dims
     integer(kind=mpi_address_kind) :: subtable_size
 
     ! Parallel
@@ -495,21 +532,16 @@ contains
       this % subtable_dims_padded = subtable_dims
       this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
 
-      ! confirm table size, comm size
-      print *, "trouble? ", ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)
-
       subtable_topology = ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)
       subtable_coordinate = this % index_to_coord(rank + 1, subtable_topology)
 
       if (rank .eq. 0) then
-        write (*, *) "table size ", this % table_dims(1:size(this % table_dims) - 1) &
-        & , "with ", nprocs, " ranks"
+        !write (*, *) "table size ", this % table_dims(1:size(this % table_dims) - 1), "with ", nprocs, " ranks"
 
         ! check if padding will be necessary due to table not folding cleanly over the comm size
         if (mod(product(this % table_dims(1:size(this % table_dims) - 1)), nprocs) .ne. 0) then
-          write (*, '(A,I0,A,I0,A)') "however the table size ", &
-          & product(this % table_dims(1:size(this % table_dims) - 1)), " won't divide evenly over ", &
-          & nprocs, " ranks"
+          write (*, '(A,I0,A,I0,A)') "however the table size ", product(this % table_dims(1:size(this % table_dims) - 1)), &
+          & " won't divide evenly over ", nprocs, " ranks"
         end if
 
         ! print the subtable dimensions, total subtables
@@ -518,10 +550,10 @@ contains
         & this % table_dims(1:size(this % table_dims) - 1)
 
         ! todo check if the subtable dimensions * no. of ranks does not fit the table dimensions
-        if (product(ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)) &
-          & .ne. nprocs) print *, "WARNING: Subtable dims do not fit table with given comm size."
+        if (product(ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)) .ne. nprocs) then
+          print *, "WARNING: Subtable dims do not fit table with given comm size."
+        end if
       end if
-      print *, "rank ", rank, " topologically: ", subtable_coordinate
 
       ! "exact" subtable dimensions
       !do i = 1, size(subtable_dims)
@@ -531,7 +563,7 @@ contains
       !            & mod(this % table_dims(i), this % subtable_dims(i)) .ne. 0)
       !  end if
       !end do
-      print *, "subtable dims are ", this % subtable_dims, " on rank ", rank
+      !print *, "subtable dims are ", this % subtable_dims, " on rank ", rank
 
       ! Create subtable elems with universal integer bounds
       allocate (this % elems(this % nvar, &
@@ -549,9 +581,9 @@ contains
 
       !print *, "total blocks ", total_blocks_buffer
 
-      ! Create the local pile object with blocks of size 1
-      this % pile = local_pile(10, product(this % part_dims), this % table_dims, this % nvar)
-
+      ! Create the local pile object
+      this % pile = local_pile(10, 16, (/2,2/), this % nvar)
+      
       ! TODO control vars in parallel
       !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
 
@@ -603,8 +635,8 @@ contains
   subroutine read_in(this, file_id)
     class(table), intent(inout) :: this
     character(len=*), intent(in) :: file_id
-    integer(i4) :: access_mode, rank, ierror, handle, N, &
-    & cnt
+
+    integer(i4) :: access_mode, rank, ierror, handle, N, cnt
     integer :: statu(mpi_status_size)
     integer(kind=mpi_offset_kind) :: offset
 
@@ -637,8 +669,7 @@ contains
     call mpi_file_sync(handle, ierror)
     call mpi_barrier(mpi_comm_world, ierror)
 
-    call mpi_file_read(handle, this % elems, cnt, &
-       & mpi_float, statu, ierror)
+    call mpi_file_read(handle, this % elems, cnt, mpi_float, statu, ierror)
 
     print *, this % elems
 
@@ -651,6 +682,7 @@ contains
 
 !> Remaps the partition from a given previous partition ordering to given new partition
 !! ordering.
+!! todo Should be superseded by partition_remap.
 !!
 !! @param this table object to perform partition mapping
 !! @param part_dims partition dims to use
@@ -659,6 +691,7 @@ contains
   subroutine partition_remap(this, part_dims, part_dims_prev)
     class(table), intent(inout) :: this
     integer(i4), dimension(size(this % table_dims) - 1), intent(in) :: part_dims, part_dims_prev
+
     integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_b, coord_p
     integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev
     integer(i4) :: i, i_old, N
@@ -701,16 +734,74 @@ contains
     end do
 
     deallocate (elems_old)
-
   end subroutine partition_remap
+
+!> Remaps the partition from a given previous partition ordering to given new partition
+!! ordering. Uses subtables, for distributed storage.
+!! todo Should supersede partition_remap.
+!!
+!! @param this table object to perform partition mapping
+!! @param part_dims partition dims to use
+!! @param part_dims_prev partition dims in previous partition scheme
+!! @todo move nasty reshaping code to another function
+  subroutine partition_remap_subtable(this, part_dims, part_dims_prev)
+    class(table), intent(inout) :: this
+    integer(i4), dimension(size(this % table_dims) - 1), intent(in) :: part_dims, part_dims_prev
+
+    integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_l, coord_g, coord_t, coord_s
+    integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev
+    integer(i4) :: i, i_old, N, rank, ierror, real_size, nprocs, window_old, target_rank
+    integer(kind=mpi_address_kind) :: target_displacement, subtable_size
+    real(sp), allocatable, dimension(:, :) :: elems_old
+    real(sp), dimension(this % nvar) :: val_fetched
+
+    N = size(this % table_dims) - 1
+
+    call mpi_comm_rank(mpi_comm_world, rank, ierror)
+    call mpi_comm_size(mpi_comm_world, nprocs, ierror)
+    call mpi_type_size(mpi_real, real_size, ierror)
+
+    allocate (elems_old(this % nvar, &
+        & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
+
+    elems_old = this % elems
+
+    ! Create the MPI window for elems_old
+    subtable_size = product(this % subtable_dims) * this % nvar
+    call mpi_win_create(elems_old, subtable_size, real_size, mpi_info_null, mpi_comm_world, window_old, ierror)
+    call mpi_win_fence(0, window_old, ierror)
+
+    tile_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
+
+! Pad out table to maintain shape todo verify this part
+! Find padded table dims
+!    this % subtable_dims_padded = this % subtable_dims
+!    do i = lbound(this % subtable_dims_padded, dim=1), ubound(this % subtable_dims_padded, dim=1) - 1
+!      do while (mod(this % subtable_dims_padded(i), part_dims(i)) .ne. 0)
+!        this % subtable_dims_padded(i) = this % subtable_dims_padded(i) + 1
+!      end do
+!    end do
+
+! Create a new padded table
+    deallocate (this % elems)
+    allocate (this % elems(this % nvar, rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
+
+    call mpi_win_fence(0, window_old, ierror)
+
+    deallocate (elems_old)
+
+  end subroutine partition_remap_subtable
 
 !> Write elements to stdout.
 !!
 !! @param this table object whose elements are to be written
   subroutine print_elems(this)
     class(table), intent(inout) :: this
+
     integer(i4) :: i
-!write (*, fmt='(f9.3)') this%elems
+
+    !write (*, fmt='(f9.3)') this%elems
+
     do i = 1, this % table_dims_flat
       write (*, fmt='(*(e16.8))') this % elems(:, i)
     end do
@@ -725,9 +816,13 @@ contains
     class(table), intent(inout) :: this
 
     if (allocated(this % table_dims)) deallocate (this % table_dims)
+
     if (allocated(this % table_dims_padded)) deallocate (this % table_dims_padded)
+
     if (allocated(this % part_dims)) deallocate (this % part_dims)
+
     if (allocated(this % elems)) deallocate (this % elems)
+
     if (allocated(this % ctrl_vars)) deallocate (this % ctrl_vars)
 
   end subroutine deallocate_table
@@ -743,6 +838,7 @@ contains
     class(table), intent(in) :: this
     integer(i4), intent(in) :: ind
     integer(i4), dimension(size(this % part_dims)), intent(in) :: dims
+
     integer(i4), dimension(size(this % part_dims)) :: coord
     integer(i4) :: k, div, N, ind_cpy
 
@@ -777,6 +873,7 @@ contains
     class(table), intent(in) :: this
     integer(i4), intent(in) :: ind
     integer(i4), dimension(size(this % part_dims)), intent(in) :: part_dims, tile_dims
+
     integer(i4) :: ind_p, ind_b
     integer(i4), dimension(size(this % part_dims)) :: coord, coord_p, coord_b
 
@@ -809,6 +906,7 @@ contains
 !! @param coord_b the array to return the intra-partition dimensions in
   subroutine index_to_local_coord(this, ind, part_dims, tile_dims, coord_p, coord_b)
     class(table), intent(inout) :: this
+
     integer(i4) :: ind, ind_p, ind_b
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b
     integer(i4), dimension(size(this % part_dims)) :: part_dims, tile_dims
@@ -838,6 +936,7 @@ contains
   pure function coord_to_index(this, coord, dims) result(ind)
     class(table), intent(in) :: this
     integer(i4), dimension(size(this % part_dims)), intent(in) :: coord, dims
+
     integer(i4) :: ind, k, N, div
 
     N = size(dims)
@@ -861,9 +960,10 @@ contains
 !! @result ind global flat index
   pure function global_coord_to_index(this, coord, part_dims, tile_dims) result(ind)
     class(table), intent(in) :: this
+    integer(i4), dimension(size(this % part_dims)), intent(in) :: coord, part_dims, tile_dims
+
     integer(i4) :: ind, N, k
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b
-    integer(i4), dimension(size(this % part_dims)), intent(in) :: coord, part_dims, tile_dims
 
     N = size(this % part_dims)
 
@@ -888,6 +988,7 @@ contains
   pure function local_coord_to_index(this, coord_p, coord_b, part_dims, tile_dims) result(ind)
     class(table), intent(in) :: this
     integer(i4), dimension(size(this % part_dims)), intent(in) :: coord_p, coord_b, part_dims, tile_dims
+
     integer(i4) :: ind
 
     ind = (this % coord_to_index(coord_p, part_dims) - 1) * product(tile_dims) + &
@@ -906,6 +1007,7 @@ contains
 !! @param coord_b output inter-partition box coordinate term
   subroutine global_coord_to_local_coord(this, coord, part_dims, tile_dims, coord_p, coord_b)
     class(table), intent(in) :: this
+
     integer(i4) :: N, k
     integer(i4), dimension(size(this % part_dims)) :: part_dims, tile_dims
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b, coord
@@ -930,6 +1032,7 @@ contains
   pure function local_coord_to_global_coord(this, coord_p, coord_b, tile_dims) result(coord)
     class(table), intent(in) :: this
     integer(i4), dimension(size(this % part_dims)), intent(in) :: tile_dims, coord_p, coord_b
+
     integer(i4), dimension(size(this % part_dims)) :: coord
 
     coord = (coord_p - 1) * tile_dims + coord_b

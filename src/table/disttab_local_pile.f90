@@ -41,9 +41,8 @@ module disttab_local_pile
 contains
 
 !> Constructor for the local pile object.
-  type(local_pile) function local_pile_constructor(queue_size, total_blocks, table_dims, nvar) result(this)
-    !integer(i4), dimension(:), intent(in) :: block_dims
-    integer(i4), dimension(:), intent(in) :: table_dims
+  type(local_pile) function local_pile_constructor(queue_size, total_blocks, block_dims, nvar) result(this)
+    integer(i4), dimension(:), intent(in) :: block_dims
     integer(i4), intent(in) :: total_blocks, nvar, queue_size
     integer(i4) :: nprocs, rank, ierror
 
@@ -57,10 +56,10 @@ contains
     !write (*, *) "Intra-block dimensions: ", block_dims
     !write (*, *) "Table dimensions: ", table_dims
 
-    allocate (this % block_dims(size(table_dims) - 1))
+    allocate (this % block_dims(size(block_dims)))
 
     ! Starting with 1-entry blocks, todo
-    this % block_dims = 1
+    this % block_dims = block_dims
     this % nvar = nvar
     this % queue_size = queue_size
     this % total_blocks = total_blocks
@@ -85,7 +84,6 @@ contains
   subroutine push(this, new_block, new_block_loc)
     class(local_pile) :: this
     real(sp), dimension(this % nvar, product(this % block_dims)), intent(in) :: new_block
-    !real(sp), dimension(this % nvar), intent(in) :: new_block
     integer(i4) :: new_block_loc
 
     this % pile(:, (product(this % block_dims) + 1):size(this % pile)) = &
