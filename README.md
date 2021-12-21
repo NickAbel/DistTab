@@ -104,10 +104,10 @@ The documentation is output in the directory `doc`.
 - [ ] Make repartitioning of the table coherent across ranks; i.e, a 'two-level' partitioning scheme
 - [x] Begin working on local pile
 - [ ] Complete and verify correct passing, stashing, queueing and retrieving in local pile: 
-- [ ] Passing
-- [ ] Stashing
-- [ ] Retrieving
-- [ ] Queueing
+- [ ] - Passing
+- [ ] - Stashing
+- [ ] - Retrieving
+- [ ] - Queueing
 - [ ] Explain new functionalities in README.md
 
 ## Alya

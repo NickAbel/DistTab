@@ -73,7 +73,7 @@ contains
 
   subroutine parallel_get_test(this)
     class(parallel_test), intent(inout) :: this
-    integer(i4) :: rank, nprocs, real_size, i, j, ierror, ind, tlb_index, tub_index
+    integer(i4) :: rank, nprocs, real_size, i, j, k, ierror, ind, tlb_index, tub_index
     integer(i4), dimension(size(this % tile_dims)) :: global_coords
     integer(i4), dimension(size(this % tile_dims)) :: tile_lower_bound, tile_upper_bound
     real(sp) :: r
@@ -126,6 +126,17 @@ contains
 
     do i = 1, 100
 
+      ! Check for duplicate entries in the local piles
+      do j = 1, size(this % lookup % pile % pile) 
+        do k = 1, size(this % lookup % pile % pile) 
+          if (j .ne. k .and. all(this % lookup % pile % pile(:, j) .eq. this % lookup % pile % pile(:, k)) &
+              .and. any(this % lookup % pile % pile(:,j) .ne. 0)) then 
+            print *, "ERROR in local_pile_test: duplicated entries found in the pile on rank ", rank, &
+                   " at entries ", j, " and ", k, this % lookup % pile % pile(:,j) 
+          end if
+        end do
+      end do
+
       call random_number(r)
       r = r * product(this % table_dims)
       ind = ceiling(r)
@@ -142,7 +153,7 @@ contains
       else
       !  write (*, '(A, I0, A, I0, A, F8.2)') "Rank ", rank, ": Requested index (", ind, &
       !    & ") is on another sub-table.", this % lookup % index_to_value(ind)
-		blk = floor(1.0 * (ind - 1) / product(this % lookup % pile % block_dims)) + 1
+      blk = floor(1.0 * (ind - 1) / product(this % lookup % pile % block_dims)) + 1
         if (this % lookup % pile % block_locator(blk) .gt. 0) then
           write (*, *) "Rank ", rank, ": Requested index (", ind, &
           & " is on another sub-table ", this % lookup % index_to_value(ind), &

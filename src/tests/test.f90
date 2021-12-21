@@ -23,8 +23,8 @@ program test
   !call square_test()
   !call rand_test_fast()
   !call rand_test_full()
-  !call test_mpi()
-  call reshape_test()
+  call test_mpi()
+  !call reshape_test()
 
   ! Other tests
   !call read_test() ! This won't work for the time being as MPI is introduced in table % read_in()
