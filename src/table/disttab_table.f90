@@ -46,6 +46,9 @@ module disttab_table
 ! Deallocate table member variables (this is not the dtor!)
     procedure, public, pass(this) :: deallocate_table
 
+! Re-shape the table
+    procedure, public, pass(this) :: reshape_table
+
 ! Given integer coordinates in CV space, return corresponding SV value
     procedure, public, pass(this) :: index_to_value
     procedure, public, pass(this) :: local_coord_to_value
@@ -582,8 +585,8 @@ contains
       !print *, "total blocks ", total_blocks_buffer
 
       ! Create the local pile object
-      this % pile = local_pile(10, 16, (/2,2/), this % nvar)
-      
+      this % pile = local_pile(10, 16, (/2, 2/), this % nvar)
+
       ! TODO control vars in parallel
       !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
 
@@ -682,7 +685,7 @@ contains
 
 !> Remaps the partition from a given previous partition ordering to given new partition
 !! ordering.
-!! todo Should be superseded by partition_remap.
+!! todo Should be superseded by partition_remap_subtable
 !!
 !! @param this table object to perform partition mapping
 !! @param part_dims partition dims to use
@@ -826,6 +829,47 @@ contains
     if (allocated(this % ctrl_vars)) deallocate (this % ctrl_vars)
 
   end subroutine deallocate_table
+
+!> Reshapes the table. This will not preserve the entries, but is here to re-specify the
+!! table shape after the constructor has been called. This is included as it is most
+!! likely necessary for interfacing with Alya.
+!!
+!! @param this the table object whose allocatable member variables are to be deallocated
+  subroutine reshape_table(this, ndim, nvar, table_dims)
+    class(table), intent(inout) :: this
+    integer, intent(in) :: ndim, nvar
+    integer, dimension(:), intent(in) :: table_dims
+
+    if (allocated(this % table_dims)) deallocate (this % table_dims)
+
+    if (allocated(this % table_dims_padded)) deallocate (this % table_dims_padded)
+
+    if (allocated(this % part_dims)) deallocate (this % part_dims)
+
+    if (allocated(this % elems)) deallocate (this % elems)
+
+    if (allocated(this % ctrl_vars)) deallocate (this % ctrl_vars)
+
+    allocate (this % table_dims(size(table_dims)))
+    allocate (this % table_dims_padded(size(table_dims)))
+    allocate (this % part_dims(size(table_dims) - 1))
+
+    this % table_dims = table_dims
+    this % table_dims_padded = table_dims
+    this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+    this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+    this % subtable_dims = table_dims
+    this % subtable_dims_padded = table_dims
+    this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
+
+! Table initially considered to have one table-sized partition, i.e. 'unpartitioned'
+! Note there are other partitioning schemes which are identical to this scheme.
+    this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
+
+    allocate (this % elems(this % nvar, this % table_dims_padded_flat))
+    allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
+
+  end subroutine reshape_table
 
 !> Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing
 !! using the dimensions given in part_dims

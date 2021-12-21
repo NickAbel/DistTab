@@ -23,7 +23,8 @@ program test
   !call square_test()
   !call rand_test_fast()
   !call rand_test_full()
-  call test_mpi()
+  !call test_mpi()
+  call reshape_test()
 
   ! Other tests
   !call read_test() ! This won't work for the time being as MPI is introduced in table % read_in()
@@ -143,8 +144,8 @@ contains
     allocate (subtable_dims(3))
     allocate (part_dims(2))
 
-    table_dims = (/8, 8, 1/)
-    subtable_dims = (/4, 4/)
+    table_dims = (/8, 4, 1/)
+    subtable_dims = (/4, 2/)
     part_dims = (/2, 2/)
 
     test_parallel = parallel_test(table_dims, subtable_dims, part_dims)
@@ -162,6 +163,40 @@ contains
     call mpi_finalize(ierror)
 
   end subroutine test_mpi
+
+!> Test of 2-dim to 3-dim partitioning with randomly generated
+!! table and partition sizes on each dimension.
+  subroutine reshape_test()
+    type(table) :: lookup_shaped
+    real(sp) :: nvar_real
+    integer(i4) :: nvar
+    print *, "reshape_test: "
+    do dims = 2, 3
+      lookup_shaped = table((/1/))
+      print *, "generated dims: ", dims, " unshaped initialized table dimensions (should be 1): ", lookup_shaped % table_dims
+      allocate (table_dims_real(dims + 1))
+      allocate (table_dims(dims + 1))
+
+      call random_number(nvar_real)
+      nvar_real = nvar_real * 18.0
+      nvar = ceiling(nvar_real)
+
+      call random_number(table_dims_real)
+      table_dims_real = table_dims_real * 20.0
+      table_dims = ceiling(table_dims_real)
+      table_dims(1:dims) = 1 + table_dims(1:dims)
+      table_dims(dims + 1) = nvar
+
+      print *, "reshaping to (last dim is nvar): ", table_dims
+
+      call lookup_shaped % reshape_table(dims, nvar, table_dims)
+
+      print *, size(lookup_shaped % elems)
+
+      deallocate (table_dims_real)
+      deallocate (table_dims)
+    end do
+  end subroutine reshape_test
 
 !> Read in a table of state variables (more than 1 per line) into table object
 !! todo: Read table in Alya format properly that stores table size, control variables, etc.

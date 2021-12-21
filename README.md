@@ -36,14 +36,14 @@ DistTab is a library being developed for use with combustion codes that use spra
 
 ### Install
 
-To compile and run the tests
+To compile and run the tests, assuming ``mpif90`` is available
 
 ```sh
 $ git clone https://github.com/NickAbel/DistTab.git
 $ cd DistTab
 $ mkdir build
 $ cd build
-$ cmake ..
+$ FC=mpif90 cmake ..
 $ make
 $ cd ../bin
 $ ./disttab
@@ -98,9 +98,16 @@ The documentation is output in the directory `doc`.
 - [x] Given control variable coordinates in [0,1]x...x[0,1], return state variable value cloud from partitioned table
 - [x] Repartitioning; accept 'old' partition dimensions as option instead of assuming 'Alya format'
 - [x] Don't rely on the sort command to generate input for tests
-- [ ] Make output verbiage from tests easier to understand, should see at a glance all PASS/FAIL/DIFFs.
-- [ ] Re-introduce MPI calls and split table among ranks in simple manner
-- [ ] Begin working on local pile
+- [x] Make output verbiage from tests easier to understand, should see at a glance all PASS/FAIL/DIFFs.
+- [x] Re-introduce MPI calls
+- [x] Distribute the table among ranks in a simple manner
+- [ ] Make repartitioning of the table coherent across ranks; i.e, a 'two-level' partitioning scheme
+- [x] Begin working on local pile
+- [ ] Complete and verify correct passing, stashing, queueing and retrieving in local pile: 
+- [ ] Passing
+- [ ] Stashing
+- [ ] Retrieving
+- [ ] Queueing
 - [ ] Explain new functionalities in README.md
 
 ## Alya
