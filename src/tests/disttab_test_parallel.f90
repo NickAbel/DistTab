@@ -55,7 +55,7 @@ contains
     this % table_dims = table_dimensions
     this % subtable_dims = subtable_dimensions
     this % tile_dims = tile_dimensions
-    this % lookup = table(this % table_dims, this % subtable_dims)
+    this % lookup = table(this % table_dims, this % subtable_dims, mpi_comm_world)
 
     ! Impose tile dimensions
     this % lookup % part_dims = this % tile_dims
@@ -80,9 +80,9 @@ contains
     real(sp), dimension(this % lookup % nvar, product(this % tile_dims)) :: tile_buffer
 
     ! MPI variables we'll need
-    call mpi_comm_size(mpi_comm_world, nprocs, ierror)
+    call mpi_comm_size(this % lookup % communicator, nprocs, ierror)
     call mpi_type_size(mpi_real, real_size, ierror)
-    call mpi_comm_rank(mpi_comm_world, rank, ierror)
+    call mpi_comm_rank(this % lookup % communicator, rank, ierror)
 
     do i = lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
       this % lookup % elems(:, i) = i
@@ -108,9 +108,9 @@ contains
     real(sp) :: r
 
     ! MPI variables we'll need
-    call mpi_comm_size(mpi_comm_world, nprocs, ierror)
+    call mpi_comm_size(this % lookup % communicator, nprocs, ierror)
     call mpi_type_size(mpi_real, real_size, ierror)
-    call mpi_comm_rank(mpi_comm_world, rank, ierror)
+    call mpi_comm_rank(this % lookup % communicator, rank, ierror)
 
     print *, "local_pile_test, rank ", rank
 
@@ -180,22 +180,25 @@ contains
 
     allocate (gold_tile(this % lookup % pile % nvar, product(this % lookup % pile % block_dims)))
 
-!    do i = 1, this % lookup % pile % total_blocks
-!      gold_tile = (i-1)*product(this % lookup % pile % block_dims) + 1
-!      if (this % lookup % pile % block_locator(i) .gt. 0) then
-!        print *, gold_tile
-!        if (any(gold_tile .ne. this % lookup % pile % pile(:, & 
-!        & this % lookup % pile % block_locator(i)*product(this % lookup % pile % block_dims) : &
-!        & (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) + &
-!        & product(this % lookup % pile % block_dims) - 1))) then
-!          print *, "!!!!!!FAIL in local pile test", &
-!        & gold_tile, this % lookup % pile % pile(:, & 
-!        & this % lookup % pile % block_locator(i)*product(this % lookup % pile % block_dims): &
-!        & (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) + &
-!        & product(this % lookup % pile % block_dims) - 1)
-!        end if
-!      end if
-!    end do
+    do i = 1, this % lookup % pile % total_blocks
+      do j = 1, product(this % lookup % pile % block_dims)
+        do k = 1, this % lookup % pile % nvar
+          gold_tile(k, j) = (i - 1)*product(this % lookup % pile % block_dims) + j + (k-1)/10.0
+        end do
+      end do
+      if (this % lookup % pile % block_locator(i) .gt. 0) then
+        print *, gold_tile
+        !if (any(gold_tile .ne. this % lookup % pile % pile(:, & 
+        !& this % lookup % pile % block_locator(i)*product(this % lookup % pile % block_dims) : &
+        !& (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) + &
+        !& product(this % lookup % pile % block_dims) - 1))) then
+        !  print *, "!!!!!!FAIL in local pile test", &
+        !& "GOLD: [", gold_tile, "] ", "PILE SLOT: [", this % lookup % pile % pile(:, & 
+        !& this % lookup % pile % block_locator(i-1)*product(this % lookup % pile % block_dims): &
+        !& (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) - 1), "] "
+        !end if
+      end if
+    end do
 
     deallocate (gold_tile)
 

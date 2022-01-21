@@ -25,6 +25,8 @@ module disttab_table
     integer(i4) :: table_dims_flat
     integer(i4) :: table_dims_padded_flat
 
+    ! MPI communicator
+    integer(i4) :: communicator
     ! MPI RMA memory view window
     integer(i4) :: window
 
@@ -104,6 +106,204 @@ module disttab_table
 
 contains
 
+!> Constructor for the table object.
+!! Allocates the elements array according to the table dimensions.
+!! Initializes the member variables table_dims, table_dims_padded.
+!! Computes the parameters table_dims_flat,
+!! table_dims_padded_flat, nvar,
+!! which are all a property of the table_dims argument, necessary
+!! for partition mapping functionality.
+!!
+!! @param table_dims the length of the control variable space
+!! in each dimension, and the number of state variables
+!! @param subtable_dims the dimensions of the block structure
+!! @param communicator the MPI communicator to store and use
+!! @result this table object
+!! @todo if partition dimensions are a property of a lookup table which
+!! may change, the part_dims can be stored as a member variable
+!! but perhaps not initialized here. Then, the same is true of the "padded"
+!! variables which generally will change as the part_dims change.
+!! Organize the code as such. Perhaps use an optional argument for part_dims
+!! here instead.
+  type(table) function table_constructor(table_dims, subtable_dims, communicator) result(this)
+    integer(i4), dimension(:), intent(in) :: table_dims
+    integer(i4), dimension(:), intent(in), optional :: subtable_dims
+    integer(i4), intent(in), optional :: communicator
+
+    integer(i4) :: nprocs, ierror, rank, real_size, i, total_blocks_buffer
+    integer(i4), dimension(:), allocatable :: subtable_topology, subtable_coordinate, tile_dims
+    integer(kind=mpi_address_kind) :: subtable_size
+
+    ! Parallel
+    if (present(communicator)) then
+      this % communicator = communicator
+      call mpi_comm_size(this % communicator, nprocs, ierror)
+      call mpi_type_size(mpi_real, real_size, ierror)
+      call mpi_comm_rank(this % communicator, rank, ierror)
+
+      allocate (this % table_dims(size(table_dims)))
+      allocate (this % table_dims_padded(size(table_dims)))
+      allocate (this % part_dims(size(table_dims) - 1))
+      allocate (subtable_topology(size(table_dims) - 1))
+      allocate (subtable_coordinate(size(table_dims) - 1))
+
+      this % table_dims = table_dims
+      this % table_dims_padded = table_dims
+      this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+      this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+      this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
+      this % subtable_dims = subtable_dims
+      this % subtable_dims_padded = subtable_dims
+      this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
+
+      subtable_topology = ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)
+      subtable_coordinate = this % index_to_coord(rank + 1, subtable_topology)
+
+      if (rank .eq. 0) then
+        !write (*, *) "table size ", this % table_dims(1:size(this % table_dims) - 1), "with ", nprocs, " ranks"
+
+        ! check if padding will be necessary due to table not folding cleanly over the comm size
+        if (mod(product(this % table_dims(1:size(this % table_dims) - 1)), nprocs) .ne. 0) then
+          write (*, '(A,I0,A,I0,A)') "however the table size ", product(this % table_dims(1:size(this % table_dims) - 1)), &
+          & " won't divide evenly over ", nprocs, " ranks"
+        end if
+
+        ! print the subtable dimensions, total subtables
+        print *, "sub-table dimensions supplied (", this % subtable_dims, &
+        & ") give total ", product(subtable_topology), " sub-tables on table size ", &
+        & this % table_dims(1:size(this % table_dims) - 1)
+
+        ! todo check if the subtable dimensions * no. of ranks does not fit the table dimensions
+        if (product(ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)) .ne. nprocs) then
+          print *, "WARNING: Subtable dims do not fit table with given comm size."
+        end if
+      end if
+
+      ! "exact" subtable dimensions
+      !do i = 1, size(subtable_dims)
+      !  if (subtable_coordinate(i) .eq. subtable_topology(i)) then
+      !    this % subtable_dims(i) = merge(mod(this % table_dims(i), this % subtable_dims(i)), &
+      !            & this % subtable_dims(i), &
+      !            & mod(this % table_dims(i), this % subtable_dims(i)) .ne. 0)
+      !  end if
+      !end do
+      !print *, "subtable dims are ", this % subtable_dims, " on rank ", rank
+
+      ! Create subtable elems with universal integer bounds
+      allocate (this % elems(this % nvar, &
+        & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
+
+      ! Create the MPI window
+      subtable_size = product(this % subtable_dims) * real_size
+      call mpi_win_create(this % elems, subtable_size, &
+        & real_size, mpi_info_null, this % communicator, this % window, ierror)
+      call mpi_win_fence(0, this % window, ierror)
+
+      ! Have all ranks report their number of total tiles and add them up into total_block_buffer
+      !call mpi_allreduce(product(this % part_dims), total_blocks_buffer, 1, mpi_integer, &
+      !  & mpi_sum, this % communicator, ierror)
+
+      !print *, "total blocks ", total_blocks_buffer
+
+      ! Create the local pile object
+      this % pile = local_pile(10, 16, (/2, 2/), this % nvar)
+
+      ! TODO control vars in parallel
+      !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
+
+      deallocate (subtable_topology)
+      deallocate (subtable_coordinate)
+
+      ! Serial
+    else
+
+      allocate (this % table_dims(size(table_dims)))
+      allocate (this % table_dims_padded(size(table_dims)))
+      allocate (this % part_dims(size(table_dims) - 1))
+
+      this % table_dims = table_dims
+      this % table_dims_padded = table_dims
+      this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+      this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
+      this % subtable_dims = table_dims
+      this % subtable_dims_padded = table_dims
+      this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
+
+! Table initially considered to have one table-sized partition, i.e. 'unpartitioned'
+! Note there are other partitioning schemes which are identical to this scheme.
+      this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
+
+      allocate (this % elems(this % nvar, this % table_dims_padded_flat))
+      allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
+    end if
+
+  end function table_constructor
+
+!> destructor for the table type
+!!
+!! @param this the table object to destruct
+!! @todo what is this exactly doing? is deallocate_table call necessary?
+  subroutine table_destructor(this)
+    type(table) :: this
+
+    call deallocate_table(this)
+
+  end subroutine table_destructor
+
+!> Reads in a lookup table to the elements array of the table object.
+!! Assumes that the first size(this%part_dims) lines are normalized
+!! control variable discretizations, and the following lines are
+!! state variable values.
+!! @param this table object to which read_in is a member.
+!! @param file_id the lookup table filename to read in.
+  subroutine read_in(this, file_id)
+    class(table), intent(inout) :: this
+    character(len=*), intent(in) :: file_id
+
+    integer(i4) :: access_mode, rank, ierror, handle, N, cnt
+    integer :: statu(mpi_status_size)
+    integer(kind=mpi_offset_kind) :: offset
+
+    N = size(this % part_dims)
+
+    offset = 0
+    cnt = product(this % table_dims(1:N))
+
+    ! Sequential
+    !integer(i4) :: i
+    !open (1, file=file_id, action='read')
+    !read (unit=1, fmt=*) this % ctrl_vars
+    !print *, size(this % ctrl_vars)
+    !print *, this % table_dims_flat
+    !do i = 1, this % table_dims_flat
+    !  read (unit=1, fmt=*) this % elems(:, i)
+    !end do
+    !close (1)
+
+    call mpi_comm_rank(this % communicator, rank, ierror)
+    write (*, '(A,I0,A)') '[MPI process ', rank, '] read_in'
+
+    access_mode = mpi_mode_rdonly
+    call mpi_file_open(this % communicator, file_id, access_mode, mpi_info_null, handle, ierror)
+    if (ierror .ne. mpi_success) then
+      write (*, '(A,I0,A)') '[MPI process ', rank, '] Failure in opening the file.'
+      call mpi_abort(this % communicator, -1, ierror)
+    end if
+
+    call mpi_file_sync(handle, ierror)
+    call mpi_barrier(this % communicator, ierror)
+
+    call mpi_file_read(handle, this % elems, cnt, mpi_float, statu, ierror)
+
+    print *, this % elems
+
+    call mpi_file_close(handle, ierror)
+    if (ierror .ne. mpi_success) then
+      write (*, '(A,I0,A)') '[MPI process ', rank, '] Failure in closing the file.'
+      call mpi_abort(this % communicator, -1, ierror)
+    end if
+  end subroutine read_in
+
 !> Given index, return corresponding value.
 !!
 !! @param this the table object
@@ -117,7 +317,7 @@ contains
     integer(kind=mpi_address_kind) :: target_displacement
     real(sp), dimension(this % nvar) :: val
 
-    call mpi_comm_rank(mpi_comm_world, rank, ierror)
+    call mpi_comm_rank(this % communicator, rank, ierror)
 
     if (ind .ge. lbound(this % elems, dim=2) .and. ind .le. ubound(this % elems, dim=2)) then
       val = this % elems(1, ind)
@@ -489,200 +689,6 @@ contains
 
   end subroutine gather_value_cloud
 
-!> Constructor for the table object.
-!! Allocates the elements array according to the table dimensions.
-!! Initializes the member variables table_dims, table_dims_padded.
-!! Computes the parameters table_dims_flat,
-!! table_dims_padded_flat, nvar,
-!! which are all a property of the table_dims argument, necessary
-!! for partition mapping functionality.
-!!
-!! @param table_dims the length of the control variable space
-!! in each dimension, and the number of state variables
-!! @result this table object
-!! @todo if partition dimensions are a property of a lookup table which
-!! may change, the part_dims can be stored as a member variable
-!! but perhaps not initialized here. Then, the same is true of the "padded"
-!! variables which generally will change as the part_dims change.
-!! Organize the code as such. Perhaps use an optional argument for part_dims
-!! here instead.
-  type(table) function table_constructor(table_dims, subtable_dims) result(this)
-    integer(i4), dimension(:), intent(in) :: table_dims
-    integer(i4), dimension(:), intent(in), optional :: subtable_dims
-
-    integer(i4) :: nprocs, ierror, rank, real_size, i, total_blocks_buffer
-    integer(i4), dimension(:), allocatable :: subtable_topology, subtable_coordinate, tile_dims
-    integer(kind=mpi_address_kind) :: subtable_size
-
-    ! Parallel
-    if (present(subtable_dims)) then
-      call mpi_comm_size(mpi_comm_world, nprocs, ierror)
-      call mpi_type_size(mpi_real, real_size, ierror)
-      call mpi_comm_rank(mpi_comm_world, rank, ierror)
-
-      allocate (this % table_dims(size(table_dims)))
-      allocate (this % table_dims_padded(size(table_dims)))
-      allocate (this % part_dims(size(table_dims) - 1))
-      allocate (subtable_topology(size(table_dims) - 1))
-      allocate (subtable_coordinate(size(table_dims) - 1))
-
-      this % table_dims = table_dims
-      this % table_dims_padded = table_dims
-      this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
-      this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
-      this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
-      this % subtable_dims = subtable_dims
-      this % subtable_dims_padded = subtable_dims
-      this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
-
-      subtable_topology = ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)
-      subtable_coordinate = this % index_to_coord(rank + 1, subtable_topology)
-
-      if (rank .eq. 0) then
-        !write (*, *) "table size ", this % table_dims(1:size(this % table_dims) - 1), "with ", nprocs, " ranks"
-
-        ! check if padding will be necessary due to table not folding cleanly over the comm size
-        if (mod(product(this % table_dims(1:size(this % table_dims) - 1)), nprocs) .ne. 0) then
-          write (*, '(A,I0,A,I0,A)') "however the table size ", product(this % table_dims(1:size(this % table_dims) - 1)), &
-          & " won't divide evenly over ", nprocs, " ranks"
-        end if
-
-        ! print the subtable dimensions, total subtables
-        print *, "sub-table dimensions supplied (", this % subtable_dims, &
-        & ") give total ", product(subtable_topology), " sub-tables on table size ", &
-        & this % table_dims(1:size(this % table_dims) - 1)
-
-        ! todo check if the subtable dimensions * no. of ranks does not fit the table dimensions
-        if (product(ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)) .ne. nprocs) then
-          print *, "WARNING: Subtable dims do not fit table with given comm size."
-        end if
-      end if
-
-      ! "exact" subtable dimensions
-      !do i = 1, size(subtable_dims)
-      !  if (subtable_coordinate(i) .eq. subtable_topology(i)) then
-      !    this % subtable_dims(i) = merge(mod(this % table_dims(i), this % subtable_dims(i)), &
-      !            & this % subtable_dims(i), &
-      !            & mod(this % table_dims(i), this % subtable_dims(i)) .ne. 0)
-      !  end if
-      !end do
-      !print *, "subtable dims are ", this % subtable_dims, " on rank ", rank
-
-      ! Create subtable elems with universal integer bounds
-      allocate (this % elems(this % nvar, &
-        & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
-
-      ! Create the MPI window
-      subtable_size = product(this % subtable_dims) * real_size
-      call mpi_win_create(this % elems, subtable_size, &
-        & real_size, mpi_info_null, mpi_comm_world, this % window, ierror)
-      call mpi_win_fence(0, this % window, ierror)
-
-      ! Have all ranks report their number of total tiles and add them up into total_block_buffer
-      !call mpi_allreduce(product(this % part_dims), total_blocks_buffer, 1, mpi_integer, &
-      !  & mpi_sum, mpi_comm_world, ierror)
-
-      !print *, "total blocks ", total_blocks_buffer
-
-      ! Create the local pile object
-      this % pile = local_pile(10, 16, (/2, 2/), this % nvar)
-
-      ! TODO control vars in parallel
-      !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
-
-      deallocate (subtable_topology)
-      deallocate (subtable_coordinate)
-
-      ! Serial
-    else
-
-      allocate (this % table_dims(size(table_dims)))
-      allocate (this % table_dims_padded(size(table_dims)))
-      allocate (this % part_dims(size(table_dims) - 1))
-
-      this % table_dims = table_dims
-      this % table_dims_padded = table_dims
-      this % table_dims_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
-      this % table_dims_padded_flat = product(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))
-      this % subtable_dims = table_dims
-      this % subtable_dims_padded = table_dims
-      this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
-
-! Table initially considered to have one table-sized partition, i.e. 'unpartitioned'
-! Note there are other partitioning schemes which are identical to this scheme.
-      this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
-
-      allocate (this % elems(this % nvar, this % table_dims_padded_flat))
-      allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
-    end if
-
-  end function table_constructor
-
-!> destructor for the table type
-!!
-!! @param this the table object to destruct
-!! @todo what is this exactly doing? is deallocate_table call necessary?
-  subroutine table_destructor(this)
-    type(table) :: this
-
-    call deallocate_table(this)
-
-  end subroutine table_destructor
-
-!> Reads in a lookup table to the elements array of the table object.
-!! Assumes that the first size(this%part_dims) lines are normalized
-!! control variable discretizations, and the following lines are
-!! state variable values.
-!! @param this table object to which read_in is a member.
-!! @param file_id the lookup table filename to read in.
-  subroutine read_in(this, file_id)
-    class(table), intent(inout) :: this
-    character(len=*), intent(in) :: file_id
-
-    integer(i4) :: access_mode, rank, ierror, handle, N, cnt
-    integer :: statu(mpi_status_size)
-    integer(kind=mpi_offset_kind) :: offset
-
-    N = size(this % part_dims)
-
-    offset = 0
-    cnt = product(this % table_dims(1:N))
-
-    ! Sequential
-    !integer(i4) :: i
-    !open (1, file=file_id, action='read')
-    !read (unit=1, fmt=*) this % ctrl_vars
-    !print *, size(this % ctrl_vars)
-    !print *, this % table_dims_flat
-    !do i = 1, this % table_dims_flat
-    !  read (unit=1, fmt=*) this % elems(:, i)
-    !end do
-    !close (1)
-
-    call mpi_comm_rank(mpi_comm_world, rank, ierror)
-    write (*, '(A,I0,A)') '[MPI process ', rank, '] read_in'
-
-    access_mode = mpi_mode_rdonly
-    call mpi_file_open(mpi_comm_world, file_id, access_mode, mpi_info_null, handle, ierror)
-    if (ierror .ne. mpi_success) then
-      write (*, '(A,I0,A)') '[MPI process ', rank, '] Failure in opening the file.'
-      call mpi_abort(mpi_comm_world, -1, ierror)
-    end if
-
-    call mpi_file_sync(handle, ierror)
-    call mpi_barrier(mpi_comm_world, ierror)
-
-    call mpi_file_read(handle, this % elems, cnt, mpi_float, statu, ierror)
-
-    print *, this % elems
-
-    call mpi_file_close(handle, ierror)
-    if (ierror .ne. mpi_success) then
-      write (*, '(A,I0,A)') '[MPI process ', rank, '] Failure in closing the file.'
-      call mpi_abort(mpi_comm_world, -1, ierror)
-    end if
-  end subroutine read_in
-
 !> Remaps the partition from a given previous partition ordering to given new partition
 !! ordering.
 !! todo Should be superseded by partition_remap_subtable
@@ -760,8 +766,8 @@ contains
 
     N = size(this % table_dims) - 1
 
-    call mpi_comm_rank(mpi_comm_world, rank, ierror)
-    call mpi_comm_size(mpi_comm_world, nprocs, ierror)
+    call mpi_comm_rank(this % communicator, rank, ierror)
+    call mpi_comm_size(this % communicator, nprocs, ierror)
     call mpi_type_size(mpi_real, real_size, ierror)
 
     allocate (elems_old(this % nvar, &
@@ -771,7 +777,7 @@ contains
 
     ! Create the MPI window for elems_old
     subtable_size = product(this % subtable_dims) * this % nvar
-    call mpi_win_create(elems_old, subtable_size, real_size, mpi_info_null, mpi_comm_world, window_old, ierror)
+    call mpi_win_create(elems_old, subtable_size, real_size, mpi_info_null, this % communicator, window_old, ierror)
     call mpi_win_fence(0, window_old, ierror)
 
     tile_dims_prev = this % table_dims_padded(1:N) / part_dims_prev

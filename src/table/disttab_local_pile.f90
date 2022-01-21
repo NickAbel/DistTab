@@ -1,7 +1,6 @@
 !> This module contains the local pile object, for storing recently
 !! obtained blocks from other subtables in a FIFO queue.
 module disttab_local_pile
-  use :: mpi
   use :: kind_params
 
   implicit none
@@ -44,13 +43,7 @@ contains
   type(local_pile) function local_pile_constructor(queue_size, total_blocks, block_dims, nvar) result(this)
     integer(i4), dimension(:), intent(in) :: block_dims
     integer(i4), intent(in) :: total_blocks, nvar, queue_size
-    integer(i4) :: nprocs, rank, ierror
 
-    call mpi_comm_size(mpi_comm_world, nprocs, ierror)
-    call mpi_comm_rank(mpi_comm_world, rank, ierror)
-
-    !write (*, '(A,I0)') "Constructing local pile on rank ", rank
-    !write (*, '(A,I0)') "Max number of blocks in queue: ", queue_size
     !write (*, '(A,I0)') "Block size on table: ", total_blocks
     !write (*, '(A,I0)') "# of state vars: ", nvar
     !write (*, *) "Intra-block dimensions: ", block_dims
