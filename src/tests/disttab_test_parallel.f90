@@ -104,7 +104,7 @@ contains
   subroutine local_pile_test(this)
     class(parallel_test), intent(inout) :: this
     integer(i4) :: rank, nprocs, real_size, ierror, ind, i, j, k, blk
-    real(sp), dimension(:,:), allocatable :: gold_tile, push_tile
+    real(sp), dimension(:, :), allocatable :: gold_tile, push_tile
     real(sp) :: r
 
     ! MPI variables we'll need
@@ -116,10 +116,12 @@ contains
 
     ! print subtable bounds on each rank
     print *, "rank ", rank, " subtable bounds: ", lbound(this % lookup % elems, dim=2), &
-      & ubound(this % lookup % elems, dim=2)
+      & ubound(this % lookup % elems, dim=2), " nvar = ", this % lookup % nvar
 
     do i = lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
-      this % lookup % elems(:, i) = i
+      do j = lbound(this % lookup % elems, dim=1), ubound(this % lookup % elems, dim=1)
+        this % lookup % elems(j, i) = i + 0.001 * j
+      end do
     end do
 
     print *, "part dims: ", this % lookup % part_dims
@@ -127,47 +129,50 @@ contains
     do i = 1, 100
 
       ! Check for duplicate entries in the local piles
-      do j = 1, size(this % lookup % pile % pile) 
-        do k = 1, size(this % lookup % pile % pile) 
+      do j = 1, size(this % lookup % pile % pile)
+        do k = 1, size(this % lookup % pile % pile)
           if (j .ne. k .and. all(this % lookup % pile % pile(:, j) .eq. this % lookup % pile % pile(:, k)) &
-              .and. any(this % lookup % pile % pile(:,j) .ne. 0)) then 
+              .and. any(this % lookup % pile % pile(:, j) .ne. 0)) then
             print *, "ERROR in local_pile_test: duplicated entries found in the pile on rank ", rank, &
-                   " at entries ", j, " and ", k, this % lookup % pile % pile(:,j) 
+              " at entries ", j, " and ", k, this % lookup % pile % pile(:, j)
           end if
         end do
       end do
 
+      ! Random target index to retrieve
       call random_number(r)
       r = r * product(this % table_dims)
       ind = ceiling(r)
 
       !write (*, '(A, I0, A, I0)') "Rank ", rank, ": Request index ", ind
 
+      ! Check if index is on the table
       if (ind .ge. lbound(this % lookup % elems, dim=2) .and. ind .le. &
         & ubound(this % lookup % elems, dim=2)) then
-      !  write (*, *) "Obtaining index ", ind, " which is local on rank ", rank, &
-      !    & " --> ", this % lookup % index_to_value(ind)
+        !  write (*, *) "Obtaining index ", ind, " which is local on rank ", rank, &
+        !    & " --> ", this % lookup % index_to_value(ind)
       else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
         write (*, '(A, I0, A)') "ERROR in index_to_value call: Requested index (", ind, &
           & ") is not within lookup table bounds."
       else
-      !  write (*, '(A, I0, A, I0, A, F8.2)') "Rank ", rank, ": Requested index (", ind, &
-      !    & ") is on another sub-table.", this % lookup % index_to_value(ind)
-      blk = floor(1.0 * (ind - 1) / product(this % lookup % pile % block_dims)) + 1
+        !  write (*, '(A, I0, A, I0, A, F8.2)') "Rank ", rank, ": Requested index (", ind, &
+        !    & ") is on another sub-table.", this % lookup % index_to_value(ind)
+
+        blk = floor(1.0 * (ind - 1) / product(this % lookup % pile % block_dims)) + 1
         if (this % lookup % pile % block_locator(blk) .gt. 0) then
           write (*, *) "Rank ", rank, ": Requested index (", ind, &
           & " is on another sub-table ", this % lookup % index_to_value(ind), &
           & " but is found on the local pile slot ", this % lookup % pile % block_locator(blk), &
           & this % lookup % pile % pile(:, &
-          & product(this % lookup % pile % block_dims)*(this % lookup % pile % block_locator(blk) - 1) + 1 : &
-          & product(this % lookup % pile % block_dims)*(this % lookup % pile % block_locator(blk) - 1) + &
+          & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
+          & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
           & product(this % lookup % pile % block_dims))
         else
           allocate (push_tile(this % lookup % pile % nvar, product(this % lookup % pile % block_dims)))
           do j = 1, product(this % lookup % pile % block_dims)
             k = floor(1.0 * (ind - 1) / product(this % lookup % pile % block_dims)) * &
             & product(this % lookup % pile % block_dims) + j
-            push_tile(:,j) = this % lookup % index_to_value(k)
+            push_tile(:, j) = this % lookup % index_to_value(k)
           end do
           call this % lookup % pile % push(push_tile, blk)
           deallocate (push_tile)
@@ -183,17 +188,17 @@ contains
     do i = 1, this % lookup % pile % total_blocks
       do j = 1, product(this % lookup % pile % block_dims)
         do k = 1, this % lookup % pile % nvar
-          gold_tile(k, j) = (i - 1)*product(this % lookup % pile % block_dims) + j + (k-1)/10.0
+          gold_tile(k, j) = (i - 1) * product(this % lookup % pile % block_dims) + j + (k - 1) / 10.0
         end do
       end do
       if (this % lookup % pile % block_locator(i) .gt. 0) then
         print *, gold_tile
-        !if (any(gold_tile .ne. this % lookup % pile % pile(:, & 
+        !if (any(gold_tile .ne. this % lookup % pile % pile(:, &
         !& this % lookup % pile % block_locator(i)*product(this % lookup % pile % block_dims) : &
         !& (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) + &
         !& product(this % lookup % pile % block_dims) - 1))) then
         !  print *, "!!!!!!FAIL in local pile test", &
-        !& "GOLD: [", gold_tile, "] ", "PILE SLOT: [", this % lookup % pile % pile(:, & 
+        !& "GOLD: [", gold_tile, "] ", "PILE SLOT: [", this % lookup % pile % pile(:, &
         !& this % lookup % pile % block_locator(i-1)*product(this % lookup % pile % block_dims): &
         !& (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) - 1), "] "
         !end if
