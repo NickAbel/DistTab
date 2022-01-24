@@ -175,7 +175,7 @@ contains
 
     ! Open, read, and close the file to the gold standard
     allocate (elems_gold_std(this % lookup % nvar, this % lookup % table_dims_flat))
-    open (36, file='partition_test_table_sorted.nopad.DistTab.tmp.dat', action='read')
+    open (36, file='partition_test_table_sorted.nopad.DistTab.tmp.dat')!, action='read')
     do i = 1, this % lookup % table_dims_flat
       read (36, *) (coord(j), j=1, N), elems_gold_std(:, i)
     end do

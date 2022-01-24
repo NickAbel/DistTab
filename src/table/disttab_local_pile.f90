@@ -28,6 +28,7 @@ module disttab_local_pile
 
   contains
     procedure, public, pass(this) :: push
+    procedure, public, pass(this) :: resize
 
     final :: local_pile_destructor
 
@@ -47,7 +48,6 @@ contains
     !write (*, '(A,I0)') "Block size on table: ", total_blocks
     !write (*, '(A,I0)') "# of state vars: ", nvar
     !write (*, *) "Intra-block dimensions: ", block_dims
-    !write (*, *) "Table dimensions: ", table_dims
 
     allocate (this % block_dims(size(block_dims)))
 
@@ -58,9 +58,6 @@ contains
     this % total_blocks = total_blocks
 
     allocate (this % pile(nvar, product(this % block_dims) * this % queue_size))
-
-    ! todo not necessary to zero out the pile, this is just for testing
-    this % pile = 0
 
     allocate (this % block_locator(this % total_blocks))
     this % block_locator = -1
@@ -79,17 +76,57 @@ contains
     real(sp), dimension(this % nvar, product(this % block_dims)), intent(in) :: new_block
     integer(i4) :: new_block_loc
 
-    this % pile(:, (product(this % block_dims) + 1):size(this % pile)) = &
-      & this % pile(:, 1:(size(this % pile) - product(this % block_dims)))
+    print *, "NVAR = ", this % nvar, " PILE SIZE = ", size(this % pile), " PRODUCT BLOCK DIMS = ", &
+      & product(this % block_dims), " PILE UBOUND2 = ", ubound(this % pile, dim=2)
+
+    ! Move the old blocks back
+    this % pile(:, (product(this % block_dims) + 1):ubound(this % pile, dim=2)) = &
+      & this % pile(:, 1:(ubound(this % pile, dim=2) - product(this % block_dims)))
+
+    ! Place the new block at the front
     this % pile(:, 1:product(this % block_dims)) = new_block
 
+    ! Indicate the removed block is gone, in the block locator
     if (maxval(this % block_locator) .ge. this % queue_size) then
       this % block_locator(maxloc(this % block_locator)) = -1
     end if
 
+    ! Indicate the locations of the old blocks in the block locator
     this % block_locator = this % block_locator + sign(1, this % block_locator)
+
+    ! Indicate the new block is at the front of the pile
     this % block_locator(new_block_loc) = 1
 
   end subroutine push
+
+!> Resize the local pile
+!! TODO an MPI fence is necessary when using this to prevent accessing deallocated memory, etc.
+  subroutine resize(this, queue_size, total_blocks, block_dims, nvar)
+    class(local_pile) :: this
+    integer(i4), dimension(:), intent(in) :: block_dims
+    integer(i4), intent(in) :: total_blocks, nvar, queue_size
+
+    !write (*, '(A,I0)') "Block size on table: ", total_blocks
+    !write (*, '(A,I0)') "# of state vars: ", nvar
+    !write (*, *) "Intra-block dimensions: ", block_dims
+
+    deallocate (this % block_dims)
+    allocate (this % block_dims(size(block_dims)))
+
+    ! Starting with 1-entry blocks, todo
+    this % block_dims = block_dims
+    this % nvar = nvar
+    this % queue_size = queue_size
+    this % total_blocks = total_blocks
+
+    deallocate (this % pile)
+    allocate (this % pile(nvar, product(this % block_dims) * this % queue_size))
+
+    deallocate (this % block_locator)
+    allocate (this % block_locator(this % total_blocks))
+    this % block_locator = -1
+
+  end subroutine resize
+
 
 end module disttab_local_pile

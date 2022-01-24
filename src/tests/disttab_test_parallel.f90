@@ -47,18 +47,26 @@ contains
     integer(i4), dimension(:), intent(in) :: table_dimensions
     integer(i4), dimension(:), intent(in) :: subtable_dimensions
     integer(i4), dimension(:), intent(in) :: tile_dimensions
+    integer(i4), dimension(:), allocatable :: ones
 
     allocate (this % table_dims(size(table_dimensions)))
     allocate (this % subtable_dims(size(table_dimensions) - 1))
     allocate (this % tile_dims(size(table_dimensions) - 1))
+    allocate (ones(size(table_dimensions) - 1))
+
+    ones = 1
 
     this % table_dims = table_dimensions
     this % subtable_dims = subtable_dimensions
     this % tile_dims = tile_dimensions
     this % lookup = table(this % table_dims, this % subtable_dims, mpi_comm_world)
 
+    !call this % lookup % partition_remap_subtable(tile_dimensions, ones)
+
     ! Impose tile dimensions
     this % lookup % part_dims = this % tile_dims
+    call this % lookup % pile % resize(10, product(this % table_dims(1:size(this%table_dims)-1)) / &
+      & product(this % tile_dims), this % tile_dims, this % lookup % nvar)
 
   end function parallel_test_constructor
 
@@ -112,70 +120,88 @@ contains
     call mpi_type_size(mpi_real, real_size, ierror)
     call mpi_comm_rank(this % lookup % communicator, rank, ierror)
 
-    print *, "local_pile_test, rank ", rank
-
     ! print subtable bounds on each rank
     print *, "rank ", rank, " subtable bounds: ", lbound(this % lookup % elems, dim=2), &
       & ubound(this % lookup % elems, dim=2), " nvar = ", this % lookup % nvar
 
+    ! Impose tile dimensions
+    this % lookup % pile % block_dims = this % tile_dims
+
     do i = lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
       do j = lbound(this % lookup % elems, dim=1), ubound(this % lookup % elems, dim=1)
-        this % lookup % elems(j, i) = i + 0.001 * j
+        this % lookup % elems(j, i) = i + 0.01 * j
       end do
     end do
+    
+    ! Zero out the pile (for checking duplicate entries)
+    this % lookup % pile % pile = 0.0
 
-    print *, "part dims: ", this % lookup % part_dims
+    do i = 1, 1000
 
-    do i = 1, 100
-
+      call mpi_win_fence(0, this % lookup % window, ierror)
+      
       ! Check for duplicate entries in the local piles
-      do j = 1, size(this % lookup % pile % pile)
-        do k = 1, size(this % lookup % pile % pile)
-          if (j .ne. k .and. all(this % lookup % pile % pile(:, j) .eq. this % lookup % pile % pile(:, k)) &
-              .and. any(this % lookup % pile % pile(:, j) .ne. 0)) then
-            print *, "ERROR in local_pile_test: duplicated entries found in the pile on rank ", rank, &
-              " at entries ", j, " and ", k, this % lookup % pile % pile(:, j)
-          end if
-        end do
-      end do
+      !do j = lbound(this % lookup % pile % pile, dim=2), ubound(this % lookup % pile % pile, dim=2)
+      !  do k = lbound(this % lookup % pile % pile, dim=2), ubound(this % lookup % pile % pile, dim=2)
+      !    if (j .ne. k .and. all(this % lookup % pile % pile(:, j) .eq. this % lookup % pile % pile(:, k)) &
+      !        .and. any(this % lookup % pile % pile(:, j) .ne. 0)) then
+      !      print *, "ERROR in local_pile_test: duplicated entries found in the pile on rank ", rank, &
+      !        " at entries ", j, " and ", k, this % lookup % pile % pile(:, j), this % lookup % pile % pile(:, k)
+      !    end if
+      !  end do
+      !end do
 
       ! Random target index to retrieve
       call random_number(r)
-      r = r * product(this % table_dims)
+      r = r * product(this % table_dims(1:size(this%table_dims)-1))
       ind = ceiling(r)
 
-      !write (*, '(A, I0, A, I0)') "Rank ", rank, ": Request index ", ind
+      write (*, *) "Rank ", rank, ": Request index ", ind, lbound(this % lookup % elems, dim=2), &
+        &  ubound(this % lookup % elems, dim=2)
 
       ! Check if index is on the table
       if (ind .ge. lbound(this % lookup % elems, dim=2) .and. ind .le. &
         & ubound(this % lookup % elems, dim=2)) then
-        !  write (*, *) "Obtaining index ", ind, " which is local on rank ", rank, &
-        !    & " --> ", this % lookup % index_to_value(ind)
+
+        !write (*, *) "Obtaining index ", ind, " which is local on rank ", rank, &
+        !  & " --> ", this % lookup % index_to_value(ind)
+
       else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
-        write (*, '(A, I0, A)') "ERROR in index_to_value call: Requested index (", ind, &
-          & ") is not within lookup table bounds."
+
+        !write (*, '(A, I0, A)') "ERROR in index_to_value call: Requested index (", ind, &
+        !  & ") is not within lookup table bounds."
+
       else
-        !  write (*, '(A, I0, A, I0, A, F8.2)') "Rank ", rank, ": Requested index (", ind, &
-        !    & ") is on another sub-table.", this % lookup % index_to_value(ind)
+
+        !write (*, '(A, I0, A, I0, A, F8.2)') "Rank ", rank, ": Requested index (", ind, &
+        !  & ") is on another sub-table.", this % lookup % index_to_value(ind)
 
         blk = floor(1.0 * (ind - 1) / product(this % lookup % pile % block_dims)) + 1
+
         if (this % lookup % pile % block_locator(blk) .gt. 0) then
-          write (*, *) "Rank ", rank, ": Requested index (", ind, &
-          & " is on another sub-table ", this % lookup % index_to_value(ind), &
-          & " but is found on the local pile slot ", this % lookup % pile % block_locator(blk), &
-          & this % lookup % pile % pile(:, &
-          & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
-          & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
-          & product(this % lookup % pile % block_dims))
+
+        !write (*, *) "Rank ", rank, ": Requested index ", ind, &
+        !& " is on another sub-table ", this % lookup % index_to_value(ind), &
+        !& " but is found on the local pile slot ", this % lookup % pile % block_locator(blk), &
+        !& this % lookup % pile % pile(:, &
+        !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
+        !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
+        !& product(this % lookup % pile % block_dims))
+
         else
+
           allocate (push_tile(this % lookup % pile % nvar, product(this % lookup % pile % block_dims)))
+
           do j = 1, product(this % lookup % pile % block_dims)
             k = floor(1.0 * (ind - 1) / product(this % lookup % pile % block_dims)) * &
             & product(this % lookup % pile % block_dims) + j
             push_tile(:, j) = this % lookup % index_to_value(k)
           end do
+
           call this % lookup % pile % push(push_tile, blk)
+
           deallocate (push_tile)
+
         end if
       end if
     end do
@@ -183,29 +209,29 @@ contains
     if (rank .eq. 0) print *, this % lookup % pile % block_locator
     if (rank .eq. 0) print *, this % lookup % pile % pile
 
-    allocate (gold_tile(this % lookup % pile % nvar, product(this % lookup % pile % block_dims)))
+    !allocate (gold_tile(this % lookup % pile % nvar, product(this % lookup % pile % block_dims)))
 
-    do i = 1, this % lookup % pile % total_blocks
-      do j = 1, product(this % lookup % pile % block_dims)
-        do k = 1, this % lookup % pile % nvar
-          gold_tile(k, j) = (i - 1) * product(this % lookup % pile % block_dims) + j + (k - 1) / 10.0
-        end do
-      end do
-      if (this % lookup % pile % block_locator(i) .gt. 0) then
-        print *, gold_tile
-        !if (any(gold_tile .ne. this % lookup % pile % pile(:, &
-        !& this % lookup % pile % block_locator(i)*product(this % lookup % pile % block_dims) : &
-        !& (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) + &
-        !& product(this % lookup % pile % block_dims) - 1))) then
-        !  print *, "!!!!!!FAIL in local pile test", &
-        !& "GOLD: [", gold_tile, "] ", "PILE SLOT: [", this % lookup % pile % pile(:, &
-        !& this % lookup % pile % block_locator(i-1)*product(this % lookup % pile % block_dims): &
-        !& (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) - 1), "] "
-        !end if
-      end if
-    end do
+    !do i = 1, this % lookup % pile % total_blocks
+    !  do j = 1, product(this % lookup % pile % block_dims)
+    !    do k = 1, this % lookup % pile % nvar
+    !      gold_tile(k, j) = (i - 1) * product(this % lookup % pile % block_dims) + j + (k - 1) / 10.0
+    !    end do
+    !  end do
+    !  if (this % lookup % pile % block_locator(i) .gt. 0) then
+    !    print *, gold_tile
+    !    !if (any(gold_tile .ne. this % lookup % pile % pile(:, &
+    !    !& this % lookup % pile % block_locator(i)*product(this % lookup % pile % block_dims) : &
+    !    !& (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) + &
+    !    !& product(this % lookup % pile % block_dims) - 1))) then
+    !    !  print *, "!!!!!!FAIL in local pile test", &
+    !    !& "GOLD: [", gold_tile, "] ", "PILE SLOT: [", this % lookup % pile % pile(:, &
+    !    !& this % lookup % pile % block_locator(i-1)*product(this % lookup % pile % block_dims): &
+    !    !& (this % lookup % pile % block_locator(i))*product(this % lookup % pile % block_dims) - 1), "] "
+    !    !end if
+    !  end if
+    !end do
 
-    deallocate (gold_tile)
+    !deallocate (gold_tile)
 
   end subroutine local_pile_test
 

@@ -194,7 +194,7 @@ contains
         & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
 
       ! Create the MPI window
-      subtable_size = product(this % subtable_dims) * real_size
+      subtable_size = product(this % subtable_dims) * real_size * this % nvar
       call mpi_win_create(this % elems, subtable_size, &
         & real_size, mpi_info_null, this % communicator, this % window, ierror)
       call mpi_win_fence(0, this % window, ierror)
@@ -206,7 +206,8 @@ contains
       !print *, "total blocks ", total_blocks_buffer
 
       ! Create the local pile object
-      this % pile = local_pile(10, 16, (/2, 2/), this % nvar)
+      this % pile = local_pile(10, product(this % table_dims(1:size(this%table_dims)-1)) / &
+        & product(this % part_dims) , this % part_dims, this % nvar)
 
       ! TODO control vars in parallel
       !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
@@ -320,6 +321,7 @@ contains
     call mpi_comm_rank(this % communicator, rank, ierror)
 
     if (ind .ge. lbound(this % elems, dim=2) .and. ind .le. ubound(this % elems, dim=2)) then
+
       val = this % elems(1, ind)
 
     else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
@@ -327,8 +329,12 @@ contains
     else
 
       target_rank = (ind - 1) / product(this % subtable_dims)
-      target_displacement = merge(mod(ind, product(this % subtable_dims)), product(this % subtable_dims), &
-                              & mod(ind, product(this % subtable_dims)) .ne. 0) - 1
+      target_displacement = merge(mod(ind, product(this % subtable_dims))*this % nvar, product(this % subtable_dims)*this % nvar, &
+                              & mod(ind, product(this % subtable_dims))*this % nvar .ne. 0) - this % nvar
+
+      print *, "ORIGIN RANK: ", rank, "TARGET RANK: ", target_rank, " INDEX: ", ind, "DISPLACEMENT: ", target_displacement, " &
+      & SUBTABLE DIMS: ", this % subtable_dims
+
       call mpi_get(val, &
                    this % nvar, &
                    mpi_real, &
@@ -338,6 +344,7 @@ contains
                    mpi_real, &
                    this % window, &
                    ierror)
+
     end if
 
   end function index_to_value
@@ -712,14 +719,16 @@ contains
     elems_old = this % elems
 
     tile_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
-! Pad out table to maintain shape
-! Find padded table dims
+
+    ! Pad out table to maintain shape
+    ! Find padded table dims
     this % table_dims_padded = this % table_dims
     do i = lbound(this % table_dims_padded, dim=1), ubound(this % table_dims_padded, dim=1) - 1
       do while (mod(this % table_dims_padded(i), part_dims(i)) .ne. 0)
         this % table_dims_padded(i) = this % table_dims_padded(i) + 1
       end do
     end do
+
     this % table_dims_padded_flat = &
       product(this % table_dims_padded(1:ubound(this % table_dims_padded, dim=1) - 1))
 
@@ -743,6 +752,8 @@ contains
     end do
 
     deallocate (elems_old)
+
+
   end subroutine partition_remap
 
 !> Remaps the partition from a given previous partition ordering to given new partition
@@ -759,7 +770,7 @@ contains
 
     integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_l, coord_g, coord_t, coord_s
     integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev
-    integer(i4) :: i, i_old, N, rank, ierror, real_size, nprocs, window_old, target_rank
+    integer(i4) :: i, j, i_old, N, rank, ierror, real_size, nprocs, window_old, target_rank
     integer(kind=mpi_address_kind) :: target_displacement, subtable_size
     real(sp), allocatable, dimension(:, :) :: elems_old
     real(sp), dimension(this % nvar) :: val_fetched
@@ -771,16 +782,17 @@ contains
     call mpi_type_size(mpi_real, real_size, ierror)
 
     allocate (elems_old(this % nvar, &
-        & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
+      & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
 
     elems_old = this % elems
 
     ! Create the MPI window for elems_old
-    subtable_size = product(this % subtable_dims) * this % nvar
+    subtable_size = product(this % subtable_dims) * real_size * this % nvar
     call mpi_win_create(elems_old, subtable_size, real_size, mpi_info_null, this % communicator, window_old, ierror)
     call mpi_win_fence(0, window_old, ierror)
 
     tile_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
+    this % part_dims = part_dims
 
 ! Pad out table to maintain shape todo verify this part
 ! Find padded table dims
@@ -797,7 +809,19 @@ contains
 
     call mpi_win_fence(0, window_old, ierror)
 
+    ! Only for example
+    do i = lbound(this % elems, dim=2), ubound(this % elems, dim=2)
+      do j = 1, this % nvar
+      this % elems(j,i) = i + j * 0.01
+      end do
+    end do
+
     deallocate (elems_old)
+
+    print *, this % elems
+
+    call this % pile % resize(10, product(this % table_dims(1:size(this%table_dims)-1)) / &
+      & product(this % part_dims), this % part_dims, this % nvar)
 
   end subroutine partition_remap_subtable
 
