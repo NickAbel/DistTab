@@ -65,6 +65,7 @@ contains
 
     ! Impose tile dimensions
     this % lookup % part_dims = this % tile_dims
+    print *, "total blocks: ", product(this % table_dims(1:size(this%table_dims)-1)) / product(this % tile_dims)
     call this % lookup % pile % resize(10, product(this % table_dims(1:size(this%table_dims)-1)) / &
       & product(this % tile_dims), this % tile_dims, this % lookup % nvar)
 
@@ -111,7 +112,7 @@ contains
 
   subroutine local_pile_test(this)
     class(parallel_test), intent(inout) :: this
-    integer(i4) :: rank, nprocs, real_size, ierror, ind, i, j, k, blk
+    integer(i4) :: rank, nprocs, real_size, ierror, ind, i, j, k, blk, displacement_cv
     real(sp), dimension(:, :), allocatable :: gold_tile, push_tile
     real(sp) :: r
 
@@ -127,16 +128,18 @@ contains
     ! Impose tile dimensions
     this % lookup % pile % block_dims = this % tile_dims
 
+    ! Impose table entries
     do i = lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
       do j = lbound(this % lookup % elems, dim=1), ubound(this % lookup % elems, dim=1)
         this % lookup % elems(j, i) = i + 0.01 * j
       end do
     end do
+    print *, "elems ", this % lookup % elems
     
     ! Zero out the pile (for checking duplicate entries)
     this % lookup % pile % pile = 0.0
 
-    do i = 1, 1000
+    do i = 1, 100
 
       call mpi_win_fence(0, this % lookup % window, ierror)
       
@@ -156,8 +159,8 @@ contains
       r = r * product(this % table_dims(1:size(this%table_dims)-1))
       ind = ceiling(r)
 
-      write (*, *) "Rank ", rank, ": Request index ", ind, lbound(this % lookup % elems, dim=2), &
-        &  ubound(this % lookup % elems, dim=2)
+      !write (*, *) "Rank ", rank, ": Request index ", ind, lbound(this % lookup % elems, dim=2), &
+      !  &  ubound(this % lookup % elems, dim=2)
 
       ! Check if index is on the table
       if (ind .ge. lbound(this % lookup % elems, dim=2) .and. ind .le. &
@@ -180,13 +183,19 @@ contains
 
         if (this % lookup % pile % block_locator(blk) .gt. 0) then
 
-        !write (*, *) "Rank ", rank, ": Requested index ", ind, &
-        !& " is on another sub-table ", this % lookup % index_to_value(ind), &
-        !& " but is found on the local pile slot ", this % lookup % pile % block_locator(blk), &
-        !& this % lookup % pile % pile(:, &
-        !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
-        !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
-        !& product(this % lookup % pile % block_dims))
+        displacement_cv = merge(mod(ind, product(this % subtable_dims)), &
+        & product(this % subtable_dims), &
+        & mod(ind, product(this % subtable_dims))*this % lookup % nvar .ne. 0) - 1
+
+        write (*, *) "Rank ", rank, ": Requested index ", ind, &
+        & " is on another sub-table ", this % lookup % index_to_value(ind), &
+        & " but is found on the local pile slot ", this % lookup % pile % block_locator(blk), &
+        & this % lookup % pile % pile(:, &
+        & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
+        & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
+        & product(this % lookup % pile % block_dims)), "---", displacement_cv, "---", this % lookup % pile % pile(:, &
+        & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1 + displacement_cv)
+
 
         else
 

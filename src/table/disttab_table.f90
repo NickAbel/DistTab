@@ -332,8 +332,8 @@ contains
       target_displacement = merge(mod(ind, product(this % subtable_dims))*this % nvar, product(this % subtable_dims)*this % nvar, &
                               & mod(ind, product(this % subtable_dims))*this % nvar .ne. 0) - this % nvar
 
-      print *, "ORIGIN RANK: ", rank, "TARGET RANK: ", target_rank, " INDEX: ", ind, "DISPLACEMENT: ", target_displacement, " &
-      & SUBTABLE DIMS: ", this % subtable_dims
+      !print *, "ORIGIN RANK: ", rank, "TARGET RANK: ", target_rank, " INDEX: ", ind, "DISPLACEMENT: ", target_displacement, " &
+      !& SUBTABLE DIMS: ", this % subtable_dims
 
       call mpi_get(val, &
                    this % nvar, &

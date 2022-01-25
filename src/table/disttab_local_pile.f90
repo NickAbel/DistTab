@@ -76,8 +76,8 @@ contains
     real(sp), dimension(this % nvar, product(this % block_dims)), intent(in) :: new_block
     integer(i4) :: new_block_loc
 
-    print *, "NVAR = ", this % nvar, " PILE SIZE = ", size(this % pile), " PRODUCT BLOCK DIMS = ", &
-      & product(this % block_dims), " PILE UBOUND2 = ", ubound(this % pile, dim=2)
+    !print *, "NVAR = ", this % nvar, " PILE SIZE = ", size(this % pile), " PRODUCT BLOCK DIMS = ", &
+    !  & product(this % block_dims), " PILE UBOUND2 = ", ubound(this % pile, dim=2)
 
     ! Move the old blocks back
     this % pile(:, (product(this % block_dims) + 1):ubound(this % pile, dim=2)) = &

@@ -140,11 +140,11 @@ contains
   subroutine test_mpi()
     character(len=120) :: file_id
 
-    allocate (table_dims(3))
-    allocate (subtable_dims(3))
-    allocate (part_dims(2))
+    allocate (table_dims(4))
+    allocate (subtable_dims(4))
+    allocate (part_dims(3))
 
-    table_dims = (/8, 4, 1/)
+    table_dims = (/8, 4, 2/)
     subtable_dims = (/4, 2/)
     part_dims = (/2, 2/)
 
