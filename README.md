@@ -117,7 +117,7 @@ The documentation is output in the directory `doc`.
 - [ ] - Stashing
 - [x] - Retrieving
 - [ ] - Queueing
-- [ ] Begin parallel file I/O
+- [ ] Implement parallel file I/O
 
 ## Alya
 
