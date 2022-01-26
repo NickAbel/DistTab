@@ -100,15 +100,24 @@ The documentation is output in the directory `doc`.
 - [x] Don't rely on the sort command to generate input for tests
 - [x] Make output verbiage from tests easier to understand, should see at a glance all PASS/FAIL/DIFFs.
 - [x] Re-introduce MPI calls
-- [x] Distribute the table among ranks in a simple manner
-- [ ] Make repartitioning of the table coherent across ranks; i.e, a 'two-level' partitioning scheme
-- [x] Begin working on local pile
-- [ ] Complete and verify correct passing, stashing, queueing and retrieving in local pile: 
+- [ ] Parallel storage and mapping of table:
+- [x] - Distribute the table among ranks in a simple manner
+- [ ] - Make repartitioning of the table coherent across ranks; i.e, a 'two-level' partitioning scheme
+- [ ] - Remapping of tables which are stored across ranks
+- [x] Local pile functionality for two-dimensional tables with divisible block structure, one state variable
+- [x] Local pile functionality for two-dimensional tables with divisible block structure, multiple state variables
+- [x] Local pile functionality for n-dimensional tables with divisible block structure, one state variable
+- [x] Local pile functionality for n-dimensional tables with divisible block structure, multiple state variables
+- [ ] Local pile functionality for two-dimensional tables with nondivisible block structure, one state variable
+- [ ] Local pile functionality for two-dimensional tables with nondivisible block structure, multiple state variables
+- [ ] Local pile functionality for n-dimensional tables with nondivisible block structure, one state variable
+- [ ] Local pile functionality for n-dimensional tables with nondivisible block structure, multiple state variables
+- [ ] Implement tests to verify correct passing, stashing, queueing and retrieving in local pile: 
 - [ ] - Passing
 - [ ] - Stashing
-- [ ] - Retrieving
+- [x] - Retrieving
 - [ ] - Queueing
-- [ ] Explain new functionalities in README.md
+- [ ] Begin parallel file I/O
 
 ## Alya
 
