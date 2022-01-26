@@ -141,11 +141,11 @@ contains
     character(len=120) :: file_id
 
     allocate (table_dims(3))
-    allocate (subtable_dims(3))
+    allocate (subtable_dims(2))
     allocate (part_dims(2))
 
-    table_dims = (/8, 4, 18/)
-    subtable_dims = (/4, 2/)
+    table_dims = (/6, 6, 2/)
+    subtable_dims = (/3, 3/)
     part_dims = (/2, 2/)
 
     test_parallel = parallel_test(table_dims, subtable_dims, part_dims)

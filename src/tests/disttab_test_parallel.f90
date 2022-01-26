@@ -65,8 +65,8 @@ contains
 
     ! Impose tile dimensions
     this % lookup % part_dims = this % tile_dims
-    print *, "total blocks: ", product(this % table_dims(1:size(this%table_dims)-1)) / product(this % tile_dims)
-    call this % lookup % pile % resize(10, product(this % table_dims(1:size(this%table_dims)-1)) / &
+    print *, "total blocks: ", product(this % table_dims(1:size(this % table_dims) - 1)) / product(this % tile_dims)
+    call this % lookup % pile % resize(10, product(this % table_dims(1:size(this % table_dims) - 1)) / &
       & product(this % tile_dims), this % tile_dims, this % lookup % nvar)
 
   end function parallel_test_constructor
@@ -135,14 +135,14 @@ contains
         this % lookup % elems(j, i) = i + 0.01 * j
       end do
     end do
-    
+
     ! Zero out the pile (for checking duplicate entries)
     this % lookup % pile % pile = 0.0
 
     do i = 1, 1000
 
       call mpi_win_fence(0, this % lookup % window, ierror)
-      
+
       ! Check for duplicate entries in the local piles
       !do j = lbound(this % lookup % pile % pile, dim=2), ubound(this % lookup % pile % pile, dim=2)
       !  do k = lbound(this % lookup % pile % pile, dim=2), ubound(this % lookup % pile % pile, dim=2)
@@ -156,7 +156,7 @@ contains
 
       ! Random target index to retrieve
       call random_number(r)
-      r = r * product(this % table_dims(1:size(this%table_dims)-1))
+      r = r * product(this % table_dims(1:size(this % table_dims) - 1))
       ind = ceiling(r)
 
       !write (*, *) "Rank ", rank, ": Request index ", ind, lbound(this % lookup % elems, dim=2), &
@@ -183,23 +183,23 @@ contains
 
         if (this % lookup % pile % block_locator(blk) .gt. 0) then
 
-        displacement_cv = merge(mod(ind, product(this % lookup % part_dims)), &
-        & product(this % lookup % part_dims), &
-        & mod(ind, product(this % lookup % part_dims)) .ne. 0) 
+          displacement_cv = merge(mod(ind, product(this % lookup % part_dims)), &
+          & product(this % lookup % part_dims), &
+          & mod(ind, product(this % lookup % part_dims)) .ne. 0)
 
-        table_value = this % lookup % index_to_value(ind)
-        pile_value = this % lookup % pile % pile(:, product(this % lookup % pile % block_dims) * &
-        & (this % lookup % pile % block_locator(blk) - 1) + displacement_cv)
+          table_value = this % lookup % index_to_value(ind)
+          pile_value = this % lookup % pile % pile(:, product(this % lookup % pile % block_dims) * &
+          & (this % lookup % pile % block_locator(blk) - 1) + displacement_cv)
 
-        if (any(table_value .ne. pile_value)) print *, "FAIL in local_pile_test: table value and pile value not equal"
+          if (any(table_value .ne. pile_value)) print *, "FAIL in local_pile_test: table value and pile value not equal"
 
-        !write (*, *) "Rank ", rank, ": Requested index ", ind, &
-        !& " is on another sub-table ", this % lookup % index_to_value(ind), &
-        !& " but is found on the local pile slot ", this % lookup % pile % block_locator(blk) &
-        !&, ":", displacement_cv, this % lookup % pile % pile(:, &
-        !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
-        !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
-        !& product(this % lookup % pile % block_dims)) 
+          !write (*, *) "Rank ", rank, ": Requested index ", ind, &
+          !& " is on another sub-table ", this % lookup % index_to_value(ind), &
+          !& " but is found on the local pile slot ", this % lookup % pile % block_locator(blk) &
+          !&, ":", displacement_cv, this % lookup % pile % pile(:, &
+          !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
+          !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
+          !& product(this % lookup % pile % block_dims))
 
         else
 

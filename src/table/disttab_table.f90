@@ -206,8 +206,8 @@ contains
       !print *, "total blocks ", total_blocks_buffer
 
       ! Create the local pile object
-      this % pile = local_pile(10, product(this % table_dims(1:size(this%table_dims)-1)) / &
-        & product(this % part_dims) , this % part_dims, this % nvar)
+      this % pile = local_pile(10, product(this % table_dims(1:size(this % table_dims) - 1)) / &
+        & product(this % part_dims), this % part_dims, this % nvar)
 
       ! TODO control vars in parallel
       !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
@@ -329,8 +329,9 @@ contains
     else
 
       target_rank = (ind - 1) / product(this % subtable_dims)
-      target_displacement = merge(mod(ind, product(this % subtable_dims))*this % nvar, product(this % subtable_dims)*this % nvar, &
-                              & mod(ind, product(this % subtable_dims))*this % nvar .ne. 0) - this % nvar
+      target_displacement = merge(mod(ind, product(this % subtable_dims)) * this % nvar, &
+                          & product(this % subtable_dims) * this % nvar, &
+                          & mod(ind, product(this % subtable_dims)) * this % nvar .ne. 0) - this % nvar
 
       !print *, "ORIGIN RANK: ", rank, "TARGET RANK: ", target_rank, " INDEX: ", ind, "DISPLACEMENT: ", target_displacement, " &
       !& SUBTABLE DIMS: ", this % subtable_dims
@@ -753,7 +754,6 @@ contains
 
     deallocate (elems_old)
 
-
   end subroutine partition_remap
 
 !> Remaps the partition from a given previous partition ordering to given new partition
@@ -812,7 +812,7 @@ contains
     ! Only for example
     do i = lbound(this % elems, dim=2), ubound(this % elems, dim=2)
       do j = 1, this % nvar
-      this % elems(j,i) = i + j * 0.01
+        this % elems(j, i) = i + j * 0.01
       end do
     end do
 
@@ -820,7 +820,7 @@ contains
 
     print *, this % elems
 
-    call this % pile % resize(10, product(this % table_dims(1:size(this%table_dims)-1)) / &
+    call this % pile % resize(10, product(this % table_dims(1:size(this % table_dims) - 1)) / &
       & product(this % part_dims), this % part_dims, this % nvar)
 
   end subroutine partition_remap_subtable
