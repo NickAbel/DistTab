@@ -114,6 +114,7 @@ contains
     class(parallel_test), intent(inout) :: this
     integer(i4) :: rank, nprocs, real_size, ierror, ind, i, j, k, blk, displacement_cv
     real(sp), dimension(:, :), allocatable :: gold_tile, push_tile
+    real(sp), dimension(this % lookup % nvar) :: table_value, pile_value
     real(sp) :: r
 
     ! MPI variables we'll need
@@ -134,12 +135,11 @@ contains
         this % lookup % elems(j, i) = i + 0.01 * j
       end do
     end do
-    print *, "elems ", this % lookup % elems
     
     ! Zero out the pile (for checking duplicate entries)
     this % lookup % pile % pile = 0.0
 
-    do i = 1, 100
+    do i = 1, 1000
 
       call mpi_win_fence(0, this % lookup % window, ierror)
       
@@ -183,19 +183,23 @@ contains
 
         if (this % lookup % pile % block_locator(blk) .gt. 0) then
 
-        displacement_cv = merge(mod(ind, product(this % subtable_dims)), &
-        & product(this % subtable_dims), &
-        & mod(ind, product(this % subtable_dims))*this % lookup % nvar .ne. 0) - 1
+        displacement_cv = merge(mod(ind, product(this % lookup % part_dims)), &
+        & product(this % lookup % part_dims), &
+        & mod(ind, product(this % lookup % part_dims)) .ne. 0) 
 
-        write (*, *) "Rank ", rank, ": Requested index ", ind, &
-        & " is on another sub-table ", this % lookup % index_to_value(ind), &
-        & " but is found on the local pile slot ", this % lookup % pile % block_locator(blk), &
-        & this % lookup % pile % pile(:, &
-        & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
-        & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
-        & product(this % lookup % pile % block_dims)), "---", displacement_cv, "---", this % lookup % pile % pile(:, &
-        & product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1 + displacement_cv)
+        table_value = this % lookup % index_to_value(ind)
+        pile_value = this % lookup % pile % pile(:, product(this % lookup % pile % block_dims) * &
+        & (this % lookup % pile % block_locator(blk) - 1) + displacement_cv)
 
+        if (any(table_value .ne. pile_value)) print *, "FAIL in local_pile_test: table value and pile value not equal"
+
+        !write (*, *) "Rank ", rank, ": Requested index ", ind, &
+        !& " is on another sub-table ", this % lookup % index_to_value(ind), &
+        !& " but is found on the local pile slot ", this % lookup % pile % block_locator(blk) &
+        !&, ":", displacement_cv, this % lookup % pile % pile(:, &
+        !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + 1: &
+        !& product(this % lookup % pile % block_dims) * (this % lookup % pile % block_locator(blk) - 1) + &
+        !& product(this % lookup % pile % block_dims)) 
 
         else
 
@@ -215,8 +219,8 @@ contains
       end if
     end do
 
-    if (rank .eq. 0) print *, this % lookup % pile % block_locator
-    if (rank .eq. 0) print *, this % lookup % pile % pile
+    !if (rank .eq. 0) print *, this % lookup % pile % block_locator
+    !if (rank .eq. 0) print *, this % lookup % pile % pile
 
     !allocate (gold_tile(this % lookup % pile % nvar, product(this % lookup % pile % block_dims)))
 
