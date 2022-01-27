@@ -111,12 +111,12 @@ contains
     ! Compute padded dimensions for test tables
     this % lookup % table_dims_padded = this % table_dims
 
+    ! todo verify doing this here is entirely redundant as it is done in partition_remap
     do i = lbound(this % lookup % table_dims_padded, dim=1), ubound(this % lookup % table_dims_padded, dim=1) - 1
       do while (mod(this % lookup % table_dims_padded(i), this % part_dims(i)) .ne. 0)
         this % lookup % table_dims_padded(i) = this % lookup % table_dims_padded(i) + 1
       end do
     end do
-
     this % lookup % table_dims_padded_flat = &
       product(this % lookup % table_dims_padded(1:ubound(this % lookup % table_dims_padded, dim=1) - 1))
 
@@ -143,7 +143,7 @@ contains
     if (all(this % lookup % elems .eq. elems_gold_std)) then
       write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
         this % part_dims, "]: ", "partition_map_test passed! Tables will be deleted."
-      call execute_command_line('rm *.DistTab.tmp.dat')
+      !call execute_command_line('rm *.DistTab.tmp.dat')
     else if (all(abs(this % lookup % elems - elems_gold_std) .lt. 0.0005)) then
       write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
         this % part_dims, "]: ", "trivially small diff in partition_map_test. most likely a pass. Tables not deleted."
@@ -185,7 +185,7 @@ contains
     if (all(this % lookup % elems .eq. elems_gold_std)) then
       write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
         this % part_dims, "]: ", "partition_map_unmap_test passed! Tables will be deleted."
-      call execute_command_line('rm *.DistTab.tmp.dat')
+      !call execute_command_line('rm *.DistTab.tmp.dat')
     else if (all(abs(this % lookup % elems - elems_gold_std) .lt. 0.0005)) then
       write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
         this % part_dims, "]: ", "trivially small diff in partition_map_unmap_test. most likely a pass. Tables not deleted."

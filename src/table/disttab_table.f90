@@ -704,7 +704,6 @@ contains
 !! @param this table object to perform partition mapping
 !! @param part_dims partition dims to use
 !! @param part_dims_prev partition dims in previous partition scheme
-!! @todo move nasty reshaping code to another function
   subroutine partition_remap(this, part_dims, part_dims_prev)
     class(table), intent(inout) :: this
     integer(i4), dimension(size(this % table_dims) - 1), intent(in) :: part_dims, part_dims_prev
@@ -741,6 +740,7 @@ contains
     this % part_dims = part_dims
     tile_dims = this % table_dims_padded(1:N) / this % part_dims
 
+    print *, this % elems
     do i = 1, this % table_dims_padded_flat
       call this % index_to_local_coord(i, this % part_dims, tile_dims, coord_p, coord_b)
       coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
@@ -748,9 +748,11 @@ contains
         this % elems(:, i) = 0
       else
         i_old = this % global_coord_to_index(coord, part_dims_prev, tile_dims_prev)
+        print *, i, i_old
         this % elems(:, i) = elems_old(:, i_old)
       end if
     end do
+    print *, this % elems
 
     deallocate (elems_old)
 
@@ -768,9 +770,10 @@ contains
     class(table), intent(inout) :: this
     integer(i4), dimension(size(this % table_dims) - 1), intent(in) :: part_dims, part_dims_prev
 
-    integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_l, coord_g, coord_t, coord_s, coord_p, coord_b
+    integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_r, coord_p, coord_b
     integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev
-    integer(i4) :: i, j, i_old, N, rank, ierror, real_size, nprocs, window_old, target_rank
+    integer(i4), dimension(size(this % table_dims) - 1) :: rank_dims
+    integer(i4) :: i, j, i_old, N, i_rank, i_root, rank, ierror, real_size, nprocs, window_old, target_rank
     integer(kind=mpi_address_kind) :: target_displacement, subtable_size
     real(sp), allocatable, dimension(:, :) :: elems_old
     real(sp), dimension(this % nvar) :: val_fetched
@@ -812,23 +815,29 @@ contains
     this % part_dims = part_dims
     tile_dims = this % table_dims_padded(1:N) / this % part_dims
 
-    do i = rank*product(this % subtable_dims) + 1, (rank + 1)*product(this % subtable_dims)
-      call this % index_to_local_coord(i, this % part_dims, tile_dims, coord_p, coord_b)
+    rank_dims = this % table_dims(1:N) / this % subtable_dims
+
+    do i = product(this % subtable_dims)*rank + 1, (rank + 1)*product(this % subtable_dims)
+      i_root = merge(mod(i, product(this % subtable_dims)), product(this % subtable_dims), &
+                 & mod(i, product(this % subtable_dims)) .ne. 0) + (rank)*product(this % subtable_dims)
+      call this % index_to_local_coord(i_root, this % part_dims, tile_dims, coord_p, coord_b)
       coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
       if (any(coord .gt. this % table_dims(1:N))) then
         this % elems(:, i) = 0
-        if (rank .eq. 0) print *, "0-padding ", i
       else
         i_old = this % global_coord_to_index(coord, part_dims_prev, tile_dims_prev)
+        coord_r(1) = mod(ceiling((i - 1) / this % subtable_dims(1)*1.0), rank_dims(1)) 
+        coord_r(2) = ceiling((i - 1) / (rank_dims(1) * product(this % subtable_dims)) * 1.0)
+        i_rank = mod(ceiling((i - 1) / this % subtable_dims(1)*1.0), rank_dims(1)) + &
+                 & rank_dims(1)*ceiling((i - 1) / (rank_dims(1) * product(this % subtable_dims)) * 1.0)
+        if (rank .ne. -1) then
+          print *, i, i_old, i_root!, coord_r, coord
+        end if
         this % elems(:, i) = elems_old(:, i_old)
-        if (rank .eq. 0) print *, i, " gets entry ", i_old
       end if
     end do
 
-
     deallocate (elems_old)
-
-    print *, "Rank ", rank, ": ", this % elems
 
     !call this % pile % resize(10, product(this % table_dims(1:size(this % table_dims) - 1)) / &
     !  & product(this % part_dims), this % part_dims, this % nvar)

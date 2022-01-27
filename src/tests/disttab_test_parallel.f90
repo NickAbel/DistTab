@@ -268,10 +268,10 @@ contains
     ! Fill subtables with easy ascending integers
     N = product(this % lookup % subtable_dims)
     do i = 1, N
-      this % lookup % elems(:,i + rank * N) = i + rank * N
+      this % lookup % elems(:, i + rank * N) = i + rank * N
     end do
 
-    call this % lookup % partition_remap_subtable(this % subtable_dims, this % lookup % table_dims_padded)
+    call this % lookup % partition_remap(this % tile_dims, this % lookup % table_dims_padded)
 
     if (rank .eq. 0) print *, "parallel partition mapping test", N, this % lookup % elems
 

@@ -144,7 +144,7 @@ contains
     allocate (subtable_dims(2))
     allocate (part_dims(2))
 
-    table_dims = (/8, 8, 1/)
+    table_dims = (/4, 4, 1/)
     subtable_dims = (/4, 4/)
     part_dims = (/2, 2/)
 
