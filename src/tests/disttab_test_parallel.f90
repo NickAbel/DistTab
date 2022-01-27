@@ -21,9 +21,13 @@ module disttab_test_parallel
 
     procedure, pass(this) :: run_parallel_get_test
     procedure, pass(this) :: run_local_pile_test
+    procedure, pass(this) :: run_parallel_partition_map_test
+    procedure, pass(this) :: run_parallel_partition_map_unmap_test
 
     procedure, pass(this), private :: parallel_get_test
     procedure, pass(this), private :: local_pile_test
+    procedure, pass(this), private :: parallel_partition_map_test
+    procedure, pass(this), private :: parallel_partition_map_unmap_test
 
     final :: parallel_test_destructor
 
@@ -248,6 +252,48 @@ contains
 
   end subroutine local_pile_test
 
+  subroutine parallel_partition_map_test(this)
+    class(parallel_test), intent(inout) :: this
+    integer(i4) :: rank, nprocs, real_size, i, j, k, ierror, ind, tlb_index, tub_index, N
+    integer(i4), dimension(size(this % tile_dims)) :: global_coords
+    integer(i4), dimension(size(this % tile_dims)) :: tile_lower_bound, tile_upper_bound
+    real(sp) :: r
+    real(sp), dimension(this % lookup % nvar, product(this % tile_dims)) :: tile_buffer
+
+    ! MPI variables we'll need
+    call mpi_comm_size(this % lookup % communicator, nprocs, ierror)
+    call mpi_type_size(mpi_real, real_size, ierror)
+    call mpi_comm_rank(this % lookup % communicator, rank, ierror)
+
+    ! Fill subtables with easy ascending integers
+    N = product(this % lookup % subtable_dims)
+    do i = 1, N
+      this % lookup % elems(:,i + rank * N) = i + rank * N
+    end do
+
+    call this % lookup % partition_remap_subtable(this % subtable_dims, this % lookup % table_dims_padded)
+
+    if (rank .eq. 0) print *, "parallel partition mapping test", N, this % lookup % elems
+
+  end subroutine parallel_partition_map_test
+
+  subroutine parallel_partition_map_unmap_test(this)
+    class(parallel_test), intent(inout) :: this
+    integer(i4) :: rank, nprocs, real_size, i, j, k, ierror, ind, tlb_index, tub_index
+    integer(i4), dimension(size(this % tile_dims)) :: global_coords
+    integer(i4), dimension(size(this % tile_dims)) :: tile_lower_bound, tile_upper_bound
+    real(sp) :: r
+    real(sp), dimension(this % lookup % nvar, product(this % tile_dims)) :: tile_buffer
+
+    ! MPI variables we'll need
+    call mpi_comm_size(this % lookup % communicator, nprocs, ierror)
+    call mpi_type_size(mpi_real, real_size, ierror)
+    call mpi_comm_rank(this % lookup % communicator, rank, ierror)
+
+    print *, "parallel partition mapping-unmapping test"
+
+  end subroutine parallel_partition_map_unmap_test
+
 !> Runs the partition mapping test.
 !! @param this the parallel_test object
   subroutine run_parallel_get_test(this)
@@ -265,5 +311,23 @@ contains
     call this % local_pile_test()
 
   end subroutine run_local_pile_test
+
+!> Runs the parallel partition mapping test.
+!! @param this the parallel_test object
+  subroutine run_parallel_partition_map_test(this)
+    class(parallel_test), intent(inout) :: this
+
+    call this % parallel_partition_map_test()
+
+  end subroutine run_parallel_partition_map_test
+
+!> Runs the parallel partition mapping-unmapping test.
+!! @param this the parallel_test object
+  subroutine run_parallel_partition_map_unmap_test(this)
+    class(parallel_test), intent(inout) :: this
+
+    call this % parallel_partition_map_unmap_test()
+
+  end subroutine run_parallel_partition_map_unmap_test
 
 end module disttab_test_parallel

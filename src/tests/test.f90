@@ -144,13 +144,15 @@ contains
     allocate (subtable_dims(2))
     allocate (part_dims(2))
 
-    table_dims = (/6, 6, 2/)
-    subtable_dims = (/3, 3/)
+    table_dims = (/8, 8, 1/)
+    subtable_dims = (/4, 4/)
     part_dims = (/2, 2/)
 
     test_parallel = parallel_test(table_dims, subtable_dims, part_dims)
     !call test_parallel % run_parallel_get_test()
-    call test_parallel % run_local_pile_test()
+    !call test_parallel % run_local_pile_test()
+    call test_parallel % run_parallel_partition_map_test()
+    !call test_parallel % run_parallel_partition_map_unmap_test()
 
     ! WIP todo parallel file I/O with MPI in lookup % read_in()
     !file_id = "../tables/4x4_1var.dat"

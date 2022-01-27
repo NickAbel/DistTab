@@ -768,7 +768,7 @@ contains
     class(table), intent(inout) :: this
     integer(i4), dimension(size(this % table_dims) - 1), intent(in) :: part_dims, part_dims_prev
 
-    integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_l, coord_g, coord_t, coord_s
+    integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_l, coord_g, coord_t, coord_s, coord_p, coord_b
     integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev
     integer(i4) :: i, j, i_old, N, rank, ierror, real_size, nprocs, window_old, target_rank
     integer(kind=mpi_address_kind) :: target_displacement, subtable_size
@@ -794,34 +794,44 @@ contains
     tile_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
     this % part_dims = part_dims
 
-! Pad out table to maintain shape todo verify this part
-! Find padded table dims
-!    this % subtable_dims_padded = this % subtable_dims
-!    do i = lbound(this % subtable_dims_padded, dim=1), ubound(this % subtable_dims_padded, dim=1) - 1
-!      do while (mod(this % subtable_dims_padded(i), part_dims(i)) .ne. 0)
-!        this % subtable_dims_padded(i) = this % subtable_dims_padded(i) + 1
-!      end do
-!    end do
-
-! Create a new padded table
+    ! Pad out table to maintain shape todo verify this part
+    ! Find padded table dims
+    !    this % subtable_dims_padded = this % subtable_dims
+    !    do i = lbound(this % subtable_dims_padded, dim=1), ubound(this % subtable_dims_padded, dim=1) - 1
+    !      do while (mod(this % subtable_dims_padded(i), part_dims(i)) .ne. 0)
+    !        this % subtable_dims_padded(i) = this % subtable_dims_padded(i) + 1
+    !      end do
+    !    end do
+    
+    ! Create a new padded table
     deallocate (this % elems)
     allocate (this % elems(this % nvar, rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
 
     call mpi_win_fence(0, window_old, ierror)
 
-    ! Only for example
-    do i = lbound(this % elems, dim=2), ubound(this % elems, dim=2)
-      do j = 1, this % nvar
-        this % elems(j, i) = i + j * 0.01
-      end do
+    this % part_dims = part_dims
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+
+    do i = rank*product(this % subtable_dims) + 1, (rank + 1)*product(this % subtable_dims)
+      call this % index_to_local_coord(i, this % part_dims, tile_dims, coord_p, coord_b)
+      coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
+      if (any(coord .gt. this % table_dims(1:N))) then
+        this % elems(:, i) = 0
+        if (rank .eq. 0) print *, "0-padding ", i
+      else
+        i_old = this % global_coord_to_index(coord, part_dims_prev, tile_dims_prev)
+        this % elems(:, i) = elems_old(:, i_old)
+        if (rank .eq. 0) print *, i, " gets entry ", i_old
+      end if
     end do
+
 
     deallocate (elems_old)
 
-    print *, this % elems
+    print *, "Rank ", rank, ": ", this % elems
 
-    call this % pile % resize(10, product(this % table_dims(1:size(this % table_dims) - 1)) / &
-      & product(this % part_dims), this % part_dims, this % nvar)
+    !call this % pile % resize(10, product(this % table_dims(1:size(this % table_dims) - 1)) / &
+    !  & product(this % part_dims), this % part_dims, this % nvar)
 
   end subroutine partition_remap_subtable
 
