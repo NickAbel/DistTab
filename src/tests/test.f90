@@ -20,10 +20,10 @@ program test
   call mpi_init(ierror)
 
   ! Built-in tests that verify mapping and padding
-  !call square_test()
-  !call rand_test_fast()
+  call square_test()
+  call rand_test_fast()
   !call rand_test_full()
-  call test_mpi()
+  !call test_mpi()
   !call reshape_test()
 
   ! Other tests
@@ -72,11 +72,11 @@ contains
       allocate (part_dims(dims))
 
       call random_number(part_dims_real)
-      part_dims_real = part_dims_real * 12.0
+      part_dims_real = part_dims_real * 15.0
       part_dims = ceiling(part_dims_real)
 
       call random_number(table_dims_real)
-      table_dims_real = table_dims_real * 20.0
+      table_dims_real = table_dims_real * 50.0
       table_dims = ceiling(table_dims_real)
       table_dims(1:dims) = part_dims + table_dims(1:dims)
       table_dims(dims + 1) = 1

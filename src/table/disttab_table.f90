@@ -703,27 +703,21 @@ contains
 !! @param part_dims partition dims to use
 !! @param part_dims_prev partition dims in previous partition scheme
   subroutine partition_remap(this, part_dims, part_dims_prev)
+
     class(table), intent(inout) :: this
     integer(i4), dimension(size(this % table_dims) - 1), intent(in) :: part_dims, part_dims_prev
 
     integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_b, coord_p
     integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev
-    integer(i4) :: i, i_old, N, rank, ierror
+    integer(i4) :: i, i_old, N
     real(sp), allocatable, dimension(:, :) :: elems_old
 
     N = size(this % table_dims) - 1
 
-    !if (present(this % communicator)) then
-      call mpi_comm_rank(this % communicator, rank, ierror)
-    !else
-    !  rank = 0
-    !end if
-
-    allocate (elems_old(this % nvar,  product(this % subtable_dims_padded)*rank + 1 : &
-    & (rank + 1)*product(this % subtable_dims_padded)))
+    allocate (elems_old(this % nvar, this % table_dims_padded_flat))
     elems_old = this % elems
 
-    tile_dims_prev = this % subtable_dims_padded(1:N) / part_dims_prev
+    tile_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
 
     ! Pad out table to maintain shape
     ! Find padded table dims
@@ -733,31 +727,21 @@ contains
         this % table_dims_padded(i) = this % table_dims_padded(i) + 1
       end do
     end do
-    
-    this % subtable_dims_padded = this % subtable_dims
-    do i = lbound(this % subtable_dims_padded, dim=1), ubound(this % subtable_dims_padded, dim=1) - 1
-      do while (mod(this % subtable_dims_padded(i), part_dims(i)) .ne. 0)
-        this % subtable_dims_padded(i) = this % subtable_dims_padded(i) + 1
-      end do
-    end do
 
     this % table_dims_padded_flat = &
       product(this % table_dims_padded(1:ubound(this % table_dims_padded, dim=1) - 1))
 
 ! Create a new padded table
     deallocate (this % elems)
-    allocate (this % elems(this % nvar, product(this % subtable_dims_padded)*rank + 1 : &
-    & (rank + 1)*product(this % subtable_dims_padded)))
+    allocate (this % elems(this % nvar, this % table_dims_padded_flat))
     this % elems = 0.d0
 
     this % part_dims = part_dims
-    tile_dims = this % subtable_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:N) / this % part_dims
 
-    do i = product(this % subtable_dims)*rank + 1, (rank + 1)*product(this % subtable_dims)
+    do i = 1, this % table_dims_padded_flat
       call this % index_to_local_coord(i, this % part_dims, tile_dims, coord_p, coord_b)
       coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
-      print *, i, coord_p, coord_b, coord
-      ! TODO rank topology is not used for parallel tables, this logic is merely a workaround to pass the serial tests.
       if (any(coord .gt. this % table_dims(1:N))) then
         this % elems(:, i) = 0
       else
