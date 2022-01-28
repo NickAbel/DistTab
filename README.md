@@ -104,6 +104,9 @@ The documentation is output in the directory `doc`.
 - [x] - Distribute the table among ranks in a simple manner
 - [ ] - Make repartitioning of the table coherent across ranks; i.e, a 'two-level' partitioning scheme
 - [ ] - Remapping of tables which are stored across ranks
+- [ ] - Retrieval from a repartitioned parallel-storage table based on index
+- [ ] - Retrieval from a repartitioned parallel-storage table based on coordinates
+- [ ] - Retrieval from a repartitioned parallel-storage table based on spatial location
 - [x] Local pile functionality for two-dimensional tables with divisible block structure, one state variable
 - [x] Local pile functionality for two-dimensional tables with divisible block structure, multiple state variables
 - [x] Local pile functionality for n-dimensional tables with divisible block structure, one state variable
