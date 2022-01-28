@@ -69,7 +69,7 @@ contains
 
     ! Impose tile dimensions
     this % lookup % part_dims = this % tile_dims
-    print *, "total blocks: ", product(this % table_dims(1:size(this % table_dims) - 1)) / product(this % tile_dims)
+    !print *, "total blocks: ", product(this % table_dims(1:size(this % table_dims) - 1)) / product(this % tile_dims)
     call this % lookup % pile % resize(10, product(this % table_dims(1:size(this % table_dims) - 1)) / &
       & product(this % tile_dims), this % tile_dims, this % lookup % nvar)
 
@@ -223,8 +223,8 @@ contains
       end if
     end do
 
-    !if (rank .eq. 0) print *, this % lookup % pile % block_locator
-    !if (rank .eq. 0) print *, this % lookup % pile % pile
+    print *, this % lookup % pile % block_locator
+    print *, this % lookup % pile % pile
 
     !allocate (gold_tile(this % lookup % pile % nvar, product(this % lookup % pile % block_dims)))
 
@@ -271,9 +271,11 @@ contains
       this % lookup % elems(:, i + rank * N) = i + rank * N
     end do
 
-    call this % lookup % partition_remap(this % tile_dims, this % lookup % table_dims_padded)
+    print *, "parallel partition mapping test", N, this % lookup % elems
 
-    if (rank .eq. 0) print *, "parallel partition mapping test", N, this % lookup % elems
+    call this % lookup % partition_remap_subtable(this % tile_dims, this % lookup % subtable_dims)
+
+    print *, "parallel partition mapping test", N, this % lookup % elems
 
   end subroutine parallel_partition_map_test
 
