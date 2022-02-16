@@ -19,17 +19,20 @@ program test
 
   call mpi_init(ierror)
 
-  ! Built-in tests that verify mapping and padding
-  call square_test()
-  call rand_test_fast()
+  ! Sequential functionality testing
+  !call square_test()
+  !call rand_test_fast()
   !call rand_test_full()
-  !call test_mpi()
   !call reshape_test()
+
+  ! Parallel functionality testing
+  call test_mpi()
 
   ! Other tests
   !call read_test() ! This won't work for the time being as MPI is introduced in table % read_in()
   !call locality_test()
   !call access_perf_test()
+  !call troubleshooting()
 
 contains
 
@@ -144,7 +147,7 @@ contains
     allocate (subtable_dims(2))
     allocate (part_dims(2))
 
-    table_dims = (/4, 16, 1/)
+    table_dims = (/8, 8, 1/)
     subtable_dims = (/4, 4/)
     part_dims = (/2, 2/)
 
@@ -272,5 +275,27 @@ contains
       end do
     end do
   end subroutine access_perf_test
+
+!> Troubleshooting subroutine for miscellaneous debugging
+  subroutine troubleshooting()
+      integer(i4) :: ones(5)
+
+      allocate (table_dims(6))
+      allocate (part_dims(5))
+
+      table_dims = (/51, 4, 51, 4, 1, 17/)
+      part_dims = (/11, 2, 11, 2, 2/)
+      ones = 1
+
+      lookup = table(table_dims)
+
+      call lookup % partition_remap(part_dims, ones)
+      print *, lookup % index_to_global_coord(1, ones, table_dims(1:5))
+
+      deallocate (part_dims)
+      deallocate (table_dims)
+  end subroutine troubleshooting
+
+
 
 end program test
