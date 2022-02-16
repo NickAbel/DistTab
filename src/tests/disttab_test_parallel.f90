@@ -264,7 +264,7 @@ contains
     class(parallel_test), intent(inout) :: this
     integer(i4) :: rank, nprocs, i, j, k, ierror, N
     character :: a
-    character(len=:), allocatable :: str
+    character(len=:), allocatable :: str, str_sorted
     integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_reord, tile_dims, coord_p, coord_b
 
     N = size(this % lookup % part_dims)
@@ -297,6 +297,11 @@ contains
 
     close (52)
 
+    ! Edit string to reflect rank number
+    str_sorted = 'partition_test_table_sorted.nopad.DistTab.tmp.dat.rank0'
+    a = str_sorted(len(str_sorted):len(str_sorted))
+    str_sorted(len(str_sorted):len(str_sorted)) = char(ichar(a) + rank)
+
     ! This gawk loop will sort the coordinate columns 1 to N in order, which
     ! emulates the storage format of Alya tables.
     call execute_command_line("gawk -F ',' '                                &
@@ -311,18 +316,12 @@ contains
                               &          }                                  &
                               &          print sorter[i][j]                 &
                               &      }                                      &
-                              &  }' partition_test_table.nopad.DistTab.tmp.dat.rank0 >    &
-                              &  partition_test_table_sorted.nopad.DistTab.tmp.dat.rank0")
+                              &  }' "//str//" > "//str_sorted)
 
-    ! Edit string to reflect rank number
-    str = 'partition_test_table_sorted.nopad.DistTab.tmp.dat.rank0'
-    a = str(len(str):len(str))
-    str(len(str):len(str)) = char(ichar(a) + rank)
-
-    open (53, file=str, action='read')
+    open (53, file=str_sorted, action='read')
 
     ! After sorting to the "Alya format," load the table back into the elements array.
-    do i = 1, this % lookup % table_dims_flat
+    do i = product(this % lookup % subtable_dims) * rank + 1, (rank + 1) * product(this % lookup % subtable_dims)
       read (53, *) (coord(j), j=1, N), this % lookup % elems(:, i)
     end do
 
