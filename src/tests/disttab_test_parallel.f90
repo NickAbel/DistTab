@@ -292,7 +292,7 @@ contains
       coord_reord(2) = ceiling((coord(1) - 1) / &
                      & (this % lookup % table_dims(1)) * 1.0) * this % lookup % subtable_dims(2) + coord(2)
 
-      write (52, *) (coord_reord(j), j=1, N), (i + (k - 1)*.01, k=1, this % lookup % nvar)
+      write (52, *) (coord_reord(j), j=1, N), (i, k=1, this % lookup % nvar)
     end do
 
     close (52)
@@ -331,11 +331,13 @@ contains
 
   subroutine parallel_partition_map_test(this)
     class(parallel_test), intent(inout) :: this
-    integer(i4) :: rank, nprocs, real_size, i, j, k, ierror, ind, tlb_index, tub_index, N
-    integer(i4), dimension(size(this % tile_dims)) :: global_coords
-    integer(i4), dimension(size(this % tile_dims)) :: tile_lower_bound, tile_upper_bound
-    real(sp) :: r
-    real(sp), dimension(this % lookup % nvar, product(this % tile_dims)) :: tile_buffer
+    integer(i4) :: rank, nprocs, real_size, i, j, k, N, ierror
+    integer(i4), dimension(size(this % tile_dims)) :: coord
+    double precision, allocatable, dimension(:, :) :: elems_gold_std
+    character :: a
+    character(len=:), allocatable :: str
+
+    N = size(this % tile_dims)
 
     ! MPI variables we'll need
     call mpi_comm_size(this % lookup % communicator, nprocs, ierror)
@@ -354,6 +356,39 @@ contains
 
     ! Create gold standard and fill table with Alya-format sorted version of table
     call this % create_test_tables_unpadded_parallel()
+
+    call this % lookup % partition_remap_subtable(this % tile_dims, this % lookup % subtable_dims)
+
+    ! Edit string to reflect rank number
+    str = 'partition_test_table.nopad.DistTab.tmp.dat.rank0'
+    a = str(len(str):len(str))
+    str(len(str):len(str)) = char(ichar(a) + rank)
+    
+    ! Open, read, and close the file to the gold standard
+    allocate (elems_gold_std(this % lookup % nvar, &
+    & product(this % lookup % subtable_dims) * rank + 1:(rank + 1) * product(this % lookup % subtable_dims)))
+    open (54, file=str, action='read')
+    do i = product(this % lookup % subtable_dims) * rank + 1, (rank + 1) * product(this % lookup % subtable_dims)
+      read (54, *) (coord(j), j=1, N), elems_gold_std(:, i)
+    end do
+    close (54)
+
+    ! Check if the partition mapping of the elements is equal to the gold standard generated in create_test_tables
+    if (all(this % lookup % elems .eq. elems_gold_std)) then
+      write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
+        this % lookup % part_dims, "]: ", "parallel_partition_map_test passed! Tables will be deleted. Rank ", rank, "."
+      if (rank .eq. 0) call execute_command_line('rm *.DistTab.tmp.dat.rank*')
+    else if (all(abs(this % lookup % elems - elems_gold_std) .lt. 0.0005)) then
+      write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
+        this % lookup % part_dims, "]: ", &
+        & "trivially small diff in parallel_partition_map_test. most likely a pass. Tables not deleted. Rank ", rank, "."
+    else
+      write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
+        this % lookup % part_dims, "]: ", &
+        & "parallel_partition_map_test conditional not working right. Tables not deleted. Rank ", rank, "."
+    end if
+
+    deallocate (elems_gold_std)
 
   end subroutine parallel_partition_map_test
 

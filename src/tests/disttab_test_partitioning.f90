@@ -84,7 +84,7 @@ contains
 !> A verification test for the table object's partition mapping algorithm.
 !! First, calls create_test_tables to fill the elements of this%lookup
 !! with pre-partitioned entries.
-!! Then, calls this%lookup%partition_remap to get the result of the
+!! Then, calls this % lookup % partition_remap to get the result of the
 !! partition mapping algorithm.
 !! Next creates the array elems_gold_std, which is a reference
 !! solution to the partition mapping problem with table size of
@@ -92,11 +92,11 @@ contains
 !!
 !! The entries of elems_gold_std are ascending integers.
 !!
-!! elems_gold_std is then compared to this%lookup%elems. If all
+!! elems_gold_std is then compared to this % lookup % elems. If all
 !! entries are equal, a pass is reported. If there is no difference in
 !! absolute value greater than 0.0005 between all elements of the two tables,
 !! a different message is given (as this could be due to precision issues
-!! that I am not sure don't exist.) Else, the test is failed.
+!! that I can't be sure won't exist). Else, the test is failed.
 !!
 !! @param this the partition_test object to which partition_map_test belongs
 !! @todo be sure there is no precision issue
