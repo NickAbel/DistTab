@@ -278,24 +278,22 @@ contains
 
 !> Troubleshooting subroutine for miscellaneous debugging
   subroutine troubleshooting()
-      integer(i4) :: ones(5)
+    integer(i4) :: ones(5)
 
-      allocate (table_dims(6))
-      allocate (part_dims(5))
+    allocate (table_dims(6))
+    allocate (part_dims(5))
 
-      table_dims = (/51, 4, 51, 4, 1, 17/)
-      part_dims = (/11, 2, 11, 2, 2/)
-      ones = 1
+    table_dims = (/51, 4, 51, 4, 1, 17/)
+    part_dims = (/11, 2, 11, 2, 2/)
+    ones = 1
 
-      lookup = table(table_dims)
+    lookup = table(table_dims)
 
-      call lookup % partition_remap(part_dims, ones)
-      print *, lookup % index_to_global_coord(1, ones, table_dims(1:5))
+    call lookup % partition_remap(part_dims, ones)
+    print *, lookup % index_to_global_coord(1, ones, table_dims(1:5))
 
-      deallocate (part_dims)
-      deallocate (table_dims)
+    deallocate (part_dims)
+    deallocate (table_dims)
   end subroutine troubleshooting
-
-
 
 end program test

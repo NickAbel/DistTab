@@ -259,10 +259,10 @@ contains
     class(parallel_test), intent(inout) :: this
 
   end subroutine create_test_tables_padded_parallel
-  
+
   subroutine create_test_tables_unpadded_parallel(this)
     class(parallel_test), intent(inout) :: this
-    integer(i4) :: rank, nprocs, i, j, k, ierror, svar, N
+    integer(i4) :: rank, nprocs, i, j, k, ierror, N
     character :: a
     character(len=:), allocatable :: str
     integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_reord, tile_dims, coord_p, coord_b
@@ -280,49 +280,53 @@ contains
     str = 'partition_test_table.nopad.DistTab.tmp.dat.rank0'
     a = str(len(str):len(str))
     str(len(str):len(str)) = char(ichar(a) + rank)
-    
+
     open (52, file=str, action='write')
 
-    do i = 1, product(this % lookup % subtable_dims)*rank + 1, (rank + 1)*product(this % lookup % subtable_dims)
+    do i = product(this % lookup % subtable_dims) * rank + 1, (rank + 1) * product(this % lookup % subtable_dims)
       call this % lookup % index_to_local_coord(i, this % lookup % part_dims, tile_dims, coord_p, coord_b)
       coord = this % lookup % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
 
       coord_reord(1) = coord(1) - ceiling((coord(1) - 1) / &
-                       & (this % lookup % table_dims(1)) * 1.0)*this % lookup % table_dims(1)
+                     & (this % lookup % table_dims(1)) * 1.0) * this % lookup % table_dims(1)
       coord_reord(2) = ceiling((coord(1) - 1) / &
-                       & (this % lookup % table_dims(1)) * 1.0)*this % lookup % subtable_dims(2) + coord(2)
+                     & (this % lookup % table_dims(1)) * 1.0) * this % lookup % subtable_dims(2) + coord(2)
 
-      svar = i
-      write (52, *) (coord(j), j=1, N), (svar, k=1, this % lookup % nvar)
+      write (52, *) (coord_reord(j), j=1, N), (i + (k - 1)*.01, k=1, this % lookup % nvar)
     end do
 
     close (52)
 
-    ! ! This gawk loop will sort the coordinate columns 1 to N in order, which
-    ! ! emulates the storage format of Alya tables.
-    ! call execute_command_line("gawk -F ',' '                                &
-    !                           &   {                                         &
-    !                           &      for(i=1;i<=NF;i++){sorter[i][NR]=$i}   &
-    !                           &   }                                         &
-    !                           &   END{                                      &
-    !                           &      for(i=1;i<=NF;i++){asort(sorter[i])}   &
-    !                           &      for(j=1;j<=NR;j++){                    &
-    !                           &          for(i=1;i<NF;i++){                 &
-    !                           &              printf ""%s,"",sorter[i][j]    &
-    !                           &          }                                  &
-    !                           &          print sorter[i][j]                 &
-    !                           &      }                                      &
-    !                           &  }' partition_test_table.nopad.DistTab.tmp.dat >    &
-    !                           &  partition_test_table_sorted.nopad.DistTab.tmp.dat")
+    ! This gawk loop will sort the coordinate columns 1 to N in order, which
+    ! emulates the storage format of Alya tables.
+    call execute_command_line("gawk -F ',' '                                &
+                              &   {                                         &
+                              &      for(i=1;i<=NF;i++){sorter[i][NR]=$i}   &
+                              &   }                                         &
+                              &   END{                                      &
+                              &      for(i=1;i<=NF;i++){asort(sorter[i])}   &
+                              &      for(j=1;j<=NR;j++){                    &
+                              &          for(i=1;i<NF;i++){                 &
+                              &              printf ""%s,"",sorter[i][j]    &
+                              &          }                                  &
+                              &          print sorter[i][j]                 &
+                              &      }                                      &
+                              &  }' partition_test_table.nopad.DistTab.tmp.dat.rank0 >    &
+                              &  partition_test_table_sorted.nopad.DistTab.tmp.dat.rank0")
 
-    ! open (53, file='partition_test_table_sorted.nopad.DistTab.tmp.dat', action='read')
+    ! Edit string to reflect rank number
+    str = 'partition_test_table_sorted.nopad.DistTab.tmp.dat.rank0'
+    a = str(len(str):len(str))
+    str(len(str):len(str)) = char(ichar(a) + rank)
 
-    ! ! After sorting to the "Alya format," load the table back into the elements array.
-    ! do i = 1, this % lookup % table_dims_flat
-    !   read (53, *) (coord(j), j=1, N), this % lookup % elems(:, i)
-    ! end do
+    open (53, file=str, action='read')
 
-    ! close (53)
+    ! After sorting to the "Alya format," load the table back into the elements array.
+    do i = 1, this % lookup % table_dims_flat
+      read (53, *) (coord(j), j=1, N), this % lookup % elems(:, i)
+    end do
+
+    close (53)
 
   end subroutine create_test_tables_unpadded_parallel
 
