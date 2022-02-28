@@ -823,7 +823,7 @@ contains
 
     do i = product(this % subtable_dims) * rank + 1, (rank + 1) * product(this % subtable_dims)
       ! Get the spatial coordinate of the entry loaded into the table at index i
-      coord    = this % index_to_global_coord(i, ones, this % table_dims(1:ndim))
+      coord = this % index_to_global_coord(i, ones, this % table_dims(1:ndim))
 
       ! Get the destination index i_destin based on the entry's spatial coordinates.
       ! By moving entry i to i_destin, the entry is moved to the correct subtable.
@@ -832,11 +832,18 @@ contains
       i_destin = this % subtable_dims(1)*(coord(1) - 1) + &
                & (ceiling(1.0 * coord(2) / this % subtable_dims(2)) - 1) * this % subtable_dims(2) * &
                & subtable_blks(2) + this % mod_up(coord(2), this % subtable_dims(2))
-      rank_coord = ceiling(1.0 * coord / this % subtable_dims(1:ndim))
-      target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
-      target_displacement = (this % mod_up(i_destin, product(this % subtable_dims(1:ndim))) - 1) * this % nvar
 
       if (target_rank .ne. rank) then
+        ! From the coordinates, find the target rank for the MPI RMA put call
+        rank_coord = ceiling(1.0 * coord / this % subtable_dims(1:ndim))
+        target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
+
+        ! From the destination index i_destin and number of state variables nvar, 
+        ! compute the target window displacement for the MPI RMA put call
+        target_displacement = (this % mod_up(i_destin, product(this % subtable_dims(1:ndim))) - 1) * this % nvar
+
+        ! Put the entry from origin index i to target index i_destin (expressed in the decomposition to
+        ! target_rank and target_displacement) via the object's window (this % window) with an MPI RMA put
         call mpi_put(elems_old(:, i), &
                    & this % nvar, &
                    & mpi_real, &
@@ -847,6 +854,8 @@ contains
                    & this % window, &
                    & ierror)
       else
+        ! Put the entry from origin index i to target index i_destin locally,
+        ! as origin and destination ranks are the same
         this % elems(:, i_destin) = elems_old(:, i)
       end if
 
