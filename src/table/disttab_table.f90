@@ -73,6 +73,9 @@ module disttab_table
 
     procedure, public, pass(this) :: gather_value_cloud
 
+! The 'upper modulo' operator; like mod, but I mod I = I (as opposed to I mod I = 0)
+    procedure, public, pass(this) :: mod_up
+
 ! Convert index to table coordinates
     procedure, public, pass(this) :: index_to_coord
 ! Find global coordinate of index given partitioning scheme
@@ -765,13 +768,15 @@ contains
   subroutine partition_remap_subtable(this, part_dims, part_dims_prev)
     class(table), intent(inout) :: this
     integer(i4), dimension(size(this % table_dims) - 1), intent(in) :: part_dims, part_dims_prev
-
-    integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_b, coord_p, coord_reord
-    integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev, rank_dims, coord_r
-    integer(i4) :: i, i_old, N, rank, ierror
+    integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_b, coord_p, rank_coord, &
+    & tile_dims, tile_dims_prev, rank_dims, subtable_blks, part_blks, ones
+    integer(i4) :: i, j, ind_b, ind_s, i_destin, ndim, n_subtable, rank, ierror, target_rank, i_b, ind_p
+    integer(kind=mpi_address_kind) :: target_displacement
     real(sp), allocatable, dimension(:, :) :: elems_old
-
-    N = size(this % table_dims) - 1
+    
+    n_subtable = product(this % subtable_dims(1:ndim))
+    ndim = size(this % table_dims) - 1
+    ones = 1
 
     !if (present(this % communicator)) then
     call mpi_comm_rank(this % communicator, rank, ierror)
@@ -783,9 +788,10 @@ contains
     & (rank + 1) * product(this % subtable_dims_padded)))
     elems_old = this % elems
 
-    tile_dims_prev = this % subtable_dims_padded(1:N) / part_dims_prev
-
-    rank_dims = this % table_dims(1:N) / this % subtable_dims
+    tile_dims_prev = this % subtable_dims_padded(1:ndim) / part_dims_prev
+    subtable_blks = this % table_dims(1:ndim) / this % subtable_dims(1:ndim)
+    part_blks = this % table_dims(1:ndim) / this % part_dims(1:ndim)
+    rank_dims = this % table_dims(1:ndim) / this % subtable_dims(1:ndim)
 
     ! Pad out table to maintain shape
     ! Find padded table dims
@@ -806,36 +812,47 @@ contains
     this % table_dims_padded_flat = &
       product(this % table_dims_padded(1:ubound(this % table_dims_padded, dim=1) - 1))
 
-! Create a new padded table
+    ! Create a new padded table
     deallocate (this % elems)
     allocate (this % elems(this % nvar, product(this % subtable_dims_padded) * rank + 1: &
     & (rank + 1) * product(this % subtable_dims_padded)))
     this % elems = 0.d0
 
     this % part_dims = part_dims
-    tile_dims = this % subtable_dims_padded(1:N) / this % part_dims
+    tile_dims = this % subtable_dims_padded(1:ndim) / this % part_dims
 
     do i = product(this % subtable_dims) * rank + 1, (rank + 1) * product(this % subtable_dims)
-      call this % index_to_local_coord(i, this % part_dims, tile_dims, coord_p, coord_b)
-      coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
+      ! Get the spatial coordinate of the entry loaded into the table at index i
+      coord    = this % index_to_global_coord(i, ones, this % table_dims(1:ndim))
 
-      ! TODO rank topology is not used for parallel tables, this logic is merely a workaround to pass the serial tests.
-      coord_r(1) = mod(ceiling((i - 1) / this % subtable_dims(1) * 1.0), rank_dims(1))
-      coord_r(2) = ceiling((i - 1) / (rank_dims(1) * product(this % subtable_dims)) * 1.0)
+      ! Get the destination index i_destin based on the entry's spatial coordinates.
+      ! By moving entry i to i_destin, the entry is moved to the correct subtable.
+      ! The partitioning on the subtable is equivalent to Alya-format ordering over
+      ! the subspace of the hypercube that each subtable covers.
+      i_destin = this % subtable_dims(1)*(coord(1) - 1) + &
+               & (ceiling(1.0 * coord(2) / this % subtable_dims(2)) - 1) * this % subtable_dims(2) * &
+               & subtable_blks(2) + this % mod_up(coord(2), this % subtable_dims(2))
+      rank_coord = ceiling(1.0 * coord / this % subtable_dims(1:ndim))
+      target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
+      target_displacement = (this % mod_up(i_destin, product(this % subtable_dims(1:ndim))) - 1) * this % nvar
 
-      coord_reord(1) = coord(1) - ceiling((coord(1) - 1) / (this % table_dims(1)) * 1.0) * this % table_dims(1)
-      coord_reord(2) = ceiling((coord(1) - 1) / (this % table_dims(1)) * 1.0) * this % subtable_dims(2) + coord(2)
-
-      i_old = this % global_coord_to_index(coord, part_dims_prev, tile_dims_prev)
-
-      print *, i, i_old, coord_p, coord_b, coord, coord_reord
-
-      if (any(coord_reord .gt. this % table_dims(1:N))) then
-        this % elems(:, i) = 0
+      if (target_rank .ne. rank) then
+        call mpi_put(elems_old(:, i), &
+                   & this % nvar, &
+                   & mpi_real, &
+                   & target_rank, &
+                   & target_displacement, &
+                   & this % nvar, &
+                   & mpi_real, &
+                   & this % window, &
+                   & ierror)
       else
-        this % elems(:, i) = elems_old(:, i_old)
+        this % elems(:, i_destin) = elems_old(:, i)
       end if
+
     end do
+
+    print *, rank, this % elems
 
     deallocate (elems_old)
 
@@ -916,6 +933,23 @@ contains
     allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
 
   end subroutine reshape_table
+
+!> The 'upper modulo' operator; the only difference between upper modulo and the standard
+!! modulo operator is in the case I "%" I = I (as opposed to I % I = 0), where I is
+!! an integer, % is the standard modulo operator, and "%" is the upper modulo operator.
+!!
+!! @param this table object to which mod_up belongs
+!! @param a left argument of the mod operator, as in a % p
+!! @param p right argument of the mod operator, as in a % p
+!! @result result of the mod_up operator; result = a "%" p
+  pure function mod_up(this, a, p) result(result)
+    class(table), intent(in) :: this
+    integer(i4), intent(in) :: a, p
+    integer(i4) :: result
+
+    result = merge(mod(a, p), p, mod(a, p) .ne. 0)
+
+  end function mod_up
 
 !> Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing
 !! using the dimensions given in part_dims
