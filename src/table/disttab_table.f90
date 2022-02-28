@@ -773,7 +773,7 @@ contains
     integer(i4) :: i, j, ind_b, ind_s, i_destin, ndim, n_subtable, rank, ierror, target_rank, i_b, ind_p
     integer(kind=mpi_address_kind) :: target_displacement
     real(sp), allocatable, dimension(:, :) :: elems_old
-    
+
     n_subtable = product(this % subtable_dims(1:ndim))
     ndim = size(this % table_dims) - 1
     ones = 1
@@ -828,8 +828,8 @@ contains
       ! Get the destination index i_destin based on the entry's spatial coordinates.
       ! By moving entry i to i_destin, the entry is moved to the correct subtable.
       ! The partitioning on the subtable is equivalent to Alya-format ordering over
-      ! the subspace of the hypercube that each subtable covers.
-      i_destin = this % subtable_dims(1)*(coord(1) - 1) + &
+      ! the subspace of the unit hypercube that each subtable covers.
+      i_destin = this % subtable_dims(1) * (coord(1) - 1) + &
                & (ceiling(1.0 * coord(2) / this % subtable_dims(2)) - 1) * this % subtable_dims(2) * &
                & subtable_blks(2) + this % mod_up(coord(2), this % subtable_dims(2))
 
@@ -838,7 +838,7 @@ contains
         rank_coord = ceiling(1.0 * coord / this % subtable_dims(1:ndim))
         target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
 
-        ! From the destination index i_destin and number of state variables nvar, 
+        ! From the destination index i_destin and number of state variables nvar,
         ! compute the target window displacement for the MPI RMA put call
         target_displacement = (this % mod_up(i_destin, product(this % subtable_dims(1:ndim))) - 1) * this % nvar
 
