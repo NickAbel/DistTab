@@ -833,11 +833,11 @@ contains
                & (ceiling(1.0 * coord(2) / this % subtable_dims(2)) - 1) * product(this % subtable_dims(1:2)) &
                & + this % mod_up(coord(2), this % subtable_dims(2))
 
+      ! From the coordinates, find the target rank for the MPI RMA put call
+      rank_coord = ceiling(1.0 * coord / this % subtable_dims(1:ndim))
       target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
 
       if (target_rank .ne. rank) then
-        ! From the coordinates, find the target rank for the MPI RMA put call
-        rank_coord = ceiling(1.0 * coord / this % subtable_dims(1:ndim))
 
         ! From the destination index i_destin and number of state variables nvar,
         ! compute the target window displacement for the MPI RMA put call
