@@ -830,13 +830,14 @@ contains
       ! The partitioning on the subtable is equivalent to Alya-format ordering over
       ! the subspace of the unit hypercube that each subtable covers.
       i_destin = this % subtable_dims(1) * (coord(1) - 1) + &
-               & (ceiling(1.0 * coord(2) / this % subtable_dims(2)) - 1) * this % subtable_dims(2) * &
-               & subtable_blks(2) + this % mod_up(coord(2), this % subtable_dims(2))
+               & (ceiling(1.0 * coord(2) / this % subtable_dims(2)) - 1) * product(this % subtable_dims(1:2)) &
+               & + this % mod_up(coord(2), this % subtable_dims(2))
+
+      target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
 
       if (target_rank .ne. rank) then
         ! From the coordinates, find the target rank for the MPI RMA put call
         rank_coord = ceiling(1.0 * coord / this % subtable_dims(1:ndim))
-        target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
 
         ! From the destination index i_destin and number of state variables nvar,
         ! compute the target window displacement for the MPI RMA put call
@@ -860,6 +861,8 @@ contains
       end if
 
     end do
+
+    call mpi_win_fence(0, this % window, ierror)
 
     print *, rank, this % elems
 
