@@ -262,53 +262,31 @@ contains
 
   subroutine create_test_tables_unpadded_parallel(this)
     class(parallel_test), intent(inout) :: this
-    integer(i4) :: rank, nprocs, i, j, k, ierror, N, ind_b
-    character :: a
-    character(len=:), allocatable :: str, str_sorted
-    integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_reord, tile_dims, coord_p, coord_b, &
-    & t_b, s_b, p_b, t_1d, t_flat, coord_gs, coord_re
-
-    N = size(this % lookup % part_dims)
+    integer(i4), allocatable, dimension(:) :: box_dims
+    integer(i4) :: svar, N, i, j, k, nprocs, rank, ierror
+    integer(i4), dimension(size(this % tile_dims)) :: coord
+    real(sp), dimension(this % lookup % nvar) :: put
 
     ! MPI variables we'll need
     call mpi_comm_size(this % lookup % communicator, nprocs, ierror)
     call mpi_comm_rank(this % lookup % communicator, rank, ierror)
 
-    ! Find total partitions in each dimension
-    tile_dims = this % lookup % subtable_dims(1:N) / this % lookup % part_dims
+    N = size(this % tile_dims)
+    if (rank .eq. 0) then
+    ! Find total subtables in each dimension
+    allocate (box_dims(N))
+    box_dims = this % lookup % table_dims(1:N) / this % lookup % subtable_dims(1:N)
 
-    ! Edit string to reflect rank number
-    str = 'partition_test_table.nopad.DistTab.tmp.dat.rank0'
-    a = str(len(str):len(str))
-    str(len(str):len(str)) = char(ichar(a) + rank)
+    open (34, file='partition_test_table.nopad.DistTab.tmp.dat', action='write')
 
-    open (52, file=str, action='write')
-
-    t_b = this % lookup % table_dims(1:N) / this % lookup % part_dims
-    s_b = this % lookup % table_dims(1:N) / this % lookup % subtable_dims(1:N)
-    p_b = this % lookup % subtable_dims(1:N) / this % lookup % part_dims
-    t_1d = 1
-    t_1d(1) = product((this % lookup % table_dims(1:N) / this % lookup % part_dims) / &
-            & (this % lookup % subtable_dims(1:N) / this % lookup % part_dims))
-    t_flat = p_b * t_1d
-
-    do i = product(this % lookup % subtable_dims) * rank + 1, (rank + 1) * product(this % lookup % subtable_dims)
-      call this % lookup % index_to_local_coord(i, this % lookup % part_dims, tile_dims, coord_p, coord_b)
-      coord = this % lookup % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
-
-      ind_b = this % lookup % global_coord_to_index(coord_p, p_b, t_flat)
-      coord_gs = this % lookup % index_to_global_coord(ind_b, s_b, p_b)
-      coord_re = this % lookup % local_coord_to_global_coord(coord_gs, coord_b, tile_dims)
-
-      write (52, *) (coord_re(j), j=1, N), (i, k=1, this % lookup % nvar)
+    do i = 1, this % lookup % table_dims_flat
+      coord = this % lookup % index_to_global_coord(i, box_dims, this % lookup % subtable_dims(1:N))
+      svar = i
+      write (34, *) (coord(j), j=1, N), (svar, k=1, this % lookup % nvar)
     end do
 
-    close (52)
-
-    ! Edit string to reflect rank number
-    str_sorted = 'partition_test_table_sorted.nopad.DistTab.tmp.dat.rank0'
-    a = str_sorted(len(str_sorted):len(str_sorted))
-    str_sorted(len(str_sorted):len(str_sorted)) = char(ichar(a) + rank)
+    close (34)
+    deallocate (box_dims)
 
     ! This gawk loop will sort the coordinate columns 1 to N in order, which
     ! emulates the storage format of Alya tables.
@@ -324,16 +302,26 @@ contains
                               &          }                                  &
                               &          print sorter[i][j]                 &
                               &      }                                      &
-                              &  }' "//str//" > "//str_sorted)
+                              &  }' partition_test_table.nopad.DistTab.tmp.dat >    &
+                              &  partition_test_table_sorted.nopad.DistTab.tmp.dat")
+    end if
 
-    open (53, file=str_sorted, action='read')
+    call mpi_win_fence(0, this % lookup % window, ierror)
+    open (35, file='partition_test_table_sorted.nopad.DistTab.tmp.dat', action='read')
 
     ! After sorting to the "Alya format," load the table back into the elements array.
-    do i = product(this % lookup % subtable_dims) * rank + 1, (rank + 1) * product(this % lookup % subtable_dims)
-      read (53, *) (coord(j), j=1, N), this % lookup % elems(:, i)
+    do i = 1, this % lookup % table_dims_flat
+      if (i .ge. product(this % lookup % subtable_dims) * rank + 1 .and. &
+        & i .le. (rank + 1) * product(this % lookup % subtable_dims)) then
+        read (35, *) (coord(j), j=1, N), this % lookup % elems(:, i)
+      else
+        read (35, *) (coord(j), j=1, N), put
+      end if
     end do
 
-    close (53)
+    close (35)
+
+    call mpi_win_fence(0, this % lookup % window, ierror)
 
   end subroutine create_test_tables_unpadded_parallel
 
@@ -354,17 +342,17 @@ contains
     call mpi_type_size(mpi_real, real_size, ierror)
     call mpi_comm_rank(this % lookup % communicator, rank, ierror)
 
-    do i = product(this % subtable_dims) * rank + 1, (rank + 1) * product(this % subtable_dims)
-      this % lookup % elems(:, i) = i
-    end do
+    ! do i = product(this % subtable_dims) * rank + 1, (rank + 1) * product(this % subtable_dims)
+    !   this % lookup % elems(:, i) = i
+    ! end do
 
-    call this % lookup % partition_remap_subtable(this % tile_dims, this % lookup % subtable_dims)
+    ! call this % lookup % partition_remap_subtable(this % tile_dims, this % lookup % subtable_dims)
 
     ! Below to the end of the subroutine is the real parallel mapping test
     ! Create gold standard and fill table with Alya-format sorted version of table
-    !call this % create_test_tables_unpadded_parallel()
+    call this % create_test_tables_unpadded_parallel()
 
-    !call this % lookup % partition_remap_subtable(this % tile_dims, this % lookup % subtable_dims)
+    call this % lookup % partition_remap_subtable(this % tile_dims, this % lookup % subtable_dims)
 
     ! ! Edit string to reflect rank number
     ! str = 'partition_test_table.nopad.DistTab.tmp.dat.rank0'

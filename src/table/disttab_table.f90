@@ -838,7 +838,6 @@ contains
       target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
 
       if (target_rank .ne. rank) then
-
         ! From the destination index i_destin and number of state variables nvar,
         ! compute the target window displacement for the MPI RMA put call
         target_displacement = (this % mod_up(i_destin, product(this % subtable_dims(1:ndim))) - 1) * this % nvar
