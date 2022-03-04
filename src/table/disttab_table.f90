@@ -323,7 +323,7 @@ contains
 
     if (ind .ge. lbound(this % elems, dim=2) .and. ind .le. ubound(this % elems, dim=2)) then
 
-      val = this % elems(1, ind)
+      val = this % elems(:, ind)
 
     else if (ind .lt. 1 .or. ind .gt. product(this % table_dims)) then
 
@@ -334,8 +334,8 @@ contains
                           & product(this % subtable_dims) * this % nvar, &
                           & mod(ind, product(this % subtable_dims)) * this % nvar .ne. 0) - this % nvar
 
-      !print *, "ORIGIN RANK: ", rank, "TARGET RANK: ", target_rank, " INDEX: ", ind, "DISPLACEMENT: ", target_displacement, " &
-      !& SUBTABLE DIMS: ", this % subtable_dims
+      print *, "ORIGIN RANK: ", rank, "TARGET RANK: ", target_rank, " INDEX: ", ind, "DISPLACEMENT: ", target_displacement, " &
+      & SUBTABLE DIMS: ", this % subtable_dims
 
       call mpi_get(val, &
                    this % nvar, &

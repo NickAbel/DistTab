@@ -100,20 +100,24 @@ contains
     call mpi_type_size(mpi_real, real_size, ierror)
     call mpi_comm_rank(this % lookup % communicator, rank, ierror)
 
+    ! Fill the tables with ascending integers; to retrieve and compare with r
     do i = lbound(this % lookup % elems, dim=2), ubound(this % lookup % elems, dim=2)
       this % lookup % elems(:, i) = i
     end do
 
-    call random_number(r)
-    r = r * product(this % table_dims(1:size(this % tile_dims)))
+    do i = 1, 1000
 
-    ind = ceiling(r)
-    print *, "rank ", rank, " unreorganized table parallel_get_test requesting index ", ind
+      ! Generate random index to request
+      call random_number(r)
+      r = r * product(this % table_dims(1:size(this % tile_dims)))
+      ind = ceiling(r)
 
-    if (any(abs(ind - this % lookup % index_to_value(ind)) .ne. 0)) then
-      print *, "!!DIFF in parallel_get_test getting index ", ind, ", value ", this % lookup % index_to_value(ind), &
-        & " should equal index"
-    end if
+      ! Check the result from index_to_value call is equal to the requested index
+      if (any(abs(ind - this % lookup % index_to_value(ind)) .ne. 0)) then
+        print *, "!!DIFF in parallel_get_test getting index ", ind, ", value ", this % lookup % index_to_value(ind), &
+          & " should equal index"
+      end if
+    end do
 
   end subroutine parallel_get_test
 
@@ -273,37 +277,37 @@ contains
 
     N = size(this % tile_dims)
     if (rank .eq. 0) then
-    ! Find total subtables in each dimension
-    allocate (box_dims(N))
-    box_dims = this % lookup % table_dims(1:N) / this % lookup % subtable_dims(1:N)
+      ! Find total subtables in each dimension
+      allocate (box_dims(N))
+      box_dims = this % lookup % table_dims(1:N) / this % lookup % subtable_dims(1:N)
 
-    open (34, file='partition_test_table.nopad.DistTab.tmp.dat', action='write')
+      open (34, file='partition_test_table.nopad.DistTab.tmp.dat', action='write')
 
-    do i = 1, this % lookup % table_dims_flat
-      coord = this % lookup % index_to_global_coord(i, box_dims, this % lookup % subtable_dims(1:N))
-      svar = i
-      write (34, *) (coord(j), j=1, N), (svar, k=1, this % lookup % nvar)
-    end do
+      do i = 1, this % lookup % table_dims_flat
+        coord = this % lookup % index_to_global_coord(i, box_dims, this % lookup % subtable_dims(1:N))
+        svar = i
+        write (34, *) (coord(j), j=1, N), (svar, k=1, this % lookup % nvar)
+      end do
 
-    close (34)
-    deallocate (box_dims)
+      close (34)
+      deallocate (box_dims)
 
-    ! This gawk loop will sort the coordinate columns 1 to N in order, which
-    ! emulates the storage format of Alya tables.
-    call execute_command_line("gawk -F ',' '                                &
-                              &   {                                         &
-                              &      for(i=1;i<=NF;i++){sorter[i][NR]=$i}   &
-                              &   }                                         &
-                              &   END{                                      &
-                              &      for(i=1;i<=NF;i++){asort(sorter[i])}   &
-                              &      for(j=1;j<=NR;j++){                    &
-                              &          for(i=1;i<NF;i++){                 &
-                              &              printf ""%s,"",sorter[i][j]    &
-                              &          }                                  &
-                              &          print sorter[i][j]                 &
-                              &      }                                      &
-                              &  }' partition_test_table.nopad.DistTab.tmp.dat >    &
-                              &  partition_test_table_sorted.nopad.DistTab.tmp.dat")
+      ! This gawk loop will sort the coordinate columns 1 to N in order, which
+      ! emulates the storage format of Alya tables.
+      call execute_command_line("gawk -F ',' '                                &
+                                &   {                                         &
+                                &      for(i=1;i<=NF;i++){sorter[i][NR]=$i}   &
+                                &   }                                         &
+                                &   END{                                      &
+                                &      for(i=1;i<=NF;i++){asort(sorter[i])}   &
+                                &      for(j=1;j<=NR;j++){                    &
+                                &          for(i=1;i<NF;i++){                 &
+                                &              printf ""%s,"",sorter[i][j]    &
+                                &          }                                  &
+                                &          print sorter[i][j]                 &
+                                &      }                                      &
+                                &  }' partition_test_table.nopad.DistTab.tmp.dat >    &
+                                &  partition_test_table_sorted.nopad.DistTab.tmp.dat")
     end if
 
     call mpi_win_fence(0, this % lookup % window, ierror)
@@ -330,9 +334,10 @@ contains
     integer(i4) :: rank, nprocs, real_size, i_old, i, j, k, ndim, n_subtable, ierror, head, tail, temp, ind_r
     integer(i4), dimension(size(this % tile_dims)) :: coord, coord_p, coord_b, coord_r, subtable_blks, ones, &
     & part_blks, table_dims_map
-    double precision, allocatable, dimension(:, :) :: elems_gold_std
+    real(sp), allocatable, dimension(:, :) :: elems_gold_std
     character :: a
     character(len=:), allocatable :: str
+    real(sp), dimension(this % lookup % nvar) :: put
 
     ndim = size(this % tile_dims)
     ones = 1
@@ -355,35 +360,39 @@ contains
     call this % lookup % partition_remap_subtable(this % tile_dims, this % lookup % subtable_dims)
 
     ! ! Edit string to reflect rank number
-    ! str = 'partition_test_table.nopad.DistTab.tmp.dat.rank0'
-    ! a = str(len(str):len(str))
-    ! str(len(str):len(str)) = char(ichar(a) + rank)
+    str = 'partition_test_table.nopad.DistTab.tmp.dat'
 
     ! ! Open, read, and close the file to the gold standard
-    ! allocate (elems_gold_std(this % lookup % nvar, &
-    ! & product(this % lookup % subtable_dims) * rank + 1:(rank + 1) * product(this % lookup % subtable_dims)))
-    ! open (54, file=str, action='read')
-    ! do i = product(this % lookup % subtable_dims) * rank + 1, (rank + 1) * product(this % lookup % subtable_dims)
-    !   read (54, *) (coord(j), j=1, N), elems_gold_std(:, i)
-    ! end do
-    ! close (54)
+    allocate (elems_gold_std(this % lookup % nvar, &
+    & product(this % lookup % subtable_dims) * rank + 1:(rank + 1) * product(this % lookup % subtable_dims)))
+    open (54, file=str, action='read')
+    do i = 1, this % lookup % table_dims_flat
+      if (i .ge. product(this % lookup % subtable_dims) * rank + 1 .and. &
+        & i .le. (rank + 1) * product(this % lookup % subtable_dims)) then
+        read (54, *) (coord(j), j=1, size(this % tile_dims)), elems_gold_std(:, i)
+      else
+        read (54, *) (coord(j), j=1, size(this % tile_dims)), put
+      end if
+    end do
+    close (54)
+    print *, "gold std. rank", rank, elems_gold_std
 
     ! ! Check if the partition mapping of the elements is equal to the gold standard generated in create_test_tables
-    ! if (all(this % lookup % elems .eq. elems_gold_std)) then
-    !   write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
-    !     this % lookup % part_dims, "]: ", "parallel_partition_map_test passed! Tables will be deleted. Rank ", rank, "."
-    !   if (rank .eq. 0) call execute_command_line('rm *.DistTab.tmp.dat.rank*')
-    ! else if (all(abs(this % lookup % elems - elems_gold_std) .lt. 0.0005)) then
-    !   write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
-    !     this % lookup % part_dims, "]: ", &
-    !     & "trivially small diff in parallel_partition_map_test. most likely a pass. Tables not deleted. Rank ", rank, "."
-    ! else
-    !   write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
-    !     this % lookup % part_dims, "]: ", &
-    !     & "parallel_partition_map_test conditional not working right. Tables not deleted. Rank ", rank, "."
-    ! end if
+    if (all(this % lookup % elems .eq. elems_gold_std)) then
+      write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
+        this % lookup % part_dims, "]: ", "parallel_partition_map_test passed! Tables will be deleted. Rank ", rank, "."
+      if (rank .eq. 0) call execute_command_line('rm *.DistTab.tmp.dat.rank*')
+    else if (all(abs(this % lookup % elems - elems_gold_std) .lt. 0.0005)) then
+      write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
+        this % lookup % part_dims, "]: ", &
+        & "trivially small diff in parallel_partition_map_test. most likely a pass. Tables not deleted. Rank ", rank, "."
+    else
+      write (*, *) "n = [", this % lookup % table_dims, "], q = [", &
+        this % lookup % part_dims, "]: ", &
+        & "parallel_partition_map_test conditional not working right. Tables not deleted. Rank ", rank, "."
+    end if
 
-    !deallocate (elems_gold_std)
+    deallocate (elems_gold_std)
 
   end subroutine parallel_partition_map_test
 
