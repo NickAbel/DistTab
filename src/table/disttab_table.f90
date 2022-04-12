@@ -1,7 +1,9 @@
-!> This module contains the table object, which contains member functions
+!> this module contains the table object, which contains member functions
 !! and variables pertaining to the creation, storing, spatial tiling, and
 !! access to entries of the lookup table itself.
 module disttab_table
+  use, intrinsic :: iso_c_binding, only: c_ptr, c_f_pointer
+
   use :: disttab_local_pile
   use :: mpi
   use :: kind_params
@@ -25,46 +27,60 @@ module disttab_table
     integer(i4) :: table_dims_flat
     integer(i4) :: table_dims_padded_flat
 
-    ! MPI communicator
-    integer(i4) :: communicator
     ! MPI RMA memory view window
+    integer(i4) :: win_shm, shmcomm, master_comm, nnodes, root_node, node_number
+    logical :: master_table
+
+    type(c_ptr) :: elems_baseptr
+    real(sp), dimension(:, :), pointer :: elems_ptr
+
+    ! mpi communicator
+    integer(i4) :: communicator
+    ! mpi rma memory view window
     integer(i4) :: window
 
-    ! Local cache pile for MPI
+    ! local cache pile for mpi
     type(local_pile) :: pile
 
   contains
 
-! Read in a lookup table from file
+! read in a lookup table from file
     procedure, public, pass(this) :: read_in
 
-! Map table to partition-major order
+! map table to partition-major order
     procedure, public, pass(this) :: partition_remap
     procedure, public, pass(this) :: partition_remap_subtable
 
-! Print the table elements
+! print the table elements
     procedure, public, pass(this) :: print_elems
 
-! Deallocate table member variables (this is not the dtor!)
+! deallocate table member variables (this is not the dtor!)
     procedure, public, pass(this) :: deallocate_table
 
-! Re-shape the table
+! re-shape the table
     procedure, public, pass(this) :: reshape_table
 
-! Given integer coordinates in CV space, return corresponding SV value
+! Open MPI RMA window to table
+    procedure, public, pass(this) :: open_rma_window
+    procedure, public, pass(this) :: open_rma_window_shared
+
+! Allocate C-pointer style non-distributed master table
+    procedure, public, pass(this) :: table_alloc_ptr
+
+! given integer coordinates in cv space, return corresponding sv value
     procedure, public, pass(this) :: index_to_value
     procedure, public, pass(this) :: local_coord_to_value
     procedure, public, pass(this) :: global_coord_to_value
 
-! Given integer coordinates in CV space, return corresponding SV value cloud
+! given integer coordinates in cv space, return corresponding sv value cloud
     procedure, public, pass(this) :: index_to_value_cloud
     procedure, public, pass(this) :: local_coord_to_value_cloud
     procedure, public, pass(this) :: global_coord_to_value_cloud
 
-! Given real coordinates in CV space, return SV value cloud for interpolation
+! given real coordinates in cv space, return sv value cloud for interpolation
     procedure, public, pass(this) :: real_to_value_cloud
 
-! Find integerized coordinates or indices given real coordinates in the CV space
+! find integerized coordinates or indices given real coordinates in the cv space
     procedure, public, pass(this) :: real_to_global_coord
     procedure, public, pass(this) :: real_to_global_coord_opt
     procedure, public, pass(this) :: real_to_global_coord_opt_preprocessor
@@ -73,26 +89,26 @@ module disttab_table
 
     procedure, public, pass(this) :: gather_value_cloud
 
-! The 'upper modulo' operator; like mod, but I mod I = I (as opposed to I mod I = 0)
+! the 'upper modulo' operator; like mod, but i mod i = i (as opposed to i mod i = 0)
     procedure, public, pass(this) :: mod_up
 
-! Convert index to table coordinates
+! convert index to table coordinates
     procedure, public, pass(this) :: index_to_coord
-! Find global coordinate of index given partitioning scheme
+! find global coordinate of index given partitioning scheme
     procedure, public, pass(this) :: index_to_global_coord
-! Find two-level decomposition of coordinates of index given partitioning scheme
+! find two-level decomposition of coordinates of index given partitioning scheme
     procedure, public, pass(this) :: index_to_local_coord
 
-! Convert coordinates to index
+! convert coordinates to index
     procedure, public, pass(this) :: coord_to_index
-! Get index from global coordinate and partitioning scheme
+! get index from global coordinate and partitioning scheme
     procedure, public, pass(this) :: global_coord_to_index
-! Get index from two-level decomposition of coordinates and partitioning scheme
+! get index from two-level decomposition of coordinates and partitioning scheme
     procedure, public, pass(this) :: local_coord_to_index
 
-! Convert global coordinate two two-level decomposition of coordinates in partitioning scheme
+! convert global coordinate two two-level decomposition of coordinates in partitioning scheme
     procedure, public, pass(this) :: global_coord_to_local_coord
-! Convert two-level decomposition of coordinates and partitioning scheme to global coordinate
+! convert two-level decomposition of coordinates and partitioning scheme to global coordinate
     procedure, public, pass(this) :: local_coord_to_global_coord
 
     final :: table_destructor
@@ -109,10 +125,10 @@ module disttab_table
 
 contains
 
-!> Constructor for the table object.
-!! Allocates the elements array according to the table dimensions.
-!! Initializes the member variables table_dims, table_dims_padded.
-!! Computes the parameters table_dims_flat,
+!> constructor for the table object.
+!! allocates the elements array according to the table dimensions.
+!! initializes the member variables table_dims, table_dims_padded.
+!! computes the parameters table_dims_flat,
 !! table_dims_padded_flat, nvar,
 !! which are all a property of the table_dims argument, necessary
 !! for partition mapping functionality.
@@ -120,13 +136,13 @@ contains
 !! @param table_dims the length of the control variable space
 !! in each dimension, and the number of state variables
 !! @param subtable_dims the dimensions of the block structure
-!! @param communicator the MPI communicator to store and use
+!! @param communicator the mpi communicator to store and use
 !! @result this table object
 !! @todo if partition dimensions are a property of a lookup table which
 !! may change, the part_dims can be stored as a member variable
-!! but perhaps not initialized here. Then, the same is true of the "padded"
+!! but perhaps not initialized here. then, the same is true of the "padded"
 !! variables which generally will change as the part_dims change.
-!! Organize the code as such. Perhaps use an optional argument for part_dims
+!! organize the code as such. perhaps use an optional argument for part_dims
 !! here instead.
   type(table) function table_constructor(table_dims, subtable_dims, communicator) result(this)
     integer(i4), dimension(:), intent(in) :: table_dims
@@ -137,7 +153,7 @@ contains
     integer(i4), dimension(:), allocatable :: subtable_topology, subtable_coordinate, tile_dims
     integer(kind=mpi_address_kind) :: subtable_size
 
-    ! Parallel
+    ! parallel
     if (present(communicator)) then
       this % communicator = communicator
       call mpi_comm_size(this % communicator, nprocs, ierror)
@@ -167,7 +183,7 @@ contains
 
         ! check if padding will be necessary due to table not folding cleanly over the comm size
         if (mod(product(this % table_dims(1:size(this % table_dims) - 1)), nprocs) .ne. 0) then
-          write (*, '(A,I0,A,I0,A)') "however the table size ", product(this % table_dims(1:size(this % table_dims) - 1)), &
+          write (*, '(a,i0,a,i0,a)') "however the table size ", product(this % table_dims(1:size(this % table_dims) - 1)), &
           & " won't divide evenly over ", nprocs, " ranks"
         end if
 
@@ -178,7 +194,7 @@ contains
 
         ! todo check if the subtable dimensions * no. of ranks does not fit the table dimensions
         if (product(ceiling(1.0 * this % table_dims(1:size(this % table_dims) - 1) / this % subtable_dims)) .ne. nprocs) then
-          print *, "WARNING: Subtable dims do not fit table with given comm size."
+          print *, "warning: subtable dims do not fit table with given comm size."
         end if
       end if
 
@@ -192,33 +208,33 @@ contains
       !end do
       !print *, "subtable dims are ", this % subtable_dims, " on rank ", rank
 
-      ! Create subtable elems with universal integer bounds
+      ! create subtable elems with universal integer bounds
       allocate (this % elems(this % nvar, &
         & rank * product(this % subtable_dims) + 1:(rank + 1) * product(this % subtable_dims)))
 
-      ! Create the MPI window
+      ! create the mpi window
       subtable_size = product(this % subtable_dims) * real_size * this % nvar
       call mpi_win_create(this % elems, subtable_size, &
         & real_size, mpi_info_null, this % communicator, this % window, ierror)
       call mpi_win_fence(0, this % window, ierror)
 
-      ! Have all ranks report their number of total tiles and add them up into total_block_buffer
+      ! have all ranks report their number of total tiles and add them up into total_block_buffer
       !call mpi_allreduce(product(this % part_dims), total_blocks_buffer, 1, mpi_integer, &
       !  & mpi_sum, this % communicator, ierror)
 
       !print *, "total blocks ", total_blocks_buffer
 
-      ! Create the local pile object
+      ! create the local pile object
       this % pile = local_pile(10, product(this % table_dims(1:size(this % table_dims) - 1)) / &
         & product(this % part_dims), this % part_dims, this % nvar)
 
-      ! TODO control vars in parallel
+      ! todo control vars in parallel
       !allocate (this % ctrl_vars(sum(this % table_dims(1:ubound(this % table_dims, dim=1) - 1))))
 
       deallocate (subtable_topology)
       deallocate (subtable_coordinate)
 
-      ! Serial
+      ! serial
     else
 
       allocate (this % table_dims(size(table_dims)))
@@ -233,8 +249,8 @@ contains
       this % subtable_dims_padded = table_dims
       this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
 
-! Table initially considered to have one table-sized partition, i.e. 'unpartitioned'
-! Note there are other partitioning schemes which are identical to this scheme.
+! table initially considered to have one table-sized partition, i.e. 'unpartitioned'
+! note there are other partitioning schemes which are identical to this scheme.
       this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
 
       allocate (this % elems(this % nvar, this % table_dims_padded_flat))
@@ -254,8 +270,8 @@ contains
 
   end subroutine table_destructor
 
-!> Reads in a lookup table to the elements array of the table object.
-!! Assumes that the first size(this%part_dims) lines are normalized
+!> reads in a lookup table to the elements array of the table object.
+!! assumes that the first size(this%part_dims) lines are normalized
 !! control variable discretizations, and the following lines are
 !! state variable values.
 !! @param this table object to which read_in is a member.
@@ -264,16 +280,16 @@ contains
     class(table), intent(inout) :: this
     character(len=*), intent(in) :: file_id
 
-    integer(i4) :: access_mode, rank, ierror, handle, N, cnt
+    integer(i4) :: access_mode, rank, ierror, handle, n, cnt
     integer :: statu(mpi_status_size)
     integer(kind=mpi_offset_kind) :: offset
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
     offset = 0
-    cnt = product(this % table_dims(1:N))
+    cnt = product(this % table_dims(1:n))
 
-    ! Sequential
+    ! sequential
     !integer(i4) :: i
     !open (1, file=file_id, action='read')
     !read (unit=1, fmt=*) this % ctrl_vars
@@ -285,12 +301,12 @@ contains
     !close (1)
 
     call mpi_comm_rank(this % communicator, rank, ierror)
-    write (*, '(A,I0,A)') '[MPI process ', rank, '] read_in'
+    write (*, '(a,i0,a)') '[mpi process ', rank, '] read_in'
 
     access_mode = mpi_mode_rdonly
     call mpi_file_open(this % communicator, file_id, access_mode, mpi_info_null, handle, ierror)
     if (ierror .ne. mpi_success) then
-      write (*, '(A,I0,A)') '[MPI process ', rank, '] Failure in opening the file.'
+      write (*, '(a,i0,a)') '[mpi process ', rank, '] failure in opening the file.'
       call mpi_abort(this % communicator, -1, ierror)
     end if
 
@@ -303,12 +319,12 @@ contains
 
     call mpi_file_close(handle, ierror)
     if (ierror .ne. mpi_success) then
-      write (*, '(A,I0,A)') '[MPI process ', rank, '] Failure in closing the file.'
+      write (*, '(a,i0,a)') '[mpi process ', rank, '] failure in closing the file.'
       call mpi_abort(this % communicator, -1, ierror)
     end if
   end subroutine read_in
 
-!> Given index, return corresponding value.
+!> given index, return corresponding value.
 !!
 !! @param this the table object
 !! @param ind linear index in lookup table
@@ -334,8 +350,8 @@ contains
                           & product(this % subtable_dims) * this % nvar, &
                           & mod(ind, product(this % subtable_dims)) * this % nvar .ne. 0) - this % nvar
 
-      print *, "ORIGIN RANK: ", rank, "TARGET RANK: ", target_rank, " INDEX: ", ind, "DISPLACEMENT: ", target_displacement, " &
-      & SUBTABLE DIMS: ", this % subtable_dims
+      print *, "origin rank: ", rank, "target rank: ", target_rank, " index: ", ind, "displacement: ", target_displacement, " &
+      & subtable dims: ", this % subtable_dims
 
       call mpi_get(val, &
                    this % nvar, &
@@ -351,7 +367,7 @@ contains
 
   end function index_to_value
 
-!> Given local coordinate decomposition, return corresponding value.
+!> given local coordinate decomposition, return corresponding value.
 !!
 !! @param this the table object
 !! @param coord_p the intra-partition term of the coordinates
@@ -361,19 +377,19 @@ contains
     class(table), intent(in) :: this
     integer(i4), dimension(:), intent(in) :: coord_p, coord_b
 
-    integer(i4) :: ind, N
+    integer(i4) :: ind, n
     integer(i4), dimension(size(this % part_dims)) :: tile_dims
     real(sp), dimension(this % nvar) :: val
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:n) / this % part_dims
     ind = this % local_coord_to_index(coord_p, coord_b, this % part_dims, tile_dims)
     val = this % elems(:, ind)
 
   end function local_coord_to_value
 
-!> Given global coordinate, return corresponding value.
+!> given global coordinate, return corresponding value.
 !!
 !! @param this the table object
 !! @param coord global coordinate
@@ -382,34 +398,34 @@ contains
     class(table), intent(in) :: this
     integer(i4), dimension(:), intent(in) :: coord
 
-    integer(i4) :: ind, N
+    integer(i4) :: ind, n
     integer(i4), dimension(size(this % part_dims)) :: tile_dims
     real(sp), dimension(this % nvar) :: val
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:n) / this % part_dims
     ind = this % global_coord_to_index(coord, this % part_dims, tile_dims)
     val = this % elems(:, ind)
 
   end function global_coord_to_value
 
-!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
 !! corresponding global coordinates.
 !!
 !! @param this the table object
-!! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
+!! @param real_val coordinates of length n [0, 1]x...x[0, 1] in normalized state space
 !! @result global_coord resultant global coordinates
   pure function real_to_global_coord(this, real_val) result(global_coord)
     class(table), intent(in) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
 
-    integer(i4) :: N, i, j, offset_cv
+    integer(i4) :: n, i, j, offset_cv
     integer(i4), dimension(size(this % part_dims)) :: global_coord
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    do i = 1, N
+    do i = 1, n
       offset_cv = sum(this % table_dims(:i - 1))
       j = 1
       do while ((real_val(i) .lt. this % ctrl_vars(j + offset_cv)) &
@@ -421,9 +437,9 @@ contains
 
   end function real_to_global_coord
 
-!> Preprocessor for bucketed real to global coord function.
-!! Populates the bucket array used.
-!! The argument M must be equal to the argument M passed to the real_to_global_coord_opt
+!> preprocessor for bucketed real to global coord function.
+!! populates the bucket array used.
+!! the argument m must be equal to the argument m passed to the real_to_global_coord_opt
 !! function.
 !!
 !! @param this table object
@@ -434,13 +450,13 @@ contains
     integer(i4), dimension(size(this % part_dims)), intent(in) :: segments
 
     integer(i4), dimension(sum(segments)) :: buckets
-    integer(i4) :: i, j, k, l, N
+    integer(i4) :: i, j, k, l, n
     real(sp) :: offset, delta
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
     l = 1
-    do i = 1, N
+    do i = 1, n
       delta = 1.0 / (segments(i))
       do j = 0, segments(i) - 1
         offset = delta * j
@@ -455,12 +471,12 @@ contains
 
   end function real_to_global_coord_opt_preprocessor
 
-!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
 !! corresponding global coordinates.
-!! Uses optimized bucketed preprocessed technique.
+!! uses optimized bucketed preprocessed technique.
 !!
 !! @param this the table object
-!! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
+!! @param real_val coordinates of length n [0, 1]x...x[0, 1] in normalized state space
 !! @param segments number of segments in the pre-processing array
 !! @param buckets bucket array, corresponds to coarse linear table discretization
 !! @result global_coord resultant global coordinates
@@ -470,13 +486,13 @@ contains
     integer(i4), dimension(size(this % part_dims)), intent(in) :: segments
     integer(i4), dimension(:), intent(in) :: buckets
 
-    integer(i4) :: N, i, j, offset_cv
+    integer(i4) :: n, i, j, offset_cv
     real(sp) :: delta
     integer(i4), dimension(size(this % part_dims)) :: global_coord, coord_start_indices
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    do i = 1, N
+    do i = 1, n
       delta = 1.0 / (segments(i))
       offset_cv = sum(this % table_dims(:i - 1))
       coord_start_indices(i) = buckets(ceiling(real_val(i) / delta) + sum(segments(:i - 1)))
@@ -489,33 +505,33 @@ contains
 
   end function real_to_global_coord_opt
 
-!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
 !! corresponding linear index
 !!
 !! @param this the table object
-!! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
+!! @param real_val coordinates of length n [0, 1]x...x[0, 1] in normalized state space
 !! @result resultant index
   pure function real_to_index(this, real_val) result(ind)
     class(table), intent(in) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
 
     integer(i4), dimension(size(this % part_dims)) :: tile_dims, global_coord
-    integer(i4) :: ind, N
+    integer(i4) :: ind, n
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
     global_coord = this % real_to_global_coord(real_val)
-    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:n) / this % part_dims
     ind = this % global_coord_to_index(global_coord, this % part_dims, tile_dims)
 
   end function real_to_index
 
-!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
 !! corresponding state variable values.
 !!
 !! @param this the table object
-!! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
-!! @result val resultant SV values
+!! @param real_val coordinates of length n [0, 1]x...x[0, 1] in normalized state space
+!! @result val resultant sv values
   pure function real_to_value(this, real_val) result(val)
     class(table), intent(in) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
@@ -528,7 +544,7 @@ contains
 
   end function real_to_value
 
-!> Return corresponding 2**N cloud of neighbors in the state space
+!> return corresponding 2**n cloud of neighbors in the state space
 !! beginning at the given index.
 !!
 !! @param this the table object
@@ -539,133 +555,133 @@ contains
     class(table), intent(inout) :: this
     integer(i4), intent(in) :: ind
 
-    integer(i4) :: N, j
+    integer(i4) :: n, j
     integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:n) / this % part_dims
     coord = this % index_to_global_coord(ind, this % part_dims, tile_dims)
 
-    ! This doesn't detect going off the subtable in parallel. todo
-    !if (any(coord + 1 .gt. this % subtable_dims(1:N))) then
-    !  print *, "ERROR: value cloud off subtable"
-    !  print *, "coord = ", coord, "subtable_dims = ", this % subtable_dims(1:N)
+    ! this doesn't detect going off the subtable in parallel. todo
+    !if (any(coord + 1 .gt. this % subtable_dims(1:n))) then
+    !  print *, "error: value cloud off subtable"
+    !  print *, "coord = ", coord, "subtable_dims = ", this % subtable_dims(1:n)
     !end if
 
     j = 1
-    call this % gather_value_cloud(N, coord, coord + 1, val_cloud, j, tile_dims)
+    call this % gather_value_cloud(n, coord, coord + 1, val_cloud, j, tile_dims)
 
   end function index_to_value_cloud
 
-!> Return corresponding 2**N cloud of neighbors in the state space
+!> return corresponding 2**n cloud of neighbors in the state space
 !! beginning at the point indicated by the local coordinate decomposition
 !! given.
 !!
 !! @param this the table object
 !! @param coord_p the intra-partition term of the coordinates
 !! @param coord_b the inter-partition term of the coordinates
-!! @result val_cloud resultant value cloud of 2**N [0, 1]x...x[0, 1]
+!! @result val_cloud resultant value cloud of 2**n [0, 1]x...x[0, 1]
   function local_coord_to_value_cloud(this, coord_p, coord_b) result(val_cloud)
     class(table), intent(inout) :: this
     integer(i4), dimension(:), intent(in) :: coord_p, coord_b
 
-    integer(i4) :: ind, N, j
+    integer(i4) :: ind, n, j
     integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:n) / this % part_dims
     ind = this % local_coord_to_index(coord_p, coord_b, this % part_dims, tile_dims)
     coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
 
-    if (any(coord + 1 .gt. this % table_dims_padded(1:N))) then
-      print *, "ERROR: value cloud off table"
-      print *, "coord = ", coord, "table_dims_padded = ", this % table_dims_padded(1:N)
+    if (any(coord + 1 .gt. this % table_dims_padded(1:n))) then
+      print *, "error: value cloud off table"
+      print *, "coord = ", coord, "table_dims_padded = ", this % table_dims_padded(1:n)
     end if
 
     j = 1
-    call this % gather_value_cloud(N, coord, coord + 1, val_cloud, j, tile_dims)
+    call this % gather_value_cloud(n, coord, coord + 1, val_cloud, j, tile_dims)
 
   end function local_coord_to_value_cloud
 
-!> Return corresponding 2**N cloud of neighbors in the state space
+!> return corresponding 2**n cloud of neighbors in the state space
 !! beginning at the point indicated by the global coordinate given.
 !!
 !! @param this the table object
 !! @param coord global coordinate
-!! @result val_cloud resultant value cloud of 2**N [0, 1]x...x[0, 1]
+!! @result val_cloud resultant value cloud of 2**n [0, 1]x...x[0, 1]
   function global_coord_to_value_cloud(this, coord) result(val_cloud)
     class(table), intent(inout) :: this
     integer(i4), dimension(:), intent(in) :: coord
 
-    integer(i4) :: ind, N, j
+    integer(i4) :: ind, n, j
     integer(i4), dimension(size(this % part_dims)) :: tile_dims, coord_cpy
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    if (any(coord + 1 .gt. this % table_dims_padded(1:N))) then
-      print *, "ERROR: value cloud off table"
-      print *, "coord = ", coord, "table_dims_padded = ", this % table_dims_padded(1:N)
+    if (any(coord + 1 .gt. this % table_dims_padded(1:n))) then
+      print *, "error: value cloud off table"
+      print *, "coord = ", coord, "table_dims_padded = ", this % table_dims_padded(1:n)
     end if
 
-    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:n) / this % part_dims
     ind = this % global_coord_to_index(coord, this % part_dims, tile_dims)
     coord_cpy = coord
     j = 1
-    call this % gather_value_cloud(N, coord_cpy, coord_cpy + 1, val_cloud, j, tile_dims)
+    call this % gather_value_cloud(n, coord_cpy, coord_cpy + 1, val_cloud, j, tile_dims)
 
   end function global_coord_to_value_cloud
 
-!> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
+!> given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
 !! a value cloud.
 !!
 !! @param this the table object
-!! @param real_val Coordinates of length N [0, 1]x...x[0, 1] in normalized state space
-!! @result val_cloud resultant value cloud of 2**N [0, 1]x...x[0, 1]
+!! @param real_val coordinates of length n [0, 1]x...x[0, 1] in normalized state space
+!! @result val_cloud resultant value cloud of 2**n [0, 1]x...x[0, 1]
   function real_to_value_cloud(this, real_val) result(val_cloud)
     class(table), intent(inout) :: this
     real(sp), dimension(size(this % part_dims)), intent(in) :: real_val
 
-    integer(i4) :: N, j
+    integer(i4) :: n, j
     integer(i4), dimension(size(this % part_dims)) :: coord_base, tile_dims
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
     coord_base = this % real_to_global_coord(real_val)
 
-    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:n) / this % part_dims
 
     j = 1
 
-    call this % gather_value_cloud(N, coord_base, coord_base + 1, val_cloud, j, tile_dims)
+    call this % gather_value_cloud(n, coord_base, coord_base + 1, val_cloud, j, tile_dims)
 
   end function real_to_value_cloud
 
-!> Fills a 2^N-sized array with a value cloud of neighbors in state space.
+!> fills a 2^n-sized array with a value cloud of neighbors in state space.
 !!
 !!
 !! @param this the table object
 !! @param idx index of the array to increment
 !! @param ctrs counter array
 !! @param uppers when the counter array reaches this value, stop incrementing
-!! @param val_cloud output 2**N value cloud
+!! @param val_cloud output 2**n value cloud
 !! @param j incrementer for value cloud array
 !! @param tile_dims intra-partition box dimension size in partitioning scheme
   recursive subroutine gather_value_cloud(this, idx, ctrs, uppers, val_cloud, j, tile_dims)
     class(table), intent(inout) :: this
     integer(i4), intent(in) :: idx
 
-    integer(i4) :: j, ind, N
+    integer(i4) :: j, ind, n
     integer(i4), dimension(size(this % part_dims)) :: ctrs, uppers, tile_dims
     integer(i4), dimension(size(this % part_dims)) :: ctrs_copy
     real(sp), dimension(this % nvar, 2**size(this % part_dims)) :: val_cloud
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
     if (idx .eq. 1) then
 
@@ -674,9 +690,9 @@ contains
 
       j = j + 1
 
-      do while (ctrs(N - idx + 1) .lt. uppers(N - idx + 1))
+      do while (ctrs(n - idx + 1) .lt. uppers(n - idx + 1))
 
-        ctrs(N - idx + 1) = ctrs(N - idx + 1) + 1
+        ctrs(n - idx + 1) = ctrs(n - idx + 1) + 1
         ind = this % global_coord_to_index(ctrs, this % part_dims, tile_dims)
         val_cloud(:, j) = this % elems(:, ind)
 
@@ -686,11 +702,11 @@ contains
 
     else if (idx .gt. 1) then
 
-      do while (ctrs(N - idx + 1) .le. uppers(N - idx + 1))
+      do while (ctrs(n - idx + 1) .le. uppers(n - idx + 1))
 
         ctrs_copy = ctrs
         call this % gather_value_cloud(idx - 1, ctrs_copy, uppers, val_cloud, j, tile_dims)
-        ctrs(N - idx + 1) = ctrs(N - idx + 1) + 1
+        ctrs(n - idx + 1) = ctrs(n - idx + 1) + 1
 
       end do
 
@@ -698,9 +714,165 @@ contains
 
   end subroutine gather_value_cloud
 
-!> Remaps the partition from a given previous partition ordering to given new partition
+!> open mpi rma windows on the table elements.
+!!
+!! @param this the table object whose elems is to be placed in a memory window
+!! @param comm mpi communicator
+  subroutine open_rma_window(this, comm)
+    class(table), intent(inout) :: this
+    integer, intent(in) :: comm
+    integer :: ierror, real_size, dbl_size, nprocs, rank, lower_bound, upper_bound
+    integer(kind=mpi_address_kind) :: window_size
+
+    ! create the mpi window
+    call mpi_win_free(this % window, ierror)
+
+    call mpi_comm_rank(comm, rank, ierror)
+    call mpi_comm_size(comm, nprocs, ierror)
+    call mpi_type_size(mpi_real, real_size, ierror)
+    call mpi_type_size(mpi_double_precision, dbl_size, ierror)
+
+    lower_bound = lbound(this % elems, dim=2)
+    upper_bound = ubound(this % elems, dim=2)
+
+    window_size = (upper_bound - lower_bound + 1) * this % nvar * sp
+    print *, "opening window of ", window_size, " bytes on rank", rank, " of ", nprocs
+    call mpi_win_create(this % elems, window_size, &
+      & dbl_size, mpi_info_null, comm, this % window, ierror)
+    print *, "opened window on rank", rank, "sp = ", sp, "real_size = ", real_size, "dbl_size = ", dbl_size
+    call mpi_win_fence(0, this % window, ierror)
+
+  end subroutine open_rma_window
+
+!> allocate tables over shared memory regions.
+!!
+!! @param this the table object whose elems is to be placed in a memory window
+!! @param comm communicator to split over shared memory regions
+  subroutine open_rma_window_shared(this, comm)
+    class(table), intent(inout) :: this
+    integer, intent(in) :: comm
+    integer :: ierror, real_size, dbl_size, nprocs_shm, rank_shm, &
+  & disp_unit, rank, nprocs, rank_data, i, j, lower_bound, upper_bound
+    integer(kind=mpi_address_kind) :: window_size
+    integer, dimension(2) :: table_shape
+    integer, dimension(:), allocatable :: node_sizes, node_roots
+
+    call mpi_comm_split_type(comm, mpi_comm_type_shared, 0, &
+                             mpi_info_null, this % shmcomm, ierror)
+    call mpi_comm_rank(this % shmcomm, rank_shm, ierror)
+    call mpi_comm_rank(comm, rank, ierror)
+    call mpi_comm_size(this % shmcomm, nprocs_shm, ierror)
+    call mpi_comm_size(comm, nprocs, ierror)
+
+    table_shape = (/this % nvar, this % table_dims_padded_flat/)
+
+    this % nnodes = 0
+
+    if (rank_shm .eq. 0) then
+      this % root_node = 1
+    else
+      this % root_node = 0
+    end if
+
+    !call mpi_allreduce(this % root_node, this % nnodes, 1, mpi_integer, mpi_sum, comm, ierror)
+    !print *, rank_shm, this % root_node, this % nnodes
+
+    allocate (node_sizes(0:nprocs - 1))
+
+    if (rank_shm .eq. 0) then
+      rank_data = rank
+    else
+      rank_data = -1
+    end if
+
+    call mpi_allgather(rank_data, 1, mpi_integer, node_sizes, 1, mpi_integer, comm, ierror)
+
+    do i = 0, nprocs - 1
+      if (node_sizes(i) .ge. 0) this % nnodes = this % nnodes + 1
+    end do
+
+    !print *, "total nodes ", this % nnodes
+
+    allocate (node_roots(0:this % nnodes - 1))
+
+    j = 0
+    do i = 0, nprocs - 1
+      if (node_sizes(i) .ge. 0) then
+        node_roots(j) = node_sizes(i)
+        j = j + 1
+      end if
+    end do
+    !print *, "node roots = ", node_roots
+
+    this % node_number = -1
+
+    do i = 0, this % nnodes - 2
+      if (rank .ge. node_roots(i) .and. rank .lt. node_roots(i + 1)) then
+        !print *, "rank ", rank, " is at node ", i, " with shmcomm rank ", rank_shm
+        this % node_number = i
+      end if
+    end do
+
+    if (rank .ge. node_roots(this % nnodes - 1) .and. rank .lt. nprocs) then
+      !print *, "rank ", rank, " is at node ", this % nnodes - 1, " with shmcomm rank ", rank_shm
+      this % node_number = this % nnodes - 1
+    end if
+
+    if (this % node_number .eq. -1) &
+    & print *, "disttab warning: rank ", rank, "(shmcomm rank ", rank_shm, ") has not found its node!"
+
+    lower_bound = this % node_number * floor(1.0_sp * this % table_dims_padded_flat / this % nnodes) + 1
+    if (this % node_number .eq. this % nnodes - 1) then
+      upper_bound = this % table_dims_padded_flat
+    else
+      upper_bound = (this % node_number + 1) * floor(1.0_sp * this % table_dims_padded_flat / this % nnodes)
+    end if
+
+    if (rank_shm .eq. 0) &
+    & print *, "(shm dist) lb = ", lower_bound, "ub = ", upper_bound, "rank = ", rank, "node = ", this % node_number
+
+    deallocate (node_sizes)
+    deallocate (node_roots)
+
+    if (rank_shm .eq. 0) then
+      window_size = this % table_dims_padded_flat * this % nvar * int(sp, kind=mpi_address_kind) * 1_mpi_address_kind
+      !window_size = (upper_bound - lower_bound + 1) * this % nvar * rp
+    else
+      window_size = 0_mpi_address_kind
+    end if
+
+    disp_unit = int(sp, kind(disp_unit))
+
+    call mpi_win_allocate_shared(window_size, disp_unit, mpi_info_null, this % shmcomm, &
+                               & this % elems_baseptr, this % win_shm, ierror)
+
+    if (rank_shm .ne. 0) then
+      call mpi_win_shared_query(this % win_shm, 0, window_size, disp_unit, this % elems_baseptr, ierror)
+    end if
+
+    call c_f_pointer(this % elems_baseptr, this % elems_ptr, table_shape)
+
+  end subroutine open_rma_window_shared
+
+!> allocate non-distributed master table elements, with c-style pointer
+!!
+!! @param this the table object to allocate elems_ptr
+  subroutine table_alloc_ptr(this)
+    class(table), intent(inout) :: this
+    integer :: ierror
+    integer(kind=mpi_address_kind) :: window_size
+    integer, dimension(2) :: table_shape
+
+    window_size = this % table_dims_padded_flat * this % nvar * sp * 1_mpi_address_kind
+    table_shape = (/this % nvar, this % table_dims_padded_flat/)
+    call mpi_alloc_mem(window_size, mpi_info_null, this % elems_baseptr, ierror)
+    call c_f_pointer(this % elems_baseptr, this % elems_ptr, table_shape)
+
+  end subroutine table_alloc_ptr
+
+!> remaps the partition from a given previous partition ordering to given new partition
 !! ordering.
-!! todo Should be superseded by partition_remap_subtable
+!! todo should be superseded by partition_remap_subtable
 !!
 !! @param this table object to perform partition mapping
 !! @param part_dims partition dims to use
@@ -712,18 +884,18 @@ contains
 
     integer(i4), dimension(size(this % table_dims) - 1) :: coord, coord_b, coord_p
     integer(i4), dimension(size(this % table_dims) - 1) :: tile_dims, tile_dims_prev
-    integer(i4) :: i, i_old, N
+    integer(i4) :: i, i_old, n
     real(sp), allocatable, dimension(:, :) :: elems_old
 
-    N = size(this % table_dims) - 1
+    n = size(this % table_dims) - 1
 
     allocate (elems_old(this % nvar, this % table_dims_padded_flat))
     elems_old = this % elems
 
-    tile_dims_prev = this % table_dims_padded(1:N) / part_dims_prev
+    tile_dims_prev = this % table_dims_padded(1:n) / part_dims_prev
 
-    ! Pad out table to maintain shape
-    ! Find padded table dims
+    ! pad out table to maintain shape
+    ! find padded table dims
     this % table_dims_padded = this % table_dims
     do i = lbound(this % table_dims_padded, dim=1), ubound(this % table_dims_padded, dim=1) - 1
       do while (mod(this % table_dims_padded(i), part_dims(i)) .ne. 0)
@@ -734,18 +906,18 @@ contains
     this % table_dims_padded_flat = &
       product(this % table_dims_padded(1:ubound(this % table_dims_padded, dim=1) - 1))
 
-! Create a new padded table
+! create a new padded table
     deallocate (this % elems)
     allocate (this % elems(this % nvar, this % table_dims_padded_flat))
     this % elems = 0.d0
 
     this % part_dims = part_dims
-    tile_dims = this % table_dims_padded(1:N) / this % part_dims
+    tile_dims = this % table_dims_padded(1:n) / this % part_dims
 
     do i = 1, this % table_dims_padded_flat
       call this % index_to_local_coord(i, this % part_dims, tile_dims, coord_p, coord_b)
       coord = this % local_coord_to_global_coord(coord_p, coord_b, tile_dims)
-      if (any(coord .gt. this % table_dims(1:N))) then
+      if (any(coord .gt. this % table_dims(1:n))) then
         this % elems(:, i) = 0
       else
         i_old = this % global_coord_to_index(coord, part_dims_prev, tile_dims_prev)
@@ -757,9 +929,9 @@ contains
 
   end subroutine partition_remap
 
-!> Remaps the partition from a given previous partition ordering to given new partition
-!! ordering. Uses subtables, for distributed storage.
-!! todo Should supersede partition_remap.
+!> remaps the partition from a given previous partition ordering to given new partition
+!! ordering. uses subtables, for distributed storage.
+!! todo should supersede partition_remap.
 !!
 !! @param this table object to perform partition mapping
 !! @param part_dims partition dims to use
@@ -793,8 +965,8 @@ contains
     part_blks = this % table_dims(1:ndim) / this % part_dims(1:ndim)
     rank_dims = this % table_dims(1:ndim) / this % subtable_dims(1:ndim)
 
-    ! Pad out table to maintain shape
-    ! Find padded table dims
+    ! pad out table to maintain shape
+    ! find padded table dims
     this % table_dims_padded = this % table_dims
     do i = lbound(this % table_dims_padded, dim=1), ubound(this % table_dims_padded, dim=1) - 1
       do while (mod(this % table_dims_padded(i), part_dims(i)) .ne. 0)
@@ -812,7 +984,7 @@ contains
     this % table_dims_padded_flat = &
       product(this % table_dims_padded(1:ubound(this % table_dims_padded, dim=1) - 1))
 
-    ! Create a new padded table
+    ! create a new padded table
     deallocate (this % elems)
     allocate (this % elems(this % nvar, product(this % subtable_dims_padded) * rank + 1: &
     & (rank + 1) * product(this % subtable_dims_padded)))
@@ -822,28 +994,28 @@ contains
     tile_dims = this % subtable_dims_padded(1:ndim) / this % part_dims
 
     do i = product(this % subtable_dims) * rank + 1, (rank + 1) * product(this % subtable_dims)
-      ! Get the spatial coordinate of the entry loaded into the table at index i
+      ! get the spatial coordinate of the entry loaded into the table at index i
       coord = this % index_to_global_coord(i, ones, this % table_dims(1:ndim))
 
-      ! Get the destination index i_destin based on the entry's spatial coordinates.
-      ! By moving entry i to i_destin, the entry is moved to the correct subtable.
-      ! The partitioning on the subtable is equivalent to Alya-format ordering over
+      ! get the destination index i_destin based on the entry's spatial coordinates.
+      ! by moving entry i to i_destin, the entry is moved to the correct subtable.
+      ! the partitioning on the subtable is equivalent to alya-format ordering over
       ! the subspace of the unit hypercube that each subtable covers.
       i_destin = this % subtable_dims(1) * (coord(1) - 1) + &
                & (ceiling(1.0 * coord(2) / this % subtable_dims(2)) - 1) * product(this % subtable_dims(1:2)) &
                & + this % mod_up(coord(2), this % subtable_dims(2))
 
-      ! From the coordinates, find the target rank for the MPI RMA put call
+      ! from the coordinates, find the target rank for the mpi rma put call
       rank_coord = ceiling(1.0 * coord / this % subtable_dims(1:ndim))
       target_rank = (rank_coord(1) - 1) * subtable_blks(2) + (rank_coord(2) - 1)
 
       if (target_rank .ne. rank) then
-        ! From the destination index i_destin and number of state variables nvar,
-        ! compute the target window displacement for the MPI RMA put call
+        ! from the destination index i_destin and number of state variables nvar,
+        ! compute the target window displacement for the mpi rma put call
         target_displacement = (this % mod_up(i_destin, product(this % subtable_dims(1:ndim))) - 1) * this % nvar
 
-        ! Put the entry from origin index i to target index i_destin (expressed in the decomposition to
-        ! target_rank and target_displacement) via the object's window (this % window) with an MPI RMA put
+        ! put the entry from origin index i to target index i_destin (expressed in the decomposition to
+        ! target_rank and target_displacement) via the object's window (this % window) with an mpi rma put
         call mpi_put(elems_old(:, i), &
                    & this % nvar, &
                    & mpi_real, &
@@ -854,7 +1026,7 @@ contains
                    & this % window, &
                    & ierror)
       else
-        ! Put the entry from origin index i to target index i_destin locally,
+        ! put the entry from origin index i to target index i_destin locally,
         ! as origin and destination ranks are the same
         this % elems(:, i_destin) = elems_old(:, i)
       end if
@@ -869,7 +1041,7 @@ contains
 
   end subroutine partition_remap_subtable
 
-!> Write elements to stdout.
+!> write elements to stdout.
 !!
 !! @param this table object whose elements are to be written
   subroutine print_elems(this)
@@ -885,10 +1057,10 @@ contains
 
   end subroutine print_elems
 
-!> Deallocates the allocated (allocatable) member variables of the table object
+!> deallocates the allocated (allocatable) member variables of the table object
 !!
 !! @param this the table object whose allocatable member variables are to be deallocated
-!! @todo This is called by the destructor, but is it necessary?
+!! @todo this is called by the destructor, but is it necessary?
   subroutine deallocate_table(this)
     class(table), intent(inout) :: this
 
@@ -904,9 +1076,9 @@ contains
 
   end subroutine deallocate_table
 
-!> Reshapes the table. This will not preserve the entries, but is here to re-specify the
-!! table shape after the constructor has been called. This is included as it is most
-!! likely necessary for interfacing with Alya.
+!> reshapes the table. this will not preserve the entries, but is here to re-specify the
+!! table shape after the constructor has been called. this is included as it is most
+!! likely necessary for interfacing with alya.
 !!
 !! @param this the table object whose allocatable member variables are to be deallocated
   subroutine reshape_table(this, ndim, nvar, table_dims)
@@ -936,8 +1108,8 @@ contains
     this % subtable_dims_padded = table_dims
     this % nvar = this % table_dims(ubound(this % table_dims, dim=1))
 
-! Table initially considered to have one table-sized partition, i.e. 'unpartitioned'
-! Note there are other partitioning schemes which are identical to this scheme.
+! table initially considered to have one table-sized partition, i.e. 'unpartitioned'
+! note there are other partitioning schemes which are identical to this scheme.
     this % part_dims = this % table_dims_padded(1:ubound(this % table_dims, dim=1) - 1)
 
     allocate (this % elems(this % nvar, this % table_dims_padded_flat))
@@ -945,8 +1117,8 @@ contains
 
   end subroutine reshape_table
 
-!> The 'upper modulo' operator; the only difference between upper modulo and the standard
-!! modulo operator is in the case I "%" I = I (as opposed to I % I = 0), where I is
+!> the 'upper modulo' operator; the only difference between upper modulo and the standard
+!! modulo operator is in the case i "%" i = i (as opposed to i % i = 0), where i is
 !! an integer, % is the standard modulo operator, and "%" is the upper modulo operator.
 !!
 !! @param this table object to which mod_up belongs
@@ -962,7 +1134,7 @@ contains
 
   end function mod_up
 
-!> Converts flat index n entry (i_1, i_2, ..., i_N) in coordinate indexing
+!> converts flat index n entry (i_1, i_2, ..., i_n) in coordinate indexing
 !! using the dimensions given in part_dims
 !!
 !! @param this table object to which flat2coord belongs
@@ -975,29 +1147,29 @@ contains
     integer(i4), dimension(size(this % part_dims)), intent(in) :: dims
 
     integer(i4), dimension(size(this % part_dims)) :: coord
-    integer(i4) :: k, div, N, ind_cpy
+    integer(i4) :: k, div, n, ind_cpy
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    div = product(dims(2:N))
+    div = product(dims(2:n))
 
     ind_cpy = ind
 
-    outer: do k = 1, N
+    outer: do k = 1, n
       coord(k) = ceiling(real(ind_cpy, sp) / real(div, sp))
       if (mod(ind_cpy, div) .ne. 0) then
         ind_cpy = mod(ind_cpy, div)
       else
         ind_cpy = div
-        coord(k + 1:N) = dims(k + 1:N)
+        coord(k + 1:n) = dims(k + 1:n)
         exit outer
       end if
-      if (k .lt. N) div = div / dims(k + 1)
+      if (k .lt. n) div = div / dims(k + 1)
     end do outer
 
   end function index_to_coord
 
-!> Return coordinates from a global index on the object padded table dimensions.
+!> return coordinates from a global index on the object padded table dimensions.
 !!
 !! @param this table object
 !! @param ind the index whose coordinates are to be found
@@ -1014,10 +1186,10 @@ contains
 
     ind_p = ceiling(real(ind, sp) / product(tile_dims))
 
-! Compute inter-partition contribution to index
+! compute inter-partition contribution to index
     coord_p = this % index_to_coord(ind_p, part_dims)
 
-! Localized intra-partition index
+! localized intra-partition index
     ind_b = mod(ind, product(tile_dims))
     if (ind_b .ne. 0) then
       coord_b = this % index_to_coord(ind_b, tile_dims)
@@ -1029,7 +1201,7 @@ contains
 
   end function index_to_global_coord
 
-!> Given an index, intra-partition dimensions part_dims, and inter-partition dimensions tile_dims,
+!> given an index, intra-partition dimensions part_dims, and inter-partition dimensions tile_dims,
 !! return the coordinates of index under the partitioning scheme defined by
 !! part_dims and tile_dims.
 !!
@@ -1050,10 +1222,10 @@ contains
 
     ind_p = ceiling(real(ind, sp) / product(tile_dims))
 
-! Compute inter-partition contribution to index
+! compute inter-partition contribution to index
     coord_p = this % index_to_coord(ind_p, part_dims)
 
-! Localized intra-partition index
+! localized intra-partition index
     ind_b = mod(ind, product(tile_dims))
     if (ind_b .ne. 0) then
       coord_b = this % index_to_coord(ind_b, tile_dims)
@@ -1063,7 +1235,7 @@ contains
 
   end subroutine index_to_local_coord
 
-!> Converts entry (i_1, i_2, ..., i_N) in coordinate indexing to flat index n
+!> converts entry (i_1, i_2, ..., i_n) in coordinate indexing to flat index n
 !! in global order, according to the given partition size part_dims.
 !!
 !! @param this table object
@@ -1074,21 +1246,21 @@ contains
     class(table), intent(in) :: this
     integer(i4), dimension(size(this % part_dims)), intent(in) :: coord, dims
 
-    integer(i4) :: ind, k, N, div
+    integer(i4) :: ind, k, n, div
 
-    N = size(dims)
+    n = size(dims)
 
     div = product(dims)
-    ind = coord(N)
+    ind = coord(n)
 
-    do k = 1, N - 1
+    do k = 1, n - 1
       div = div / dims(k)
       ind = ind + (coord(k) - 1) * div
     end do
 
   end function coord_to_index
 
-!> Return the global flat index, given coordinates and control variable space dimensions.
+!> return the global flat index, given coordinates and control variable space dimensions.
 !!
 !! @param this table object
 !! @param coord the coordinates
@@ -1099,12 +1271,12 @@ contains
     class(table), intent(in) :: this
     integer(i4), dimension(size(this % part_dims)), intent(in) :: coord, part_dims, tile_dims
 
-    integer(i4) :: ind, N, k
+    integer(i4) :: ind, n, k
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b
 
-    N = size(this % part_dims)
+    n = size(this % part_dims)
 
-    do k = 1, N
+    do k = 1, n
       coord_p(k) = ceiling(real(coord(k), sp) / tile_dims(k))
       coord_b(k) = mod(coord(k), tile_dims(k))
       if (coord_b(k) .eq. 0) coord_b(k) = tile_dims(k)
@@ -1113,7 +1285,7 @@ contains
 
   end function global_coord_to_index
 
-!> Return partitioned flat index, given coordinates and an associated two-level partitioning scheme
+!> return partitioned flat index, given coordinates and an associated two-level partitioning scheme
 !! described by the intra-partition dimensions part_dims and inter-partition dimensions tile_dims.
 !!
 !! @param this table object
@@ -1133,7 +1305,7 @@ contains
 
   end function local_coord_to_index
 
-!> Decompose global coordinate to local coordinate pair in given partition and box dimension
+!> decompose global coordinate to local coordinate pair in given partition and box dimension
 !! scheme.
 !!
 !! @param this table object
@@ -1145,13 +1317,13 @@ contains
   subroutine global_coord_to_local_coord(this, coord, part_dims, tile_dims, coord_p, coord_b)
     class(table), intent(in) :: this
 
-    integer(i4) :: N, k
+    integer(i4) :: n, k
     integer(i4), dimension(size(this % part_dims)) :: part_dims, tile_dims
     integer(i4), dimension(size(this % part_dims)) :: coord_p, coord_b, coord
 
-    N = size(part_dims)
+    n = size(part_dims)
 
-    do k = 1, N
+    do k = 1, n
       coord_p(k) = ceiling(real(coord(k), sp) / tile_dims(k))
       coord_b(k) = mod(coord(k), tile_dims(k))
       if (coord_b(k) .eq. 0) coord_b(k) = tile_dims(k)
@@ -1159,7 +1331,7 @@ contains
 
   end subroutine global_coord_to_local_coord
 
-!> Convert a local coordinates decomposition pair to global coordinates.
+!> convert a local coordinates decomposition pair to global coordinates.
 !!
 !! @param this table object
 !! @param coord_p intra-partition coordinate
