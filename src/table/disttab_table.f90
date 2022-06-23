@@ -418,7 +418,6 @@ contains
       end do
       global_coord(i) = j
     end do
-
   end function real_to_global_coord
 
 !> Preprocessor for bucketed real to global coord function.
@@ -429,11 +428,10 @@ contains
 !! @param this table object
 !! @param segments desired number of segments per dimension in the bucket array
 !! @result buckets the bucket array
-  pure function real_to_global_coord_opt_preprocessor(this, segments) result(buckets)
+  subroutine real_to_global_coord_opt_preprocessor(this, segments, buckets)
     class(table), intent(in) :: this
     integer(i4), dimension(size(this % part_dims)), intent(in) :: segments
-
-    integer(i4), dimension(sum(segments)) :: buckets
+    integer(i4), dimension(sum(segments)), intent(inout) :: buckets
     integer(i4) :: i, j, k, l, N
     real(sp) :: offset, delta
 
@@ -447,13 +445,13 @@ contains
         k = sum(this % table_dims(:i - 1)) + 1
         do while (offset .gt. this % ctrl_vars(k))
           k = k + 1
+          ! TODO Convert this function to a subroutine because it's buggy
         end do
         buckets(l) = max(sum(this % table_dims(:i - 1)) + 1, k - 1)
         l = l + 1
       end do
     end do
-
-  end function real_to_global_coord_opt_preprocessor
+  end subroutine real_to_global_coord_opt_preprocessor
 
 !> Given coordinates [0, 1]x[0, 1]x...x[0, 1] in the normalized state space, return
 !! corresponding global coordinates.
@@ -479,7 +477,7 @@ contains
     do i = 1, N
       delta = 1.0 / (segments(i))
       offset_cv = sum(this % table_dims(:i - 1))
-      coord_start_indices(i) = buckets(ceiling(real_val(i) / delta) + sum(segments(:i - 1)))
+      coord_start_indices(i) = buckets(max(ceiling(real_val(i) / delta) + sum(segments(:i - 1)), 1))
       j = coord_start_indices(i)
       do while ((real_val(i) .lt. this % ctrl_vars(j)) .or. (real_val(i) .ge. this % ctrl_vars(j + 1)))
         j = j + 1

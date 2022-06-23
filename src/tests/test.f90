@@ -26,12 +26,12 @@ program test
   !call reshape_test()
 
   ! Parallel functionality testing
-  call test_mpi()
+  !call test_mpi()
 
   ! Other tests
   !call read_test() ! This won't work for the time being as MPI is introduced in table % read_in()
   !call locality_test()
-  !call access_perf_test()
+  call access_perf_test()
   !call troubleshooting()
 
 contains
@@ -246,25 +246,27 @@ contains
 
 !> Run bucketed real -> coordinate search performance tests.
   subroutine access_perf_test()
-    do dims = 2, 2
-      do j = 1, 2
+    do dims = 2, 6
+      do j = 2, 5
         allocate (table_dims_real(dims + 1))
         allocate (part_dims_real(dims))
         allocate (table_dims(dims + 1))
         allocate (part_dims(dims))
         allocate (segments(dims))
 
-        i = 10
-        table_dims(1:dims) = 10 * (2**i)
+        call random_number(table_dims_real(1:dims))
+        table_dims(1:dims) = ceiling(1+499*table_dims_real(1:dims))
         table_dims(dims + 1) = 1
-        segments = 2**j
+        segments = ceiling(1.0 * table_dims(1:dims) / j) + 1
+        table_dims(1:dims) = table_dims(1:dims) + 3*j
 
         if (segments(1) .gt. table_dims(1)) exit
 
-        print *, "table dims = ", table_dims(1)
-        print *, "number of segments = ", segments(1)
+        print *, "table dims = ", table_dims(1:dims)
+        print *, "number of segments = ", segments
 
         test_access = access_test(table_dims)
+        total_runs = 1000000
         call test_access % run_get_perf_test(total_runs, segments)
 
         deallocate (segments)

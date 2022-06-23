@@ -26,6 +26,8 @@ module disttab_test_access
     procedure, pass(this), private :: get_perf_test
     procedure, pass(this), private :: locality_test
 
+    procedure, pass(this), private :: quicksort
+
     procedure, pass(this), private :: fill_table_ascending_integers
     procedure, pass(this), private :: fill_cvars_linspace
 
@@ -234,34 +236,27 @@ contains
   subroutine get_perf_test(this, runs, segments)
     class(access_test), intent(inout) :: this
     real(sp) :: real_coords_rand(size(this % lookup % part_dims))
-    real(sp) :: t1, t2, time_total, time_total_opt
+    double precision :: t1, t2
     integer(i4) :: i, runs
     integer(i4), dimension(size(this % lookup % part_dims)) :: coord, coord_opt
     integer(i4), dimension(size(this % lookup % part_dims)), intent(in) :: segments
     integer(i4), dimension(:), allocatable :: buckets
 
-    !print *, "starting get_perf_test"
-
-    time_total = 0.0
-    time_total_opt = 0.0
 
     allocate (buckets(sum(segments)))
-    buckets = this % lookup % real_to_global_coord_opt_preprocessor(segments)
+    print *, "starting preprocessor"
+    call cpu_time(t1)
+    call this % lookup % real_to_global_coord_opt_preprocessor(segments, buckets)
+    call cpu_time(t2)
+    print *, "preprocessor time: ", t2 - t1
 
+    print *, "starting get_perf_test"
+    ! Correctness checking
     do i = 1, runs
       call random_number(real_coords_rand)
 
-      call cpu_time(t1)
       coord = this % lookup % real_to_global_coord(real_coords_rand)
-      call cpu_time(t2)
-
-      time_total = time_total + (t2 - t1)
-
-      call cpu_time(t1)
       coord_opt = this % lookup % real_to_global_coord_opt(real_coords_rand, segments, buckets)
-      call cpu_time(t2)
-
-      time_total_opt = time_total_opt + (t2 - t1)
 
       if (any(coord .ne. coord_opt)) then
         print *, "<FAIL> optimized real_to_global_coord_opt"
@@ -278,14 +273,26 @@ contains
           & this % lookup % ctrl_vars(coord_opt(2) + this % lookup % table_dims(1) + 1)
         print *, "table dims: ", this % lookup % table_dims
       end if
-
     end do
 
-    deallocate (buckets)
+    write (*, *) "------------ TOTALS -----------"
+    call cpu_time(t1)
+    do i = 1, runs
+      call random_number(real_coords_rand)
+      coord = this % lookup % real_to_global_coord(real_coords_rand)
+    end do
+    call cpu_time(t2)
+    write (*, *) "time_total = ", t2 - t1
 
-    !write (*, *) "------------ TOTALS -----------"
-    write (*, *) "time_total = ", time_total
-    write (*, *) "time_total_opt = ", time_total_opt
+    call cpu_time(t1)
+    do i = 1, runs
+      call random_number(real_coords_rand)
+      coord_opt = this % lookup % real_to_global_coord_opt(real_coords_rand, segments, buckets)
+    end do
+    call cpu_time(t2)
+    write (*, *) "time_total_opt = ", t2 - t1
+
+    deallocate (buckets)
   end subroutine get_perf_test
 
   subroutine locality_test(this, runs)
@@ -418,18 +425,49 @@ contains
 !! @param this access_test object
   subroutine fill_cvars_linspace(this)
     class(access_test), intent(inout) :: this
-    integer(i4) :: i, N, j
+    integer(i4) :: i, N, j, delta
 
     N = size(this % lookup % part_dims)
 
     do i = 1, N
-      do j = 1, this % lookup % table_dims(i)
-        this % lookup % ctrl_vars(j + sum(this % lookup % table_dims(:i - 1))) = &
-                        & 1.0 * (j - 1) / (this % lookup % table_dims(i) - 1)
+      this % lookup % ctrl_vars(1 + sum(this % lookup % table_dims(:i - 1))) = 0.0
+      do j = 2, this % lookup % table_dims(i) - 1
+        call random_number(this % lookup % ctrl_vars(j + sum(this % lookup % table_dims(:i - 1))))
+        !this % lookup % ctrl_vars(j + sum(this % lookup % table_dims(:i - 1))) = &
+             !& 1.0 * (j - 1) / (this % lookup % table_dims(i) - 1)
       end do
+      this % lookup % ctrl_vars(this % lookup % table_dims(i) + &
+             & sum(this % lookup % table_dims(:i - 1))) = 1.0
+      call this % quicksort(this % lookup % ctrl_vars, 1 + &
+             & sum(this % lookup % table_dims(:i - 1)), this % lookup % table_dims(i) + &
+             & sum(this % lookup % table_dims(:i - 1)))
     end do
-
   end subroutine fill_cvars_linspace
+
+recursive subroutine quicksort(this, a, first, last)
+  class(access_test), intent(inout) :: this
+  real(sp) :: a(*), x, t
+  integer(i4) :: first, last
+  integer(i4) :: i, j
+
+  x = a( (first+last) / 2 )
+  i = first
+  j = last
+  do
+     do while (a(i) < x)
+        i=i+1
+     end do
+     do while (x < a(j))
+        j=j-1
+     end do
+     if (i >= j) exit
+     t = a(i);  a(i) = a(j);  a(j) = t
+     i=i+1
+     j=j-1
+  end do
+  if (first < i-1) call this % quicksort(a, first, i-1)
+  if (j+1 < last)  call this % quicksort(a, j+1, last)
+end subroutine quicksort
 
 !> Runs the get value test.
 !! @param this access_test object
